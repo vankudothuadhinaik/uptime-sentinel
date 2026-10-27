@@ -46,7 +46,7 @@ Do not commit production values to Git. Do not use the Compose-only local databa
 
 - Runtime: Docker
 - Dockerfile path: `./Dockerfile`
-- Docker context: `. `
+- Docker context: `.`
 - Health check path: `/health/ready`
 - Start command: use the Dockerfile default (Uvicorn)
 - Keep automatic deploys enabled only for the intended production branch.
