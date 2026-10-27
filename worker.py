@@ -79,12 +79,11 @@ def cleanup_old_results(db: Session, now: datetime | None = None) -> int:
 
     cutoff = _as_utc(now or datetime.now(timezone.utc)) - timedelta(days=retention_days)
     try:
-        expired_ids = db.scalars(
-            select(CheckResult.id).where(CheckResult.checked_at < cutoff)
-        ).all()
-        deleted = len(expired_ids)
-        if expired_ids:
-            db.execute(delete(CheckResult).where(CheckResult.id.in_(expired_ids)))
+        # Delete in one database-side statement instead of loading every expired
+        # ID into worker memory. This keeps cleanup bounded for high-volume
+        # monitors and returns the affected-row count for operational logging.
+        result = db.execute(delete(CheckResult).where(CheckResult.checked_at < cutoff))
+        deleted = max(0, result.rowcount or 0)
         db.commit()
         return deleted
     except Exception:
