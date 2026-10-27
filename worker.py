@@ -79,8 +79,12 @@ def cleanup_old_results(db: Session, now: datetime | None = None) -> int:
 
     cutoff = _as_utc(now or datetime.now(timezone.utc)) - timedelta(days=retention_days)
     try:
-        result = db.execute(delete(CheckResult).where(CheckResult.checked_at < cutoff))
-        deleted = int(result.rowcount or 0)
+        expired_ids = db.scalars(
+            select(CheckResult.id).where(CheckResult.checked_at < cutoff)
+        ).all()
+        deleted = len(expired_ids)
+        if expired_ids:
+            db.execute(delete(CheckResult).where(CheckResult.id.in_(expired_ids)))
         db.commit()
         return deleted
     except Exception:
