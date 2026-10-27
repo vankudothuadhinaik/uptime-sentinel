@@ -42,23 +42,25 @@ For a disposable local smoke test, configure test-only values in `.env` and run 
 
 ## CI status and release gate
 
-Always use the [GitHub Actions workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) for the current status; this README is not a live CI indicator.
+Always use the [GitHub Actions workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) for the live status; this README is a snapshot, not a live CI indicator.
 
-- **Last verified successful run:** [run #40585083628](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40585083628), on commit `d6e7486e3aae92a78e5a6322e8495ef153453b74`. Its checks and Docker Compose smoke test passed.
-- **Newer runs:** the latest screenshot showed runs #22, #23, and #24 failing on `main`. Their failure logs have not yet been retrieved, so the cause is not confirmed and those failures must not be treated as fixed.
-- **Proxy integration:** skipped in the last verified run because the controlled fixture secrets were not configured. Skipped is not passed.
-- **Production deployment:** not verified.
+- **Latest CI checks:** [run #27](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40589776499), commit `fc618f9f3262257b439a962313fbb803b84bd1e0`. The full checks job passed, including type checking, migrations, PostgreSQL concurrency tests, unit tests, compilation, and dependency audit.
+- **Docker Compose smoke test:** still running at the time this README was updated. Do not treat the full workflow as green until this job completes successfully.
+- **Proxy integration:** skipped in run #27 because the controlled proxy fixture secrets were not configured. Skipped is not passed.
+- **Render deployment:** the PostgreSQL database is available in the dedicated Uptime Sentinel workspace. The API and worker are not yet verified as deployed.
+- **Production readiness:** not complete until a controlled destination-validating egress proxy passes the integration tests and the deployed API/worker are smoke-tested.
 
 ### Required before production deployment
 
-1. Inspect the first failed step in the newest CI run and fix the actual failure before claiming CI is green.
-2. Provision an isolated, access-controlled forward proxy and test fixtures; do not use a public/general-purpose proxy.
+1. Confirm the complete CI workflow, including Docker Compose smoke, passes on the latest commit.
+2. Provision an isolated, access-controlled forward proxy that independently validates destination IPs at connection time, prevents DNS-rebinding and unsafe redirects, and logs rejected destinations. Do not use a public/general-purpose proxy.
 3. Configure the six repository Actions secrets documented in [EGRESS_PROXY_TESTING.md](EGRESS_PROXY_TESTING.md): `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, and `EGRESS_BAD_TLS_URL`.
-4. Manually dispatch the CI workflow and inspect the proxy's destination-enforcement logs. The proxy test must pass against the real controlled proxy; mocked HTTP transports are not a substitute.
-5. Deploy only with PostgreSQL, a unique randomly generated `JWT_SECRET` of at least 32 characters, TLS termination, a controlled destination-validating egress proxy, and managed secrets. The Compose database password is a local smoke-test default and must be replaced for any real environment.
-6. Confirm `RESULT_RETENTION_DAYS` matches your policy and monitor worker logs for the daily cleanup result. Expired check samples are deleted by the worker; incident records are retained. For multi-worker/high-volume deployments, monitor cleanup load and consider moving retention to a dedicated scheduled maintenance job.
+4. Manually dispatch the CI workflow and verify the proxy integration passes against the real controlled proxy. Inspect the proxy's enforcement logs; mocked transports are not a substitute.
+5. Deploy the API and worker in the dedicated Uptime Sentinel Render workspace with PostgreSQL, a unique randomly generated `JWT_SECRET` of at least 32 characters, TLS termination, a controlled destination-validating egress proxy, and managed secrets. Never commit production secrets.
+6. Apply migrations once per release, then verify `/health/live` and `/health/ready`, registration, monitor creation, worker scheduling, and database persistence.
+7. Confirm `RESULT_RETENTION_DAYS` matches policy and monitor the worker's daily retention-cleanup logs. Expired check samples are deleted; incident records are retained.
 
-The project has a previously verified green CI run, but the newest commits have failed workflow runs and the controlled proxy gate remains open. Do not describe the current branch as fully CI-verified until a run on the latest commit passes.
+Do not describe the current branch as fully production-ready until all of these release gates are verified. A passing unit/CI checks job alone does not prove the real egress proxy or production deployment is secure.
 
 ## Deployment
 
