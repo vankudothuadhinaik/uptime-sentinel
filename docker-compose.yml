@@ -1,0 +1,40 @@
+services:
+  api:
+    build: .
+    env_file: .env
+    command: ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+    ports: ["8000:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  worker:
+    build: .
+    command: python worker.py
+    env_file: .env
+    depends_on:
+      api: {condition: service_healthy}
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: uptime_sentinel
+      POSTGRES_USER: uptime
+      POSTGRES_PASSWORD: change-me-local-only
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uptime -d uptime_sentinel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  pgdata:

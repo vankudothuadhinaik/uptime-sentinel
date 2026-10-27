@@ -1,0 +1,16 @@
+.env
+*.db
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+dist/
+*.egg-info/
+*.pyc
+.coverage
+htmlcov/
+.env.*
+!.env.example
+*.log
+*.jsonl
