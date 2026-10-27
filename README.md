@@ -42,7 +42,7 @@ For a disposable local smoke test, configure test-only values in `.env` and run 
 
 ## CI status and release gate
 
-The latest GitHub Actions run is [run #40584218809](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40584218809) on `main` (`b25620c77b8485fe37b397df0f767e7554d2df8a`). The static checks, full test suite, PostgreSQL concurrency test, dependency audit, migration round trips, and Docker Compose health smoke test all passed. The controlled `proxy-integration` job was skipped because its isolated fixture secrets are not configured.
+The latest CI results are available on the [GitHub Actions CI workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml). The latest checked run (#40585083628) on `main` (`d6e7486e3aae92a78e5a6322e8495ef153453b74`) passed the static checks, full test suite, PostgreSQL concurrency test, dependency audit, migration round trips, and Docker Compose health smoke test. The controlled `proxy-integration` job was skipped because its isolated fixture secrets are not configured.
 
 - **Passed:** static checks (Ruff lint and formatting, mypy, dependency consistency), full test suite, PostgreSQL 16 concurrency test, dependency audit, compilation, PostgreSQL and SQLite migration round trips.
 - **Passed:** Docker Compose configuration/build/start and API `/health/live` smoke test.
