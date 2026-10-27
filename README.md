@@ -58,6 +58,10 @@ The latest CI results are available on the [GitHub Actions CI workflow page](htt
 
 The project is **CI-verified**, but is not yet certified production-ready or deployed. The controlled proxy gate and remaining operational requirements above remain open.
 
+## Deployment
+
+See the [Render deployment runbook](docs/RENDER_DEPLOYMENT.md) for the API, worker, PostgreSQL, environment-variable, migration, and production release checklist. It must be followed in a dedicated Uptime Sentinel workspace; do not deploy into an unrelated workspace. The real controlled egress-proxy integration remains a mandatory security gate before production traffic.
+
 ## Data model and incident policy
 
 `users` own `monitors`; each monitor has `check_results` and `incidents`, plus UTC scheduling and lease timestamps. A non-2xx response, timeout, request failure, unsafe target, or redirect is down. The first consecutive down result opens one incident; later failures increment it; the first 2xx result resolves it. Check results older than `RESULT_RETENTION_DAYS` (default 30) are purged daily by the worker; incident records remain available. Monitor cleanup logs and schedule maintenance independently if multiple workers or data volume make per-worker cleanup inefficient.
