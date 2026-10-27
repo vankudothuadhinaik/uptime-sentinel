@@ -2,51 +2,65 @@
 
 Run date: 2026-10-28
 
-## Final decision
+## Release decision
 
-**PUBLISHED / NOT READY FOR PRODUCTION**: implementation, local verification,
-CI configuration, release hygiene, and documentation are complete on the
-published `main` branch. Production remains blocked until the controlled
-egress-proxy security tests and deployed API/worker gates pass in CI or staging.
+**PUBLISHED / NOT READY FOR PRODUCTION.** The application code and standard CI gates pass. Production is blocked on a real controlled egress proxy, execution of the proxy security integration suite, and deployed API/worker end-to-end verification.
 
-## Source reconciliation
+## Latest verified GitHub Actions run
 
-The reviewed project was retained as the base. The attached candidate was inspected but not copied wholesale: its `0003_lease_ownership_token.py` would conflict with the reviewed `0003_lease_tokens.py`, and its monitoring implementation used unbounded `get()` responses and exposed exception text. Its useful production proxy URL validation and proxy-use regression ideas were merged into the reviewed implementation.
+[Run #37 / 40595000447](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40595000447) on commit `7c05f4551f472fb5e13bbecf41a81615f49f67fd` completed successfully.
 
-## Observed checks
+| Job | Result | Interpretation |
+|---|---|---|
+| `checks` | PASS | Dependency consistency, Ruff lint/format, mypy, PostgreSQL concurrency test, pytest, compileall, pip-audit, PostgreSQL migration round trip, and SQLite migration round trip all succeeded. |
+| `compose-smoke` | PASS | Compose configuration/build/startup and API liveness check succeeded. |
+| `proxy-integration` | SKIPPED | Controlled proxy fixture secrets are not configured. This is not a security pass. |
 
-All commands below were run from the project root in the local `.venv` unless noted.
+## Previously recorded local verification
 
-| Command | Result |
-|---|---|
-| `.venv\Scripts\python.exe -m pip install -e ".[dev]"` | Passed; declared dependencies installed from available cache/index. |
-| `.venv\Scripts\python.exe -m pytest -q` | Passed: 20 tests, 6 opt-in infrastructure tests skipped (PostgreSQL/proxy unavailable), 3 deprecation warnings. |
-| `.venv\Scripts\python.exe -m ruff check .` | Passed. |
-| `.venv\Scripts\python.exe -m ruff format --check .` | Passed; 25 files formatted. |
-| `.venv\Scripts\python.exe -m mypy app worker.py migrations tests` | Passed: no issues in 19 source files. |
-| `.venv\Scripts\python.exe -m compileall -q app worker.py tests migrations` | Passed. |
-| Clean isolated environment install | BLOCKED by the 120-second command limit; the existing environment remains dependency-consistent (`pip check` passed). |
-| `DATABASE_URL=sqlite:///./final_candidate_reconcile.db alembic upgrade head` | Passed. |
-| `... alembic downgrade base` | Passed. |
-| `... alembic upgrade head` | Passed. |
-| `.venv\Scripts\python.exe -m pip_audit --skip-editable` | Passed: no known vulnerabilities. |
-| Direct login rate-limit smoke test | Passed: statuses 401 x10, then 429. |
-| Workflow and Compose structural assertions | Passed: PostgreSQL 16 service, migration/test steps, explicit `pip check`, Docker Compose smoke job, manual fail-closed proxy job, health dependencies, and API-gated worker startup verified. |
-| Worker stop-event smoke test | Passed: pre-set stop event exits without polling. |
-| `scripts\compose-smoke.ps1` PowerShell syntax | Passed; runtime execution is blocked because Docker is unavailable. |
-| Local infrastructure probe | Docker, Podman, PostgreSQL, Redis, `gh`, and proxy environment variables unavailable; bounded WSL Ubuntu start timed out after 10 seconds. GitHub/PyPI TCP reachability was available, but no authorized CI service was configured. |
-| GitHub Actions run `40591707184` for commit `d9d479dc2aaa61c8e7aeaa73767ba5dc0f31c2c6` | Passed: `checks` and `compose-smoke` succeeded; `proxy-integration` was skipped because the workflow is manual-only and controlled fixture secrets are not configured. |
+The last detailed local report recorded:
+- pytest: 20 passed; 6 infrastructure-gated tests skipped.
+- Ruff lint and format: passed.
+- mypy: passed for 19 source files.
+- compileall and pip check: passed.
+- pip-audit: no known vulnerabilities at time of run.
+- SQLite migration upgrade/downgrade/upgrade: passed.
+- Secret/artifact tracking scan: no tracked secrets, database dumps, or caches.
+- PostgreSQL concurrency and Compose smoke checks: passed in CI.
 
-The migration head is `0003_lease_tokens`. Fresh SQLite migration round trips were successful. PostgreSQL locking/concurrency was not claimed from SQLite.
+Local results are historical observations; the latest CI run above is the authoritative check for the newest published commit. A passing CI job does not verify production infrastructure.
 
-## Blocked checks
+## Implemented
 
-- Docker Compose build/startup: Docker is not installed. Run `docker compose build` and `docker compose up` on a Docker host.
-- PostgreSQL multi-worker verification: PostgreSQL client/service is unavailable. Start PostgreSQL, set `DATABASE_URL=postgresql+psycopg://...`, run the Alembic round trip, then execute the scheduler concurrency tests against separate worker sessions.
-- PostgreSQL/Redis/Compose tooling is absent in this Windows environment; PostgreSQL concurrency, Redis, and Compose runtime checks remain blocked. CI now provisions PostgreSQL and runs the concurrency test.
-- Egress-proxy integration: no controlled proxy or fixture endpoints were available. The new opt-in test module covers public reachability, private-IP blocking, DNS rebinding, redirects, and invalid TLS certificates when explicitly configured. See `EGRESS_PROXY_TESTING.md`; no proxy result is claimed here.
-- CI execution: GitHub Actions run `40591707184` passed the automatic PostgreSQL, dependency, quality, migration, and Compose jobs. The manual `workflow_dispatch` proxy job was skipped because controlled fixture secrets were not configured; it fails closed when invoked without them.
+- FastAPI API, authentication, ownership-scoped monitor operations, status endpoints, and health endpoints.
+- PostgreSQL migrations and database-backed worker leases/fencing.
+- Application-side SSRF checks, redirect disabling, bounded response reading, proxy configuration, and production startup validation.
+- Unit tests, PostgreSQL concurrency tests, Compose smoke job, dependency auditing, and opt-in proxy integration tests.
+- Render blueprint at `render.yaml` defining an API web service and a genuine continuous background worker.
+- Render runbook and release documentation.
 
-## GitHub status
+## Production blockers
 
-The confirmed project directory is the local checkout of `https://github.com/vankudothuadhinaik/uptime-sentinel.git` on `main`. Local `HEAD` is `d9d479dc2aaa61c8e7aeaa73767ba5dc0f31c2c6`, matching `origin/main`; no force-push or remote overwrite was used.
+1. **Controlled egress proxy:** no private, destination-validating proxy has been deployed or independently verified. Application-side DNS validation alone cannot eliminate the DNS-rebinding time-of-check/time-of-use risk.
+2. **Real proxy integration:** the controlled public, private, DNS-rebinding, redirect, and invalid-TLS fixtures and the six Actions secrets are not configured. The integration job has therefore been skipped.
+3. **Render services:** the latest connected Render service listing returned no application services. API and background worker deployment are not verified.
+4. **End-to-end behavior:** no deployed test has verified monitor creation, worker execution, result/incident persistence, restart/recovery, and cleanup.
+5. **Database continuity:** the existing PostgreSQL resource is on the Free plan and has a recorded expiry of 2026-11-26T21:40:41Z. Review/upgrade it before depending on production continuity.
+
+## Required external configuration
+
+Set these repository Actions secrets only after a controlled proxy and fixture endpoints exist:
+- `EGRESS_PROXY_TEST_URL`
+- `EGRESS_PUBLIC_URL`
+- `EGRESS_PRIVATE_URL`
+- `EGRESS_REBIND_URL`
+- `EGRESS_REDIRECT_URL`
+- `EGRESS_BAD_TLS_URL`
+
+Then manually dispatch the workflow and verify `proxy-integration` actually executes and passes. Use the Render blueprint only after the private proxy is ready; supply the existing database's internal URL, a unique random JWT secret of at least 32 characters, and the private proxy URL as secret environment values. Apply migrations once through a controlled release step and perform real end-to-end verification.
+
+The connected integrations available during this review do not expose GitHub Actions secret creation/manual dispatch or Render background-worker creation. No proxy or production deployment is claimed.
+
+## Final status
+
+**NOT READY FOR PRODUCTION.** Standard CI is green. Real proxy enforcement and production deployment remain unverified and must not be represented as complete.
