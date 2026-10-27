@@ -5,8 +5,8 @@ token, and completion updates are conditional on that token, so an expired
 worker cannot clear or reschedule a newer owner's lease.
 """
 
-import logging
 from datetime import datetime, timedelta, timezone
+import logging
 from signal import SIGINT, SIGTERM, signal
 from threading import Event
 from types import FrameType
