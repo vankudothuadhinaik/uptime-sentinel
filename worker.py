@@ -82,7 +82,11 @@ def cleanup_old_results(db: Session, now: datetime | None = None) -> int:
         # Delete in one database-side statement instead of loading every expired
         # ID into worker memory. This keeps cleanup bounded for high-volume
         # monitors and returns the affected-row count for operational logging.
-        result = db.execute(delete(CheckResult).where(CheckResult.checked_at < cutoff))
+        result = db.execute(
+            delete(CheckResult)
+            .where(CheckResult.checked_at < cutoff)
+            .execution_options(synchronize_session=False)
+        )
         deleted = max(0, getattr(result, "rowcount", 0) or 0)
         db.commit()
         return deleted
