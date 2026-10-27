@@ -29,7 +29,7 @@ jobs:
       - run: pip check
       - run: ruff check .
       - run: ruff format --check .
-      - run: mypy app worker.py migrations
+      - run: mypy app worker.py migrations tests
       - run: alembic upgrade head
       - run: python -m pytest -vv -s tests/test_postgres_concurrency.py
       - run: python -m pytest -q

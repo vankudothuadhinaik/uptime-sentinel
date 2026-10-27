@@ -21,7 +21,7 @@ flowchart LR
 
 ```powershell
 py -m venv .venv
-.\\.venv\\Scripts\\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 Copy-Item .env.example .env
 alembic upgrade head
@@ -38,14 +38,14 @@ Invoke-RestMethod -Method Post http://127.0.0.1:8000/monitors -Headers $headers 
 
 For Docker Compose, copy `.env.example` to `.env`, set a unique production `JWT_SECRET`, set `DATABASE_URL=postgresql+psycopg://uptime:<password>@postgres:5432/uptime_sentinel`, and set `EGRESS_PROXY_URL` to a controlled proxy that performs destination validation. Then run `docker compose up --build`. Redis is health-checked for deployment consistency but is not used by the current worker.
 
-For a disposable local smoke test, configure test-only values in `.env` and run `.\\scripts\\compose-smoke.ps1`. It validates Compose configuration, builds the images, waits for `/health/live`, prints service logs, and tears the test stack down afterward.
+For a disposable local smoke test, configure test-only values in `.env` and run `.\scripts\compose-smoke.ps1`. It validates Compose configuration, builds the images, waits for `/health/live`, prints service logs, and tears the test stack down afterward.
 
 ## CI status and release gate
 
 Always use the [GitHub Actions workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) for the live status; this README is a snapshot, not a live CI indicator.
 
-- **Latest completed full CI workflow:** [run #30](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40590347171), commit `7a44c82258d0ace31c3d94bb21bc5c301c497e5e`. The checks job and Docker Compose smoke test both passed, including type checking, migrations, PostgreSQL concurrency tests, unit tests, compilation, dependency audit, container build, and API health check.
-- **Proxy integration:** skipped in run #30 because the controlled proxy fixture secrets were not configured. Skipped is not passed.
+- **Latest completed full CI workflow:** [run #31](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40590812969), commit `3fe82b318095326b572b8c4eb2fb15be69ca1591`. The checks job and Docker Compose smoke test both passed, including type checking, migrations, PostgreSQL concurrency tests, unit tests, compilation, dependency audit, container build, and API health check.
+- **Proxy integration:** not executed in run #31 because the controlled proxy fixture secrets were not configured. Skipped is not passed.
 - **Render deployment:** the PostgreSQL database is available in the dedicated Uptime Sentinel workspace. The API and worker are not yet verified as deployed.
 - **Production readiness:** not complete until a controlled destination-validating egress proxy passes the integration tests and the deployed API/worker are smoke-tested.
 
