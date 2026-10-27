@@ -6,7 +6,6 @@ worker cannot clear or reschedule a newer owner's lease.
 """
 
 import logging
-
 from datetime import datetime, timedelta, timezone
 from signal import SIGINT, SIGTERM, signal
 from threading import Event
@@ -20,7 +19,6 @@ from app.config import get_settings
 from app.db import SessionLocal
 from app.models import CheckResult, Monitor
 from app.monitoring import perform_check
-
 
 logger = logging.getLogger(__name__)
 RETENTION_CLEANUP_INTERVAL = timedelta(hours=24)
