@@ -1,6 +1,6 @@
 # Render deployment runbook
 
-This runbook is for a **dedicated Uptime Sentinel Render workspace**. Do not deploy this project into an unrelated workspace. The connected Render integration currently exposes only the ESTIQ workspace, so no Render resources have been created by this runbook.
+This runbook is for the **dedicated Uptime Sentinel Render workspace** (workspace ID `tea-dbghjus9v7es73dnq900`). Do not deploy this project into an unrelated workspace. The PostgreSQL resource `uptime-sentinel-db` (`dpg-dbghkmc9v7es73dns2ig-a`) has been created and verified available in Singapore. The API service, worker service, and controlled egress proxy have not yet been deployed or verified.
 
 ## Required architecture
 
