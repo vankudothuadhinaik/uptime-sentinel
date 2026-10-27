@@ -42,7 +42,7 @@ For a disposable local smoke test, configure test-only values in `.env` and run 
 
 ## CI status and release gate
 
-The latest published GitHub Actions run is [run #40580619650](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40580619650).
+The last successful full verification of the published application is [run #40580619650](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40580619650). A later documentation-only main-branch run also passed; the retention feature is being validated separately in [pull request #1](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/1).
 
 - **Passed:** static checks (Ruff lint and formatting, mypy, dependency consistency), full test suite, PostgreSQL 16 concurrency test, dependency audit, compilation, PostgreSQL and SQLite migration round trips.
 - **Passed:** Docker Compose configuration/build/start and API `/health/live` smoke test.

@@ -67,7 +67,6 @@ def _finish_claim(db, monitor_id: int, token: str, next_check_at: datetime) -> b
     return result.rowcount == 1
 
 
-
 def cleanup_old_results(db: Session, now: datetime | None = None) -> int:
     """Delete check history older than RESULT_RETENTION_DAYS.
 

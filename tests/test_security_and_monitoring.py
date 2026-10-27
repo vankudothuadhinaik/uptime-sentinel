@@ -378,7 +378,6 @@ def test_monitor_client_uses_configured_proxy(monkeypatch, db_session):
     assert captured["follow_redirects"] is False
 
 
-
 def test_cleanup_old_results_removes_expired_checks_but_keeps_recent_checks_and_incidents(
     monkeypatch, db_session
 ):
