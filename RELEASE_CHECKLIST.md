@@ -1,35 +1,38 @@
-# Release checklist
+# Uptime Sentinel release checklist
 
-## Push-readiness decision
+## Current decision
 
-**PUBLISHED** to the configured repository. Production deployment remains
-blocked on the infrastructure gates listed below.
+**PUBLISHED / NOT READY FOR PRODUCTION.** Latest standard CI passed, but the real egress-proxy security gate and deployed API/worker end-to-end checks remain blocked.
 
-## Completed in this review
+## Implemented and verified by standard CI
 
+- [x] FastAPI API, authentication, ownership-scoped monitor operations, and health endpoints.
 - [x] PostgreSQL-compatible Alembic migrations through `0003_lease_tokens`.
-- [x] Database-backed scheduler claims with unique lease tokens and conditional completion.
-- [x] Paused, due, expired, exception, and slow-check regression coverage.
-- [x] SSRF validation for non-global and mixed DNS answers, mapped IPv6, credentials, and redirects.
-- [x] HTTP total timeout and bounded response streaming.
-- [x] Production JWT, PostgreSQL, and controlled-egress-proxy configuration validation.
-- [x] Existing project environment tests, lint, formatting, type checking, compilation, migration round trip, and dependency audit.
-- [x] Authentication rate-limit smoke test.
+- [x] Database-backed scheduler claims with lease tokens and conditional completion.
+- [x] Application-side SSRF validation, redirect disabling, and bounded response streaming.
+- [x] Production configuration validation for PostgreSQL, strong JWT secret, and `EGRESS_PROXY_URL`.
+- [x] Ruff lint/format, mypy, pytest, compilation, dependency audit, PostgreSQL concurrency/fencing test, and migration round trips in CI.
+- [x] Docker Compose build/start and API liveness smoke test in CI.
+- [x] Render blueprint defining an API service and a true continuous background worker.
+- [x] Render deployment runbook and explicit release blockers.
 
-## Required before production deployment
+## Must be completed before production
 
-- [x] Add PostgreSQL multi-worker/concurrency tests to CI; local execution remains blocked without PostgreSQL.
-- [x] Run Docker Compose end-to-end smoke tests in GitHub Actions.
-- [ ] Deploy behind a controlled egress proxy that revalidates destinations to address the DNS-rebinding residual risk.
-- [ ] Configure secret management, TLS, metrics, structured logs, backups, and retention cleanup.
-- [x] Verify the exact GitHub repository owner, repository name, remote URL, and branch before publishing.
+- [ ] Deploy an isolated private egress proxy that validates the actual destination IP at connection time and enforces safe DNS, IPv4/IPv6, redirect, metadata, and TLS policy.
+- [ ] Configure deterministic controlled fixtures and repository Actions secrets: `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, `EGRESS_BAD_TLS_URL`.
+- [ ] Manually dispatch CI and verify `proxy-integration` executes and passes. A skipped job is not a pass.
+- [ ] Validate/deploy `render.yaml` in the dedicated Uptime Sentinel Render workspace after proxy setup; reuse the existing PostgreSQL database.
+- [ ] Securely configure `DATABASE_URL`, a unique random `JWT_SECRET` (at least 32 characters), and `EGRESS_PROXY_URL` for API and worker.
+- [ ] Apply migrations once through a controlled release step.
+- [ ] Verify API liveness/readiness and review API/worker logs for errors and secret leakage.
+- [ ] Execute disposable end-to-end checks for account registration, monitor creation, worker execution, check/result/incident persistence, recovery after restart, and cleanup.
+- [ ] Resolve the existing database's Free-plan expiry (recorded as 2026-11-26) before production continuity depends on it.
+- [ ] Update the verification report with actual proxy test results, workflow run ID, deployed service IDs/URLs, migration result, and end-to-end observations.
 
-## Verification notes for this release
+## Latest CI evidence
 
-- Existing virtual environment: 20 tests passed, 6 infrastructure-gated tests skipped, Ruff lint and format checks passed, mypy passed for 19 source files, compilation passed, and SQLite migration upgrade/downgrade/upgrade passed.
-- A fresh isolated installation was attempted but hit the command's 120-second execution limit; it was not claimed as passed.
-- `pip-audit 2.10.1 --skip-editable`: no known vulnerabilities; advisory database was reachable during the run.
-- PostgreSQL multi-worker verification was not run because PostgreSQL tooling/service was unavailable in the review environment.
-- PostgreSQL multi-worker verification passed in GitHub Actions run `40591707184`.
-- Docker Compose build/startup passed in GitHub Actions run `40591707184`.
-- Controlled egress-proxy integration remains pending manual CI/staging execution with controlled fixture secrets.
+- [Run #37 / 40595000447](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40595000447), commit `7c05f4551f472fb5e13bbecf41a81615f49f67fd): `checks` PASS, `compose-smoke` PASS, `proxy-integration` SKIPPED because controlled fixture secrets are missing.
+- Detailed prior local verification: 20 tests passed, 6 infrastructure-gated tests skipped; Ruff, mypy (19 files), compileall, pip check, pip-audit, and SQLite migration round trip passed.
+- No Render API or worker deployment has been verified.
+
+Do not mark production ready until every unchecked security and deployment gate is genuinely verified.
