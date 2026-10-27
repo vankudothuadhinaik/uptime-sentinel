@@ -21,7 +21,7 @@ flowchart LR
 
 ```powershell
 py -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\\.venv\\Scripts\\Activate.ps1
 pip install -e ".[dev]"
 Copy-Item .env.example .env
 alembic upgrade head
@@ -38,29 +38,31 @@ Invoke-RestMethod -Method Post http://127.0.0.1:8000/monitors -Headers $headers 
 
 For Docker Compose, copy `.env.example` to `.env`, set a unique production `JWT_SECRET`, set `DATABASE_URL=postgresql+psycopg://uptime:<password>@postgres:5432/uptime_sentinel`, and set `EGRESS_PROXY_URL` to a controlled proxy that performs destination validation. Then run `docker compose up --build`. Redis is health-checked for deployment consistency but is not used by the current worker.
 
-For a disposable local smoke test, configure test-only values in `.env` and run `.\scripts\compose-smoke.ps1`. It validates Compose configuration, builds the images, waits for `/health/live`, prints service logs, and tears the test stack down afterward.
+For a disposable local smoke test, configure test-only values in `.env` and run `.\\scripts\\compose-smoke.ps1`. It validates Compose configuration, builds the images, waits for `/health/live`, prints service logs, and tears the test stack down afterward.
 
 ## CI status and release gate
 
-The latest CI results are available on the [GitHub Actions CI workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml). The latest checked run (#40585083628) on `main` (`d6e7486e3aae92a78e5a6322e8495ef153453b74`) passed the static checks, full test suite, PostgreSQL concurrency test, dependency audit, migration round trips, and Docker Compose health smoke test. The controlled `proxy-integration` job was skipped because its isolated fixture secrets are not configured.
+Always use the [GitHub Actions workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) for the current status; this README is not a live CI indicator.
 
-- **Passed:** static checks (Ruff lint and formatting, mypy, dependency consistency), full test suite, PostgreSQL 16 concurrency test, dependency audit, compilation, PostgreSQL and SQLite migration round trips.
-- **Passed:** Docker Compose configuration/build/start and API `/health/live` smoke test.
-- **Not yet verified:** `proxy-integration` was skipped because the six controlled test-fixture secrets are not configured. This is an intentional security gate, not a passing test.
+- **Last verified successful run:** [run #40585083628](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40585083628), on commit `d6e7486e3aae92a78e5a6322e8495ef153453b74`. Its checks and Docker Compose smoke test passed.
+- **Newer runs:** the latest screenshot showed runs #22, #23, and #24 failing on `main`. Their failure logs have not yet been retrieved, so the cause is not confirmed and those failures must not be treated as fixed.
+- **Proxy integration:** skipped in the last verified run because the controlled fixture secrets were not configured. Skipped is not passed.
+- **Production deployment:** not verified.
 
 ### Required before production deployment
 
-1. Provision an isolated, access-controlled forward proxy and test fixtures; do not use a public/general-purpose proxy.
-2. Configure the six repository Actions secrets documented in [EGRESS_PROXY_TESTING.md](EGRESS_PROXY_TESTING.md): `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, and `EGRESS_BAD_TLS_URL`.
-3. Manually dispatch the CI workflow and inspect the proxy's destination-enforcement logs. The proxy test must pass against the real controlled proxy; mocked HTTP transports are not a substitute.
-4. Deploy only with PostgreSQL, a unique randomly generated `JWT_SECRET` of at least 32 characters, TLS termination, a controlled destination-validating egress proxy, and managed secrets. The Compose database password is a local smoke-test default and must be replaced for any real environment.
-5. Confirm `RESULT_RETENTION_DAYS` matches your policy and monitor worker logs for the daily cleanup result. Expired check samples are deleted by the worker; incident records are retained. For multi-worker/high-volume deployments, monitor cleanup load and consider moving retention to a dedicated scheduled maintenance job.
+1. Inspect the first failed step in the newest CI run and fix the actual failure before claiming CI is green.
+2. Provision an isolated, access-controlled forward proxy and test fixtures; do not use a public/general-purpose proxy.
+3. Configure the six repository Actions secrets documented in [EGRESS_PROXY_TESTING.md](EGRESS_PROXY_TESTING.md): `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, and `EGRESS_BAD_TLS_URL`.
+4. Manually dispatch the CI workflow and inspect the proxy's destination-enforcement logs. The proxy test must pass against the real controlled proxy; mocked HTTP transports are not a substitute.
+5. Deploy only with PostgreSQL, a unique randomly generated `JWT_SECRET` of at least 32 characters, TLS termination, a controlled destination-validating egress proxy, and managed secrets. The Compose database password is a local smoke-test default and must be replaced for any real environment.
+6. Confirm `RESULT_RETENTION_DAYS` matches your policy and monitor worker logs for the daily cleanup result. Expired check samples are deleted by the worker; incident records are retained. For multi-worker/high-volume deployments, monitor cleanup load and consider moving retention to a dedicated scheduled maintenance job.
 
-The project is **CI-verified**, but is not yet certified production-ready or deployed. The controlled proxy gate and remaining operational requirements above remain open.
+The project has a previously verified green CI run, but the newest commits have failed workflow runs and the controlled proxy gate remains open. Do not describe the current branch as fully CI-verified until a run on the latest commit passes.
 
 ## Deployment
 
-See the [Render deployment runbook](docs/RENDER_DEPLOYMENT.md) for the API, worker, PostgreSQL, environment-variable, migration, and production release checklist. It must be followed in a dedicated Uptime Sentinel workspace; do not deploy into an unrelated workspace. The real controlled egress-proxy integration remains a mandatory security gate before production traffic.
+See the [Render deployment runbook](docs/RENDER_DEPLOYMENT.md) for the API, worker, PostgreSQL, environment-variable, migration, and production release checklist. Deploy only in the dedicated Uptime Sentinel workspace. The real controlled egress-proxy integration remains a mandatory security gate before production traffic.
 
 ## Data model and incident policy
 
@@ -87,9 +89,7 @@ alembic downgrade base
 alembic upgrade head
 ```
 
-The test suite uses isolated in-memory SQLite data and mocked HTTP transports. It covers authentication, ownership isolation, invalid JWTs, pagination bounds, validation, public status output, health endpoints, production JWT-secret validation, interval scheduling, paused/leased monitors, mixed DNS answers, mapped IPv6, redirects, bounded response streaming, proxy selection, and incident recovery. A direct rate-limit smoke check confirms the 11th login attempt from one client is rejected with HTTP 429. `tests/test_postgres_concurrency.py` runs when `POSTGRES_TEST_URL` is configured and verifies concurrent PostgreSQL claims, expiry recovery, and fencing; it is skipped locally when PostgreSQL is unavailable. `tests/test_egress_proxy_integration.py` is opt-in and requires a controlled proxy plus explicit fixture endpoints for private-IP, DNS-rebinding, redirect, and invalid-TLS cases. Redis and controlled-proxy integration require those services to be available.
-
-The release verification uses a clean Python virtual environment and `pip-audit` when those tools and their advisory database are available. The CI workflow repeats linting, tests, compilation, migration round trips, and dependency auditing.
+The test suite uses isolated in-memory SQLite data and mocked HTTP transports. It covers authentication, ownership isolation, invalid JWTs, pagination bounds, validation, public status output, health endpoints, production JWT-secret validation, interval scheduling, paused/leased monitors, mixed DNS answers, mapped IPv6, redirects, bounded response streaming, proxy selection, and incident recovery. `tests/test_postgres_concurrency.py` runs when `POSTGRES_TEST_URL` is configured and verifies concurrent PostgreSQL claims, expiry recovery, and fencing; it is skipped locally when PostgreSQL is unavailable. `tests/test_egress_proxy_integration.py` is opt-in and requires a controlled proxy plus explicit fixture endpoints for private-IP, DNS-rebinding, redirect, and invalid-TLS cases.
 
 ## Operations and limitations
 
