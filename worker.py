@@ -64,7 +64,7 @@ def _finish_claim(db, monitor_id: int, token: str, next_check_at: datetime) -> b
         .values(lease_until=None, lease_token=None, next_check_at=next_check_at)
     )
     db.commit()
-    return result.rowcount == 1
+    return getattr(result, "rowcount", None) == 1
 
 
 def cleanup_old_results(db: Session, now: datetime | None = None) -> int:
@@ -83,7 +83,7 @@ def cleanup_old_results(db: Session, now: datetime | None = None) -> int:
         # ID into worker memory. This keeps cleanup bounded for high-volume
         # monitors and returns the affected-row count for operational logging.
         result = db.execute(delete(CheckResult).where(CheckResult.checked_at < cutoff))
-        deleted = max(0, result.rowcount or 0)
+        deleted = max(0, getattr(result, "rowcount", 0) or 0)
         db.commit()
         return deleted
     except Exception:
