@@ -40,6 +40,24 @@ For Docker Compose, copy `.env.example` to `.env`, set a unique production `JWT_
 
 For a disposable local smoke test, configure test-only values in `.env` and run `.\scripts\compose-smoke.ps1`. It validates Compose configuration, builds the images, waits for `/health/live`, prints service logs, and tears the test stack down afterward.
 
+## CI status and release gate
+
+The latest published GitHub Actions run is [run #40580619650](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40580619650).
+
+- **Passed:** static checks (Ruff lint and formatting, mypy, dependency consistency), full test suite, PostgreSQL 16 concurrency test, dependency audit, compilation, PostgreSQL and SQLite migration round trips.
+- **Passed:** Docker Compose configuration/build/start and API `/health/live` smoke test.
+- **Not yet verified:** `proxy-integration` was skipped because the six controlled test-fixture secrets are not configured. This is an intentional security gate, not a passing test.
+
+### Required before production deployment
+
+1. Provision an isolated, access-controlled forward proxy and test fixtures; do not use a public/general-purpose proxy.
+2. Configure the six repository Actions secrets documented in [EGRESS_PROXY_TESTING.md](EGRESS_PROXY_TESTING.md): `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, and `EGRESS_BAD_TLS_URL`.
+3. Manually dispatch the CI workflow and inspect the proxy's destination-enforcement logs. The proxy test must pass against the real controlled proxy; mocked HTTP transports are not a substitute.
+4. Deploy only with PostgreSQL, a unique randomly generated `JWT_SECRET` of at least 32 characters, TLS termination, a controlled destination-validating egress proxy, and managed secrets. The Compose database password is a local smoke-test default and must be replaced for any real environment.
+5. Add and operate a scheduled retention cleanup job before high-volume production use. `RESULT_RETENTION_DAYS` is configured, but automatic cleanup is not currently implemented by the worker.
+
+The project is **CI-verified**, but is not yet certified production-ready or deployed. The controlled proxy gate and operational requirements above remain open.
+
 ## Data model and incident policy
 
 `users` own `monitors`; each monitor has `check_results` and `incidents`, plus UTC scheduling and lease timestamps. A non-2xx response, timeout, request failure, unsafe target, or redirect is down. The first consecutive down result opens one incident; later failures increment it; the first 2xx result resolves it. Results are intended to be retained for `RESULT_RETENTION_DAYS` (default 30) using a scheduled cleanup job, which should be added before high-volume production use.
