@@ -35,7 +35,7 @@ All commands below were run from the project root in the local `.venv` unless no
 | Worker stop-event smoke test | Passed: pre-set stop event exits without polling. |
 | `scripts\compose-smoke.ps1` PowerShell syntax | Passed; runtime execution is blocked because Docker is unavailable. |
 | Local infrastructure probe | Docker, Podman, PostgreSQL, Redis, `gh`, and proxy environment variables unavailable; bounded WSL Ubuntu start timed out after 10 seconds. GitHub/PyPI TCP reachability was available, but no authorized CI service was configured. |
-| GitHub Actions run `40590812969` for commit `3fe82b318095326b572b8c4eb2fb15be69ca1591` | Passed: `checks` and `compose-smoke` succeeded; `proxy-integration` was not executed because the workflow is manual-only and controlled fixture secrets are not configured. |
+| GitHub Actions run `40591707184` for commit `d9d479dc2aaa61c8e7aeaa73767ba5dc0f31c2c6` | Passed: `checks` and `compose-smoke` succeeded; `proxy-integration` was skipped because the workflow is manual-only and controlled fixture secrets are not configured. |
 
 The migration head is `0003_lease_tokens`. Fresh SQLite migration round trips were successful. PostgreSQL locking/concurrency was not claimed from SQLite.
 
@@ -45,8 +45,8 @@ The migration head is `0003_lease_tokens`. Fresh SQLite migration round trips we
 - PostgreSQL multi-worker verification: PostgreSQL client/service is unavailable. Start PostgreSQL, set `DATABASE_URL=postgresql+psycopg://...`, run the Alembic round trip, then execute the scheduler concurrency tests against separate worker sessions.
 - PostgreSQL/Redis/Compose tooling is absent in this Windows environment; PostgreSQL concurrency, Redis, and Compose runtime checks remain blocked. CI now provisions PostgreSQL and runs the concurrency test.
 - Egress-proxy integration: no controlled proxy or fixture endpoints were available. The new opt-in test module covers public reachability, private-IP blocking, DNS rebinding, redirects, and invalid TLS certificates when explicitly configured. See `EGRESS_PROXY_TESTING.md`; no proxy result is claimed here.
-- CI execution: GitHub Actions run `40590812969` passed the automatic PostgreSQL, dependency, quality, migration, and Compose jobs. The manual `workflow_dispatch` proxy job was not executed because controlled fixture secrets were not configured; it fails closed when invoked without them.
+- CI execution: GitHub Actions run `40591707184` passed the automatic PostgreSQL, dependency, quality, migration, and Compose jobs. The manual `workflow_dispatch` proxy job was skipped because controlled fixture secrets were not configured; it fails closed when invoked without them.
 
 ## GitHub status
 
-The confirmed project directory is the local checkout of `https://github.com/vankudothuadhinaik/uptime-sentinel.git` on `main`. Local `HEAD` is fast-forwarded to `3fe82b318095326b572b8c4eb2fb15be69ca1591`, matching `origin/main`; no force-push or remote overwrite was used.
+The confirmed project directory is the local checkout of `https://github.com/vankudothuadhinaik/uptime-sentinel.git` on `main`. Local `HEAD` is `d9d479dc2aaa61c8e7aeaa73767ba5dc0f31c2c6`, matching `origin/main`; no force-push or remote overwrite was used.

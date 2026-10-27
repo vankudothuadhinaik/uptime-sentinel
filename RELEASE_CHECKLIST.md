@@ -30,6 +30,6 @@ blocked on the infrastructure gates listed below.
 - A fresh isolated installation was attempted but hit the command's 120-second execution limit; it was not claimed as passed.
 - `pip-audit 2.10.1 --skip-editable`: no known vulnerabilities; advisory database was reachable during the run.
 - PostgreSQL multi-worker verification was not run because PostgreSQL tooling/service was unavailable in the review environment.
-- PostgreSQL multi-worker verification passed in GitHub Actions run `40590812969`.
-- Docker Compose build/startup passed in GitHub Actions run `40590812969`.
+- PostgreSQL multi-worker verification passed in GitHub Actions run `40591707184`.
+- Docker Compose build/startup passed in GitHub Actions run `40591707184`.
 - Controlled egress-proxy integration remains pending manual CI/staging execution with controlled fixture secrets.
