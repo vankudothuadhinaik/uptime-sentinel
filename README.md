@@ -44,8 +44,7 @@ For a disposable local smoke test, configure test-only values in `.env` and run 
 
 Always use the [GitHub Actions workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) for the live status; this README is a snapshot, not a live CI indicator.
 
-- **Latest CI checks:** [run #27](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40589776499), commit `fc618f9f3262257b439a962313fbb803b84bd1e0`. The full checks job passed, including type checking, migrations, PostgreSQL concurrency tests, unit tests, compilation, and dependency audit.
-- **Docker Compose smoke test:** still running at the time this README was updated. Do not treat the full workflow as green until this job completes successfully.
+- **Latest completed full CI workflow:** [run #29](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40590054853), commit `b498ede8d012ba9bd3a966da338328f85b5a51fa`. The checks job and Docker Compose smoke test both passed, including type checking, migrations, PostgreSQL concurrency tests, unit tests, compilation, dependency audit, container build, and API health check.
 - **Proxy integration:** skipped in run #27 because the controlled proxy fixture secrets were not configured. Skipped is not passed.
 - **Render deployment:** the PostgreSQL database is available in the dedicated Uptime Sentinel workspace. The API and worker are not yet verified as deployed.
 - **Production readiness:** not complete until a controlled destination-validating egress proxy passes the integration tests and the deployed API/worker are smoke-tested.
