@@ -7,8 +7,8 @@ Run date: 2026-10-28
 **READY TO PUSH** for publication to a new empty repository: implementation,
 local verification, CI configuration, release hygiene, and documentation are
 complete. This is **not READY FOR PRODUCTION** until PostgreSQL concurrency,
-Docker Compose runtime, and real controlled egress-proxy security tests pass in
-CI or staging.
+real controlled egress-proxy security tests, and the manual proxy workflow pass
+in CI or staging.
 
 ## Source reconciliation
 
@@ -36,6 +36,7 @@ All commands below were run from the project root in the local `.venv` unless no
 | Worker stop-event smoke test | Passed: pre-set stop event exits without polling. |
 | `scripts\compose-smoke.ps1` PowerShell syntax | Passed; runtime execution is blocked because Docker is unavailable. |
 | Local infrastructure probe | Docker, Podman, PostgreSQL, Redis, `gh`, and proxy environment variables unavailable; bounded WSL Ubuntu start timed out after 10 seconds. GitHub/PyPI TCP reachability was available, but no authorized CI service was configured. |
+| GitHub Actions run `40580194222` for commit `5c10a59c2af4b5b25cf87230d5c1d6c4d2586529` | Passed: `checks` and `compose-smoke` succeeded; push-triggered `proxy-integration` was skipped by its manual-only guard. |
 
 The migration head is `0003_lease_tokens`. Fresh SQLite migration round trips were successful. PostgreSQL locking/concurrency was not claimed from SQLite.
 
@@ -45,7 +46,7 @@ The migration head is `0003_lease_tokens`. Fresh SQLite migration round trips we
 - PostgreSQL multi-worker verification: PostgreSQL client/service is unavailable. Start PostgreSQL, set `DATABASE_URL=postgresql+psycopg://...`, run the Alembic round trip, then execute the scheduler concurrency tests against separate worker sessions.
 - PostgreSQL/Redis/Compose tooling is absent in this Windows environment; PostgreSQL concurrency, Redis, and Compose runtime checks remain blocked. CI now provisions PostgreSQL and runs the concurrency test.
 - Egress-proxy integration: no controlled proxy or fixture endpoints were available. The new opt-in test module covers public reachability, private-IP blocking, DNS rebinding, redirects, and invalid TLS certificates when explicitly configured. See `EGRESS_PROXY_TESTING.md`; no proxy result is claimed here.
-- CI execution: no GitHub connector/tool, `gh` CLI, token, repository, or remote is available. Static workflow validation passed; actual workflow execution remains blocked. The automatic CI path requires PostgreSQL and Docker; the manual `workflow_dispatch` proxy job fails closed unless all controlled fixture secrets are configured.
+- CI execution: GitHub Actions run `40580194222` passed the automatic PostgreSQL, dependency, quality, migration, and Compose jobs. The manual `workflow_dispatch` proxy job was not executed because controlled fixture secrets were not configured; it fails closed when invoked without them.
 
 ## GitHub status
 

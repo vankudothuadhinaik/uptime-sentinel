@@ -19,7 +19,7 @@ blocked on the infrastructure gates listed below.
 ## Required before production deployment
 
 - [x] Add PostgreSQL multi-worker/concurrency tests to CI; local execution remains blocked without PostgreSQL.
-- [ ] Run Docker Compose end-to-end smoke tests on a Docker host.
+- [x] Run Docker Compose end-to-end smoke tests in GitHub Actions.
 - [ ] Deploy behind a controlled egress proxy that revalidates destinations to address the DNS-rebinding residual risk.
 - [ ] Configure secret management, TLS, metrics, structured logs, backups, and retention cleanup.
 - [ ] Verify the exact GitHub repository owner, repository name, remote URL, and branch before publishing.
@@ -30,5 +30,6 @@ blocked on the infrastructure gates listed below.
 - A fresh isolated installation was attempted but hit the command's 120-second execution limit; it was not claimed as passed.
 - `pip-audit 2.10.1 --skip-editable`: no known vulnerabilities; advisory database was reachable during the run.
 - PostgreSQL multi-worker verification was not run because PostgreSQL tooling/service was unavailable in the review environment.
-- Docker Compose build/startup was not run because Docker was unavailable in the review environment.
-- Docker, PostgreSQL, Redis, and controlled egress-proxy integration remain blocked because the required infrastructure/tools are unavailable locally.
+- PostgreSQL multi-worker verification passed in GitHub Actions run `40580194222`.
+- Docker Compose build/startup passed in GitHub Actions run `40580194222`.
+- Controlled egress-proxy integration remains pending manual CI/staging execution with controlled fixture secrets.
