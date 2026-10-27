@@ -5,17 +5,25 @@ token, and completion updates are conditional on that token, so an expired
 worker cannot clear or reschedule a newer owner's lease.
 """
 
+import logging
 from datetime import datetime, timedelta, timezone
 from signal import SIGINT, SIGTERM, signal
 from threading import Event
 from types import FrameType
 from uuid import uuid4
 
-from sqlalchemy import or_, select, update
+from sqlalchemy import delete, or_, select, update
+from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.db import SessionLocal
-from app.models import Monitor
+from app.models import CheckResult, Monitor
 from app.monitoring import perform_check
+
+
+logger = logging.getLogger(__name__)
+RETENTION_CLEANUP_INTERVAL = timedelta(hours=24)
+RETENTION_RETRY_INTERVAL = timedelta(hours=1)
 
 
 def _as_utc(value: datetime) -> datetime:
@@ -60,6 +68,28 @@ def _finish_claim(db, monitor_id: int, token: str, next_check_at: datetime) -> b
     return result.rowcount == 1
 
 
+
+def cleanup_old_results(db: Session, now: datetime | None = None) -> int:
+    """Delete check history older than RESULT_RETENTION_DAYS.
+
+    Incident records are deliberately retained so an incident's history is not
+    erased merely because its underlying check samples have expired.
+    """
+    retention_days = get_settings().result_retention_days
+    if retention_days < 1:
+        raise ValueError("RESULT_RETENTION_DAYS must be at least 1")
+
+    cutoff = _as_utc(now or datetime.now(timezone.utc)) - timedelta(days=retention_days)
+    try:
+        result = db.execute(delete(CheckResult).where(CheckResult.checked_at < cutoff))
+        deleted = int(result.rowcount or 0)
+        db.commit()
+        return deleted
+    except Exception:
+        db.rollback()
+        raise
+
+
 def run_once(now: datetime | None = None) -> int:
     current_time = _as_utc(now or datetime.now(timezone.utc))
     checked = 0
@@ -85,7 +115,21 @@ def run_once(now: datetime | None = None) -> int:
 
 
 def run_forever(stop_event: Event) -> None:
+    next_retention_cleanup = datetime.min.replace(tzinfo=timezone.utc)
     while not stop_event.is_set():
+        now = datetime.now(timezone.utc)
+        if now >= next_retention_cleanup:
+            try:
+                with SessionLocal() as db:
+                    deleted = cleanup_old_results(db, now=now)
+                if deleted:
+                    logger.info("Retention cleanup removed %d expired check results", deleted)
+            except Exception:
+                logger.exception("Retention cleanup failed; will retry in one hour")
+                next_retention_cleanup = now + RETENTION_RETRY_INTERVAL
+            else:
+                next_retention_cleanup = now + RETENTION_CLEANUP_INTERVAL
+
         run_once()
         stop_event.wait(5)
 
