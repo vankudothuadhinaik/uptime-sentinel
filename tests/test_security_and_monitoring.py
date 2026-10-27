@@ -6,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.config import Settings
-from app.models import CheckResult, Monitor, User
+from app.models import CheckResult, Incident, Monitor, User
 from app.monitoring import perform_check
 from app.ssrf import UnsafeTarget, validate_target
 
@@ -376,3 +376,51 @@ def test_monitor_client_uses_configured_proxy(monkeypatch, db_session):
     assert captured["proxy"] == "http://proxy.test:3128"
     assert captured["trust_env"] is False
     assert captured["follow_redirects"] is False
+
+
+def test_cleanup_old_results_removes_expired_checks_but_keeps_recent_checks_and_incidents(
+    monkeypatch, db_session
+):
+    from worker import cleanup_old_results
+
+    monkeypatch.setattr("worker.get_settings", lambda: Settings(result_retention_days=30))
+    now = datetime(2026, 10, 27, 12, 0, tzinfo=timezone.utc)
+    user = User(email="retention@example.com", password_hash="test-hash")
+    db_session.add(user)
+    db_session.commit()
+    monitor = Monitor(
+        owner_id=user.id,
+        name="retention",
+        url="https://example.com",
+        interval_seconds=60,
+        timeout_seconds=5,
+    )
+    db_session.add(monitor)
+    db_session.commit()
+    db_session.refresh(monitor)
+
+    expired = CheckResult(
+        monitor_id=monitor.id,
+        checked_at=now - timedelta(days=31),
+        is_up=False,
+        error_category="http_error",
+    )
+    recent = CheckResult(
+        monitor_id=monitor.id,
+        checked_at=now - timedelta(days=29),
+        is_up=True,
+    )
+    incident = Incident(
+        monitor_id=monitor.id,
+        started_at=now - timedelta(days=45),
+        failure_count=3,
+    )
+    db_session.add_all([expired, recent, incident])
+    db_session.commit()
+    expired_id, recent_id, incident_id = expired.id, recent.id, incident.id
+
+    assert cleanup_old_results(db_session, now=now) == 1
+    assert db_session.get(CheckResult, expired_id) is None
+    assert db_session.get(CheckResult, recent_id) is not None
+    assert db_session.get(Incident, incident_id) is not None
+    assert cleanup_old_results(db_session, now=now) == 0
