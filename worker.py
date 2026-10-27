@@ -107,7 +107,11 @@ def run_once(now: datetime | None = None) -> int:
             try:
                 perform_check(db, monitor)
             except Exception:
+                # Roll back partial check writes, release the lease in finally,
+                # and propagate the failure so the process supervisor/CI can
+                # observe it rather than silently recording a successful pass.
                 db.rollback()
+                raise
             finally:
                 _finish_claim(
                     db,
