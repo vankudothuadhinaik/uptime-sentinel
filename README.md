@@ -27,7 +27,7 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 - **Security:** application-side SSRF validation, redirects disabled, production egress-proxy requirement, no forwarding of user credentials.
 - **Operations:** Alembic migrations, Docker Compose, GitHub Actions, Codecov, optional Sentry, and optional Doppler developer workflow.
 
-> **Release status:** standard CI and Compose smoke tests passed on `main` commit `da893678780ba06ed64cb6db95ef9fa6db65dea5` in [run #160](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40694085326). The controlled egress-proxy integration remains **skipped** until its real proxy and fixture secrets are configured. Production deployment is **not verified**. A skipped security test is not a pass.
+> **Release status:** the proxy authentication fail-closed fix is merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6). Standard CI and Compose smoke tests passed in [run #40697076205](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40697076205). The opt-in controlled egress-proxy integration remains **skipped** until controlled fixture URLs and repository secrets are configured. The Render proxy still permits ingress from `0.0.0.0/0`; authenticated live behavior, private-ingress controls, API/worker deployment, database continuity, and end-to-end production behavior remain **unverified**. Production is **not ready**; a skipped security test is not a pass.
 
 ## Architecture
 
