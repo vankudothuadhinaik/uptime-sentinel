@@ -2,7 +2,7 @@
 
 ## Current decision
 
-**PUBLISHED FOR REVIEW / NOT READY FOR PRODUCTION.** Branch `integration/sentry-doppler` is pushed and PR #4 is open against `main`. The real egress-proxy security gate and deployed API/worker end-to-end checks remain blocked.
+**NOT READY FOR PRODUCTION.** PR #4 (application/security hardening) was merged into `main` as commit `e1e59d2f2fbc78493da2bcadd9cd7c254a1bf631`. PR #5 adds the missing authenticated-proxy client configuration and is undergoing CI. A free Render test proxy is live at `https://uptime-sentinel-egress-proxy.onrender.com`, but it is internet-reachable and its credentials/protocol/security fixtures are not yet independently verified. The API and continuous worker are not deployed.
 
 ## Implemented and verified by standard CI
 
@@ -11,6 +11,7 @@
 - [x] Database-backed scheduler claims with lease tokens and conditional completion.
 - [x] Application-side SSRF validation, redirect disabling, and bounded response streaming.
 - [x] Production configuration validation for PostgreSQL, strong JWT secret, and `EGRESS_PROXY_URL`.
+- [ ] Merge PR #5 after CI passes; it adds production validation and client support for `EGRESS_PROXY_USERNAME` and `EGRESS_PROXY_PASSWORD`.
 - [x] Ruff lint/format, mypy, pytest, compilation, dependency audit, PostgreSQL concurrency/fencing test, and migration round trips in CI.
 - [x] Docker Compose build/start and API liveness smoke test in CI.
 - [x] Render blueprint defining an API service and a true continuous background worker.
@@ -18,11 +19,13 @@
 
 ## Must be completed before production
 
-- [ ] Deploy an isolated private egress proxy that validates the actual destination IP at connection time and enforces safe DNS, IPv4/IPv6, redirect, metadata, and TLS policy.
+- [ ] Configure strong `PROXY_USERNAME` and `PROXY_PASSWORD` in Render for the test proxy; confirm its process starts and authenticated proxy requests work.
+- [ ] Restrict proxy exposure using a supported private network/ingress control before production. The current Render test service permits internet ingress and is not production-approved.
+- [ ] Deploy/verify controlled fixtures and prove the proxy rejects private destinations and DNS rebinding with explicit HTTP 403 responses; test redirects and invalid TLS behavior.
 - [ ] Configure deterministic controlled fixtures and repository Actions secrets: `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, `EGRESS_BAD_TLS_URL`.
 - [ ] Manually dispatch CI and verify `proxy-integration` executes and passes. A skipped job is not a pass.
 - [ ] Validate/deploy `render.yaml` in the dedicated Uptime Sentinel Render workspace after proxy setup; reuse the existing PostgreSQL database.
-- [ ] Securely configure `DATABASE_URL`, a unique random `JWT_SECRET` (at least 32 characters), and `EGRESS_PROXY_URL` for API and worker.
+- [ ] Securely configure `DATABASE_URL`, a unique random `JWT_SECRET` (at least 32 characters), `EGRESS_PROXY_URL`, `EGRESS_PROXY_USERNAME`, and `EGRESS_PROXY_PASSWORD` for both API and worker.
 - [ ] Apply migrations once through a controlled release step.
 - [ ] Verify API liveness/readiness and review API/worker logs for errors and secret leakage.
 - [ ] Execute disposable end-to-end checks for account registration, monitor creation, worker execution, check/result/incident persistence, recovery after restart, and cleanup.
@@ -31,9 +34,10 @@
 
 ## Latest CI evidence
 
-- [Run #106 / 40684450986](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40684450986), commit `73ca4611c83f6fa3fb433cddce5d563bdecc83a9`: `checks` and `compose-smoke` passed; Codecov upload, dependency audit, type checking, PostgreSQL concurrency, and migration round trips all succeeded. `proxy-integration` was skipped because the six controlled fixture secrets are not configured. A skipped proxy job is not a security pass.
-- Run #108 was triggered by subsequent documentation updates and is in progress; check [Actions](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for its final result.
-- Previously recorded local verification: 23 tests passed, 6 infrastructure-gated tests skipped; Ruff, mypy (21 files), compileall, pip check, pip-audit, and SQLite migration round trip passed.
-- No Render API or worker deployment has been verified.
+- [Run #138 / 40690882267](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40690882267), commit `3d963b287899c7888add7a9e1874752adc724e7c`: `checks` and `compose-smoke` passed. `proxy-integration` was skipped because the six controlled fixture secrets are not configured. A skipped proxy job is not a security pass.
+- PR #5 CI is running; check [Actions](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for the final result before merging.
+- No Render API or continuous worker deployment has been verified.
+- The existing PostgreSQL Free plan is recorded to expire on 2026-11-26; resolve continuity before relying on it for production.
+
 
 Do not mark production ready until every unchecked security and deployment gate is genuinely verified.
