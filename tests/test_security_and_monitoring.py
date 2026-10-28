@@ -393,7 +393,8 @@ def test_monitor_client_uses_configured_proxy(monkeypatch, db_session):
     monkeypatch.setattr(monitoring.httpx, "Client", FakeClient)
     result = monitoring.perform_check(db_session, monitor)
     assert result.is_up is True
-    assert captured["proxy"] == "http://proxy.test:3128"
+    assert str(captured["proxy"].url) == "http://proxy.test:3128"
+    assert captured["proxy"].auth is None
     assert captured["trust_env"] is False
     assert captured["follow_redirects"] is False
 
