@@ -4,14 +4,11 @@ Run date: 2026-10-28
 
 ## Release decision
 
-**UNPUBLISHED FEATURE BRANCH / NOT READY FOR PRODUCTION.** The application
-code and standard local/CI gates pass for this review branch. Production is
-blocked on a real controlled egress proxy, execution of the proxy security
-integration suite, and deployed API/worker end-to-end verification.
+**PUBLISHED FOR REVIEW / NOT READY FOR PRODUCTION.** Branch `integration/sentry-doppler` is pushed and PR #4 is open against `main`. Production is blocked on a real controlled egress proxy, execution of the proxy security integration suite, and deployed API/worker end-to-end verification.
 
 ## Latest verified GitHub Actions run
 
-[Run #37 / 40595000447](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40595000447) on commit `7c05f4551f472fb5e13bbecf41a81615f49f67fd` completed successfully.
+[Run #50 / 40629283219](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40629283219) on commit `a488ac021178875b8f8f85335dd91d5c540f8c1e` has a successful `checks` job; `compose-smoke` was still running at report update and `proxy-integration` was skipped. [Run #49](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40628867331) completed the checks and Compose smoke jobs successfully.
 
 | Job | Result | Interpretation |
 |---|---|---|
@@ -64,9 +61,8 @@ Then manually dispatch the workflow and verify `proxy-integration` actually exec
 
 The connected integrations available during this review do not expose GitHub
 Actions secret creation/manual dispatch or Render background-worker creation.
-No proxy or production deployment is claimed. The feature branch is not
-pushed or merged; `origin/main` contains newer CI/coverage history that was
-reconciled locally but still requires review before publication.
+No proxy or production deployment is claimed. The feature branch is published
+and PR #4 is open for review; it has not been merged.
 
 ## Final status
 
