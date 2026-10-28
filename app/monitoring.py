@@ -20,7 +20,11 @@ def perform_check(db: Session, monitor: Monitor, client: httpx.Client | None = N
         proxy=(
             httpx.Proxy(
                 settings.egress_proxy_url,
-                auth=(settings.egress_proxy_username, settings.egress_proxy_password),
+                auth=(
+                    (settings.egress_proxy_username, settings.egress_proxy_password)
+                    if settings.egress_proxy_username
+                    else None
+                ),
             )
             if settings.egress_proxy_url
             else None
