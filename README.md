@@ -6,8 +6,8 @@
 
 A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency history, incident tracking, a public read-only status page, and a PostgreSQL-backed worker.
 
-[![CI](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=integration%2Fsentry-doppler)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml)
-[![Codecov](https://codecov.io/gh/vankudothuadhinaik/uptime-sentinel/branch/integration/sentry-doppler/graph/badge.svg)](https://codecov.io/gh/vankudothuadhinaik/uptime-sentinel)
+[![CI](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml)
+[![Codecov](https://codecov.io/gh/vankudothuadhinaik/uptime-sentinel/branch/main/graph/badge.svg)](https://codecov.io/gh/vankudothuadhinaik/uptime-sentinel)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql&logoColor=white)
@@ -118,7 +118,7 @@ The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
 - PostgreSQL and SQLite migration upgrade/downgrade round trips
 - Docker Compose build/startup and API liveness smoke test
 
-[![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=integration%2Fsentry-doppler)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
+[![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
 
 ### Codecov
 

@@ -41,12 +41,31 @@ def test_production_rejects_default_or_short_jwt_secret():
                 jwt_secret="a" * 48,
                 database_url="postgresql+psycopg://user:pass@db/app",
                 egress_proxy_url=proxy,
+                egress_proxy_username="sentinel-user",
+                egress_proxy_password="p" * 40,
             )
+    with pytest.raises(ValidationError, match="EGRESS_PROXY_USERNAME"):
+        Settings(
+            app_env="production",
+            jwt_secret="a" * 48,
+            database_url="postgresql+psycopg://user:pass@db/app",
+            egress_proxy_url="http://egress-proxy:8080",
+        )
+    with pytest.raises(ValidationError, match="EGRESS_PROXY_PASSWORD"):
+        Settings(
+            app_env="production",
+            jwt_secret="a" * 48,
+            database_url="postgresql+psycopg://user:pass@db/app",
+            egress_proxy_url="http://egress-proxy:8080",
+            egress_proxy_username="sentinel-user",
+        )
     settings = Settings(
         app_env="production",
         jwt_secret="a" * 48,
         database_url="postgresql+psycopg://user:pass@db/app",
         egress_proxy_url="http://egress-proxy:8080",
+        egress_proxy_username="sentinel-user",
+        egress_proxy_password="p" * 40,
     )
     assert settings.app_env == "production"
 
@@ -374,7 +393,8 @@ def test_monitor_client_uses_configured_proxy(monkeypatch, db_session):
     monkeypatch.setattr(monitoring.httpx, "Client", FakeClient)
     result = monitoring.perform_check(db_session, monitor)
     assert result.is_up is True
-    assert captured["proxy"] == "http://proxy.test:3128"
+    assert str(captured["proxy"].url) == "http://proxy.test:3128"
+    assert captured["proxy"].auth is None
     assert captured["trust_env"] is False
     assert captured["follow_redirects"] is False
 
