@@ -1,6 +1,6 @@
 # Render deployment runbook
 
-This runbook is for the **dedicated Uptime Sentinel Render workspace** (workspace ID `tea-dbghjus9v7es73dnq900`). Do not deploy this project into an unrelated workspace. The PostgreSQL resource `uptime-sentinel-db` (`dpg-dbghkmc9v7es73dns2ig-a`) is available in Singapore. The API service, worker service, and controlled egress proxy have not yet been deployed or verified.
+This runbook is for the **dedicated Uptime Sentinel Render workspace** (workspace ID `tea-dbghjus9v7es73dnq900`). Do not deploy this project into an unrelated workspace. The PostgreSQL resource `uptime-sentinel-db` (`dpg-dbghkmc9v7es73dns2ig-a`) is available in Singapore. A free test egress-proxy service is deployed and reports Render status `live` at `https://uptime-sentinel-egress-proxy.onrender.com` from branch `integration/sentry-doppler`. It is internet-reachable and has not passed the controlled integration suite, so it is not approved for production. The API and continuous worker have not been deployed.
 
 ## Render Blueprint
 
