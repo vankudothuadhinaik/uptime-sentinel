@@ -7,7 +7,7 @@
 # 1. Create/configure the controlled private egress proxy.
 # 2. Have the existing Render PostgreSQL internal URL ready.
 # 3. Generate a unique JWT secret (at least 32 characters) in a password manager.
-# 4. Enter DATABASE_URL, JWT_SECRET, and EGRESS_PROXY_URL through Render's
+# 4. Enter DATABASE_URL, JWT_SECRET, EGRESS_PROXY_URL, EGRESS_PROXY_USERNAME, and EGRESS_PROXY_PASSWORD through Render's
 #    secret/environment-variable setup. Never commit real values here.
 #
 # The worker is a paid Render background worker on supported plans; review
@@ -69,6 +69,10 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: EGRESS_PROXY_URL
+        sync: false
+      - key: EGRESS_PROXY_USERNAME
+        sync: false
+      - key: EGRESS_PROXY_PASSWORD
         sync: false
       - key: ACCESS_TOKEN_MINUTES
         value: "60"
