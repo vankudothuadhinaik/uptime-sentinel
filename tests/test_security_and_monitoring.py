@@ -44,6 +44,21 @@ def test_production_rejects_default_or_short_jwt_secret():
                 egress_proxy_username="sentinel-user",
                 egress_proxy_password="p" * 40,
             )
+    with pytest.raises(ValidationError, match="EGRESS_PROXY_USERNAME"):
+        Settings(
+            app_env="production",
+            jwt_secret="a" * 48,
+            database_url="postgresql+psycopg://user:pass@db/app",
+            egress_proxy_url="http://egress-proxy:8080",
+        )
+    with pytest.raises(ValidationError, match="EGRESS_PROXY_PASSWORD"):
+        Settings(
+            app_env="production",
+            jwt_secret="a" * 48,
+            database_url="postgresql+psycopg://user:pass@db/app",
+            egress_proxy_url="http://egress-proxy:8080",
+            egress_proxy_username="sentinel-user",
+        )
     settings = Settings(
         app_env="production",
         jwt_secret="a" * 48,
