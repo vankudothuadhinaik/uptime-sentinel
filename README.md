@@ -27,7 +27,7 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 - **Security:** application-side SSRF validation, redirects disabled, production egress-proxy requirement, no forwarding of user credentials.
 - **Operations:** Alembic migrations, Docker Compose, GitHub Actions, Codecov, optional Sentry, and optional Doppler developer workflow.
 
-> **Release status:** standard CI and Compose smoke tests passed on current PR head `2d61ecc` in [run #98](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40682770239). The controlled egress-proxy integration remains **skipped** until its real proxy and fixture secrets are configured. Production deployment is **not verified**. A skipped security test is not a pass.
+> **Release status:** standard CI and Compose smoke tests passed on current PR head `f48b8b2` in [run #103](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40683370759). The controlled egress-proxy integration remains **skipped** until its real proxy and fixture secrets are configured. Production deployment is **not verified**. A skipped security test is not a pass.
 
 ## Architecture
 
@@ -148,7 +148,7 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Latest completed CI run for PR head `2d61ecc`: [GitHub Actions run #98](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40682770239).
+Latest completed CI run for PR head `f48b8b2`: [GitHub Actions run #103](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40683370759).
 
 | Check | Last verified result |
 |---|---|
@@ -157,7 +157,7 @@ Latest completed CI run for PR head `2d61ecc`: [GitHub Actions run #98](https://
 | Proxy integration | **Skipped** — controlled proxy fixture secrets are not configured |
 | Render API/worker deployment | **Not verified** |
 
-Run #98 completed successfully for the documentation/diagram baseline. This README refresh itself will trigger a new CI run; use the [live Actions page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) to confirm the newest commit.
+Run #103 completed successfully for the current feature-branch head. Use the [live Actions page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) to confirm later commits.
 
 ## Production release gates
 

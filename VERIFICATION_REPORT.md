@@ -8,7 +8,7 @@ Run date: 2026-10-28
 
 ## Latest verified GitHub Actions run
 
-[Run #98 / 40682770239](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40682770239) on current PR head `2d61eccdc4fbf73f6a6cc215c1bbc9d27bb91b0c` completed successfully. `checks` and `compose-smoke` passed, including Codecov upload, type checking, dependency audit, PostgreSQL concurrency, and migration round trips. The controlled proxy integration remains skipped because the six controlled fixture secrets are not configured. A skipped job is not a security pass.
+[Run #103 / 40683370759](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40683370759) on current PR head `f48b8b2` completed successfully. `checks` and `compose-smoke` passed, including Codecov upload, type checking, dependency audit, PostgreSQL concurrency, and migration round trips. The controlled proxy integration remains skipped because the six controlled fixture secrets are not configured. A skipped job is not a security pass.
 
 | Job | Result | Interpretation |
 |---|---|---|
