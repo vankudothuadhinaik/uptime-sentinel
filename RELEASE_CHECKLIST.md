@@ -31,7 +31,8 @@
 
 ## Latest CI evidence
 
-- [Run #103 / 40683370759](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40683370759), current PR head `f48b8b2`: `checks` and `compose-smoke` passed; Codecov upload, dependency audit, type checking, PostgreSQL concurrency, and migration round trips all succeeded. `proxy-integration` was skipped because the six controlled fixture secrets are not configured. A skipped proxy job is not a security pass.
+- [Run #106 / 40684450986](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40684450986), commit `73ca4611c83f6fa3fb433cddce5d563bdecc83a9`: `checks` and `compose-smoke` passed; Codecov upload, dependency audit, type checking, PostgreSQL concurrency, and migration round trips all succeeded. `proxy-integration` was skipped because the six controlled fixture secrets are not configured. A skipped proxy job is not a security pass.
+- Run #108 was triggered by subsequent documentation updates and is in progress; check [Actions](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for its final result.
 - Previously recorded local verification: 23 tests passed, 6 infrastructure-gated tests skipped; Ruff, mypy (21 files), compileall, pip check, pip-audit, and SQLite migration round trip passed.
 - No Render API or worker deployment has been verified.
 
