@@ -35,6 +35,10 @@ services:
         sync: false
       - key: EGRESS_PROXY_URL
         sync: false
+      - key: EGRESS_PROXY_USERNAME
+        sync: false
+      - key: EGRESS_PROXY_PASSWORD
+        sync: false
       - key: ACCESS_TOKEN_MINUTES
         value: "60"
       - key: CHECK_USER_AGENT
