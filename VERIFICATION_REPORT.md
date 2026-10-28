@@ -8,7 +8,7 @@ Run date: 2026-10-28
 
 ## Latest verified GitHub Actions run
 
-[Run #82 / 40659958443](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40659958443) on commit `092e18e214e038a50c1757c4d7f28e473faa4dc5` completed successfully. The controlled proxy integration remains skipped because controlled fixture secrets are not configured. This run includes the explicit HTTP 403 policy-denial assertions for unsafe proxy fixtures and a passing Codecov patch check.
+[Run #88 / 40681979743](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40681979743) on commit `236960ded404ecace32a1cf11d60d6570610cd83` completed successfully. `checks` and `compose-smoke` passed, including the Codecov upload step. The controlled proxy integration remains skipped because controlled fixture secrets are not configured. This run includes the explicit HTTP 403 policy-denial assertions for unsafe proxy fixtures. Later documentation commits add two SVG diagrams and rebuild the README; their CI result must be checked separately.
 
 | Job | Result | Interpretation |
 |---|---|---|
@@ -41,6 +41,8 @@ The unsafe-target integration assertions now require an explicit HTTP 403 policy
 - Application-side SSRF checks, redirect disabling, bounded response reading, proxy configuration, and production startup validation.
 - Unit tests, PostgreSQL concurrency tests, Compose smoke job, dependency auditing, and opt-in proxy integration tests.
 - Render blueprint at `render.yaml` defining an API web service and a genuine continuous background worker.
+- Architecture and incident-lifecycle SVG diagrams added under `docs/images/` and embedded in the project README.
+- README badges/links for GitHub Actions and Codecov plus setup, quality gates, integrations, security model, and release checklist.
 - Render runbook and release documentation.
 
 ## Production blockers
