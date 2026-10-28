@@ -1,10 +1,9 @@
-yaml
 name: CI
+
 on:
   push:
   pull_request:
   workflow_dispatch:
-
 jobs:
   checks:
     runs-on: ubuntu-latest
