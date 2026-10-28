@@ -51,8 +51,8 @@ public CI.
 
 Always use the [GitHub Actions workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) for the live status; this README is a snapshot, not a live CI indicator.
 
-- **Latest verified CI run before this documentation update:** [run #80](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40659424347), commit `c1d91747bef161630151e0d21c137fe4565340cc`. The `checks` job passed, including dependency validation, Ruff, formatting, mypy, PostgreSQL concurrency, tests/coverage, compilation, dependency audit, and PostgreSQL/SQLite migration round trips. The Docker Compose smoke test also passed, including container build/startup and API health check. The controlled proxy integration was skipped because its fixture secrets were not configured.
-- **Proxy integration:** skipped in run #80 because the controlled proxy fixture secrets were not configured. Skipped is not passed.
+- **Latest verified CI run:** [run #82](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40659958443), commit `092e18e214e038a50c1757c4d7f28e473faa4dc5`. The `checks` job passed, including dependency validation, Ruff, formatting, mypy, PostgreSQL concurrency, tests/coverage, compilation, dependency audit, and PostgreSQL/SQLite migration round trips. The Docker Compose smoke test also passed, including container build/startup and API health check. The `codecov/patch` check passed. The controlled proxy integration was skipped because its fixture secrets were not configured.
+- **Proxy integration:** skipped in run #82 because the controlled proxy fixture secrets were not configured. Skipped is not passed.
 - **Render deployment:** the PostgreSQL database is available in the dedicated Uptime Sentinel workspace. The API and worker are not yet verified as deployed.
 - **Production readiness:** not complete until a controlled destination-validating egress proxy passes the integration tests and the deployed API/worker are smoke-tested.
 
