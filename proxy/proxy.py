@@ -101,9 +101,7 @@ async def _tunnel(client_r, client_w, host: str, port: int) -> None:
         await client_w.drain()
         await asyncio.gather(_relay(client_r, upstream_w), _relay(upstream_r, client_w))
     except PermissionError:
-        client_w.write(
-            b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
-        )
+        client_w.write(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
         await client_w.drain()
     except (ValueError, OSError, TimeoutError):
         if not client_w.is_closing():
