@@ -8,7 +8,7 @@ The repository now includes a `render.yaml` defining the API web service and a g
 
 Important:
 - The blueprint does **not** create another database or an egress proxy. Reuse the existing PostgreSQL instance and provide its internal connection URL when prompted.
-- It requires `DATABASE_URL`, `JWT_SECRET`, and `EGRESS_PROXY_URL` to be configured as secret environment values for both services. Do not enter dummy values or commit secrets.
+- It requires `DATABASE_URL`, `JWT_SECRET`, `EGRESS_PROXY_URL`, `EGRESS_PROXY_USERNAME`, and `EGRESS_PROXY_PASSWORD` to be configured as secret environment values for both services. Do not enter dummy values or commit secrets.
 - Configure the private, destination-validating proxy before deploying production services. The application intentionally refuses production startup without `EGRESS_PROXY_URL`.
 - The blueprint uses Render Starter service plans for the API and worker. Review current pricing in the dashboard before creating resources; deploying the blueprint may incur charges.
 - A successful blueprint parse or service creation is not proof that the proxy is secure or that the application works end to end.
@@ -33,7 +33,9 @@ Set these in the Render dashboard for **both API and worker** unless noted:
 | APP_ENV | production |
 | DATABASE_URL | Existing Render PostgreSQL internal connection URL, using `postgresql+psycopg://` if required by SQLAlchemy |
 | JWT_SECRET | Unique random secret generated in a password manager; at least 32 characters |
-| EGRESS_PROXY_URL | Private URL of the controlled proxy; reachable from both services |
+| EGRESS_PROXY_URL | URL of the controlled proxy without embedded credentials; reachable from both services |
+| EGRESS_PROXY_USERNAME | Proxy username (at least 8 characters) |
+| EGRESS_PROXY_PASSWORD | Random proxy password (at least 32 characters) |
 | RESULT_RETENTION_DAYS | 30 unless the data policy specifies otherwise |
 | ACCESS_TOKEN_MINUTES | 60 unless a shorter token lifetime is required |
 | CHECK_USER_AGENT | UptimeSentinel/0.1 or an approved identifying value |
