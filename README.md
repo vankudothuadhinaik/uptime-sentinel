@@ -27,7 +27,7 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 - **Security:** application-side SSRF validation, redirects disabled, production egress-proxy requirement, no forwarding of user credentials.
 - **Operations:** Alembic migrations, Docker Compose, GitHub Actions, Codecov, optional Sentry, and optional Doppler developer workflow.
 
-> **Release status:** standard CI and Compose smoke tests have passed on the latest verified pre-documentation commit. The controlled egress-proxy integration remains **skipped** until its real proxy and fixture secrets are configured. Production deployment is **not verified**. A skipped security test is not a pass.
+> **Release status:** standard CI and Compose smoke tests passed on current PR head `2d61ecc` in [run #98](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40682770239). The controlled egress-proxy integration remains **skipped** until its real proxy and fixture secrets are configured. Production deployment is **not verified**. A skipped security test is not a pass.
 
 ## Architecture
 
@@ -148,7 +148,7 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Latest completed run inspected for the previous code/documentation baseline: [GitHub Actions run #88](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40681979743).
+Latest completed CI run for PR head `2d61ecc`: [GitHub Actions run #98](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40682770239).
 
 | Check | Last verified result |
 |---|---|
@@ -157,7 +157,7 @@ Latest completed run inspected for the previous code/documentation baseline: [Gi
 | Proxy integration | **Skipped** — controlled proxy fixture secrets are not configured |
 | Render API/worker deployment | **Not verified** |
 
-This commit changes documentation and adds SVG diagrams, so use the [live Actions page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) to confirm CI for the latest commit. The results above are not a promise that the new documentation commit has already completed CI.
+Run #98 completed successfully for the documentation/diagram baseline. This README refresh itself will trigger a new CI run; use the [live Actions page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) to confirm the newest commit.
 
 ## Production release gates
 
