@@ -31,8 +31,8 @@
 
 ## Latest CI evidence
 
-- [Run #62 / 40629653385](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40629653385), commit `ee553fea243b544bc15a54dd416c4ea30f1ce14f`: `checks` PASS; `compose-smoke` PASS; `proxy-integration` SKIPPED because controlled fixture secrets are missing.
-- Latest local verification: 23 tests passed, 6 infrastructure-gated tests skipped; Ruff, mypy (21 files), compileall, pip check, pip-audit, and SQLite migration round trip passed.
+- [Run #70 / 40657045946](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40657045946), commit `c9d671b2a24aae6a195a4d905189971dae296f82`: workflow completed successfully. The controlled proxy integration remains skipped because controlled fixture secrets are missing. This run predates the current proxy-test assertion improvement and must not be used to claim that change was tested.
+- Previously recorded local verification: 23 tests passed, 6 infrastructure-gated tests skipped; Ruff, mypy (21 files), compileall, pip check, pip-audit, and SQLite migration round trip passed.
 - No Render API or worker deployment has been verified.
 
 Do not mark production ready until every unchecked security and deployment gate is genuinely verified.
