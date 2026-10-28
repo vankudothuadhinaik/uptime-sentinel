@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./uptime_sentinel.db"
     redis_url: str = "redis://localhost:6379/0"
     egress_proxy_url: str = ""
+    egress_proxy_username: str = ""
+    egress_proxy_password: str = ""
     jwt_secret: str = "development-only-change-me-change-this-secret"
     access_token_minutes: int = 60
     check_user_agent: str = "UptimeSentinel/0.1"
@@ -41,6 +43,10 @@ class Settings(BaseSettings):
                     "EGRESS_PROXY_URL is required when APP_ENV=production; use a controlled "
                     "egress proxy that revalidates destinations"
                 )
+            if len(self.egress_proxy_username) < 8:
+                raise ValueError("EGRESS_PROXY_USERNAME must be at least 8 characters in production")
+            if len(self.egress_proxy_password) < 32:
+                raise ValueError("EGRESS_PROXY_PASSWORD must be at least 32 characters in production")
             proxy = self.egress_proxy_url
             if any(ord(char) < 32 or ord(char) == 127 for char in proxy):
                 raise ValueError("EGRESS_PROXY_URL contains control characters")
