@@ -17,7 +17,14 @@ def perform_check(db: Session, monitor: Monitor, client: httpx.Client | None = N
     request_client = client or httpx.Client(
         follow_redirects=False,
         trust_env=False,
-        proxy=settings.egress_proxy_url or None,
+        proxy=(
+            httpx.Proxy(
+                settings.egress_proxy_url,
+                auth=(settings.egress_proxy_username, settings.egress_proxy_password),
+            )
+            if settings.egress_proxy_url
+            else None
+        ),
     )
     try:
         validate_target(monitor.url)
