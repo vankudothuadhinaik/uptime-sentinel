@@ -12,5 +12,8 @@ dist/
 htmlcov/
 .env.*
 !.env.example
+.doppler/
+doppler-token*
+*.doppler-token
 *.log
 *.jsonl

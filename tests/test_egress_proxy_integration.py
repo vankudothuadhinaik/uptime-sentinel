@@ -49,12 +49,13 @@ def test_public_https_endpoint_is_reachable(proxy_client: httpx.Client):
 def test_proxy_rejects_private_and_rebinding_destinations(
     proxy_client: httpx.Client, variable: str
 ):
-    try:
-        response = proxy_client.get(_fixture_url(variable))
-    except httpx.HTTPError:
-        return
-    assert response.status_code >= 400, (
-        f"controlled proxy allowed unsafe fixture {variable}; status={response.status_code}"
+    response = proxy_client.get(_fixture_url(variable))
+    # The controlled fixture contract requires an explicit policy-denial status.
+    # A DNS failure, refused connection, timeout, or arbitrary 5xx is not proof
+    # that the proxy enforced its destination-IP policy.
+    assert response.status_code == 403, (
+        f"controlled proxy must explicitly deny unsafe fixture {variable} "
+        f"with HTTP 403; got {response.status_code}"
     )
 
 

@@ -2,7 +2,7 @@
 
 ## Current decision
 
-**PUBLISHED / NOT READY FOR PRODUCTION.** Latest standard CI passed, but the real egress-proxy security gate and deployed API/worker end-to-end checks remain blocked.
+**PUBLISHED FOR REVIEW / NOT READY FOR PRODUCTION.** Branch `integration/sentry-doppler` is pushed and PR #4 is open against `main`. The real egress-proxy security gate and deployed API/worker end-to-end checks remain blocked.
 
 ## Implemented and verified by standard CI
 
@@ -31,8 +31,9 @@
 
 ## Latest CI evidence
 
-- [Run #37 / 40595000447](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40595000447), commit `7c05f4551f472fb5e13bbecf41a81615f49f67fd): `checks` PASS, `compose-smoke` PASS, `proxy-integration` SKIPPED because controlled fixture secrets are missing.
-- Detailed prior local verification: 20 tests passed, 6 infrastructure-gated tests skipped; Ruff, mypy (19 files), compileall, pip check, pip-audit, and SQLite migration round trip passed.
+- [Run #106 / 40684450986](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40684450986), commit `73ca4611c83f6fa3fb433cddce5d563bdecc83a9`: `checks` and `compose-smoke` passed; Codecov upload, dependency audit, type checking, PostgreSQL concurrency, and migration round trips all succeeded. `proxy-integration` was skipped because the six controlled fixture secrets are not configured. A skipped proxy job is not a security pass.
+- Run #108 was triggered by subsequent documentation updates and is in progress; check [Actions](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for its final result.
+- Previously recorded local verification: 23 tests passed, 6 infrastructure-gated tests skipped; Ruff, mypy (21 files), compileall, pip check, pip-audit, and SQLite migration round trip passed.
 - No Render API or worker deployment has been verified.
 
 Do not mark production ready until every unchecked security and deployment gate is genuinely verified.

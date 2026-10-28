@@ -16,7 +16,10 @@ from .models import CheckResult, Incident, Monitor, User
 from .monitoring import perform_check
 from .schemas import AuthIn, CheckOut, IncidentOut, MonitorIn, MonitorOut, MonitorPatch, Token
 from .security import current_user, hash_password, make_token, verify_password
+from .sentry import initialize_sentry
 from .ssrf import UnsafeTarget, validate_target
+
+initialize_sentry()
 
 
 @asynccontextmanager
