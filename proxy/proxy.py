@@ -17,8 +17,8 @@ from urllib.parse import urlsplit
 
 HOST = "0.0.0.0"
 PORT = int(os.getenv("PORT", "8080"))
-USERNAME = os.environ["PROXY_USERNAME"]
-PASSWORD = os.environ["PROXY_PASSWORD"]
+USERNAME = os.getenv("PROXY_USERNAME", "")
+PASSWORD = os.getenv("PROXY_PASSWORD", "")
 HEADER_LIMIT = 32 * 1024
 CONNECT_TIMEOUT = 8
 IDLE_TIMEOUT = 60
