@@ -45,3 +45,16 @@ def test_proxy_authentication_requires_exact_credentials(monkeypatch: pytest.Mon
     assert _authorized({"proxy-authorization": f"Basic {encoded}"})
     assert not _authorized({"proxy-authorization": "Basic wrong"})
     assert not _authorized({})
+
+
+def test_proxy_authentication_fails_closed_when_credentials_are_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import proxy.proxy as proxy_module
+
+    monkeypatch.setattr(proxy_module, "USERNAME", "")
+    monkeypatch.setattr(proxy_module, "PASSWORD", "")
+    # Even Basic auth for an empty user/password must not authorize public access.
+    empty_credentials = base64.b64encode(b":").decode()
+    assert not _authorized({"proxy-authorization": f"Basic {empty_credentials}"})
+    assert not _authorized({})
