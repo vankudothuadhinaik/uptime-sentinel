@@ -244,7 +244,8 @@ def test_worker_exception_releases_claim(monkeypatch, db_session):
     monkeypatch.setattr(
         "worker.perform_check", lambda db, item: (_ for _ in ()).throw(RuntimeError("boom"))
     )
-    assert run_once(now=datetime.now(timezone.utc)) == 1
+    with pytest.raises(RuntimeError, match="boom"):
+        run_once(now=datetime.now(timezone.utc))
     current = db_session.get(Monitor, monitor_id)
     assert current.lease_token is None
     assert current.next_check_at is not None
