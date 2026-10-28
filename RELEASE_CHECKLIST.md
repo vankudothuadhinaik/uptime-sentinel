@@ -31,7 +31,7 @@
 
 ## Latest CI evidence
 
-- [Run #82 / 40659958443](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40659958443), commit `092e18e214e038a50c1757c4d7f28e473faa4dc5`: `checks`, `compose-smoke`, and `codecov/patch` passed; `proxy-integration` was skipped because controlled fixture secrets are missing. This run includes the explicit HTTP 403 policy-denial assertions for unsafe proxy fixtures.
+- [Run #88 / 40681979743](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40681979743), commit `236960ded404ecace32a1cf11d60d6570610cd83`: `checks` and `compose-smoke` passed, including Codecov upload; `proxy-integration` was skipped because controlled fixture secrets are missing. This run includes the explicit HTTP 403 policy-denial assertions for unsafe proxy fixtures. The subsequent README/diagram-only changes trigger a fresh CI run.
 - Previously recorded local verification: 23 tests passed, 6 infrastructure-gated tests skipped; Ruff, mypy (21 files), compileall, pip check, pip-audit, and SQLite migration round trip passed.
 - No Render API or worker deployment has been verified.
 
