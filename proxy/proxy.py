@@ -29,7 +29,16 @@ def _safe_ip(value: str) -> bool:
     # is_global rejects loopback, RFC1918, link-local, multicast, unspecified,
     # reserved ranges, and IPv4-mapped private IPv6 addresses.
     if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped:
-        return ip.ipv4_mapped.is_global
+        ip = ip.ipv4_mapped
+    if (
+        ip.is_multicast
+        or ip.is_unspecified
+        or ip.is_loopback
+        or ip.is_private
+        or ip.is_link_local
+        or ip.is_reserved
+    ):
+        return False
     return ip.is_global
 
 
