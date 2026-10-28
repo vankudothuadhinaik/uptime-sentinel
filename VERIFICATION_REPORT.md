@@ -8,7 +8,7 @@ Run date: 2026-10-28
 
 ## Latest verified GitHub Actions run
 
-[Run #88 / 40681979743](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40681979743) on commit `236960ded404ecace32a1cf11d60d6570610cd83` completed successfully. `checks` and `compose-smoke` passed, including the Codecov upload step. The controlled proxy integration remains skipped because controlled fixture secrets are not configured. This run includes the explicit HTTP 403 policy-denial assertions for unsafe proxy fixtures. Later documentation commits add two SVG diagrams and rebuild the README; their CI result must be checked separately.
+[Run #98 / 40682770239](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40682770239) on current PR head `2d61eccdc4fbf73f6a6cc215c1bbc9d27bb91b0c` completed successfully. `checks` and `compose-smoke` passed, including Codecov upload, type checking, dependency audit, PostgreSQL concurrency, and migration round trips. The controlled proxy integration remains skipped because the six controlled fixture secrets are not configured. A skipped job is not a security pass.
 
 | Job | Result | Interpretation |
 |---|---|---|
