@@ -2,7 +2,7 @@
 
 ## Current decision
 
-**NOT READY FOR PRODUCTION.** PR #4 (application/security hardening) was merged into `main` as commit `e1e59d2f2fbc78493da2bcadd9cd7c254a1bf631`. PR #5 adds the missing authenticated-proxy client configuration and is undergoing CI. A free Render test proxy is live at `https://uptime-sentinel-egress-proxy.onrender.com`, but it is internet-reachable and its credentials/protocol/security fixtures are not yet independently verified. The API and continuous worker are not deployed.
+**NOT READY FOR PRODUCTION.** PR #4 was merged into `main`; the current verified head is commit `da893678780ba06ed64cb6db95ef9fa6db65dea5`. A free Render test proxy is live at `https://uptime-sentinel-egress-proxy.onrender.com`, but it is internet-reachable and its credentials/protocol/security fixtures are not independently verified. The API and continuous worker are not deployed.
 
 ## Implemented and verified by standard CI
 
@@ -11,7 +11,7 @@
 - [x] Database-backed scheduler claims with lease tokens and conditional completion.
 - [x] Application-side SSRF validation, redirect disabling, and bounded response streaming.
 - [x] Production configuration validation for PostgreSQL, strong JWT secret, and `EGRESS_PROXY_URL`.
-- [ ] Merge PR #5 after CI passes; it adds production validation and client support for `EGRESS_PROXY_USERNAME` and `EGRESS_PROXY_PASSWORD`.
+- [x] Add production validation and client support for `EGRESS_PROXY_USERNAME` and `EGRESS_PROXY_PASSWORD`.
 - [x] Ruff lint/format, mypy, pytest, compilation, dependency audit, PostgreSQL concurrency/fencing test, and migration round trips in CI.
 - [x] Docker Compose build/start and API liveness smoke test in CI.
 - [x] Render blueprint defining an API service and a true continuous background worker.
@@ -34,8 +34,8 @@
 
 ## Latest CI evidence
 
-- [Run #138 / 40690882267](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40690882267), commit `3d963b287899c7888add7a9e1874752adc724e7c`: `checks` and `compose-smoke` passed. `proxy-integration` was skipped because the six controlled fixture secrets are not configured. A skipped proxy job is not a security pass.
-- PR #5 CI is running; check [Actions](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for the final result before merging.
+- [Run #160 / 40694085326](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40694085326), commit `da893678780ba06ed64cb6db95ef9fa6db65dea5`: `checks` and `compose-smoke` passed. `proxy-integration` was skipped because the six controlled fixture secrets are not configured. A skipped proxy job is not a security pass.
+- The current `main` head is the merged result of PR #4. No failed or in-progress `main` run was present in the inspected workflow history.
 - No Render API or continuous worker deployment has been verified.
 - The existing PostgreSQL Free plan is recorded to expire on 2026-11-26; resolve continuity before relying on it for production.
 

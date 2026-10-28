@@ -4,11 +4,11 @@ Run date: 2026-10-28
 
 ## Release decision
 
-**PUBLISHED FOR REVIEW / NOT READY FOR PRODUCTION.** Branch `integration/sentry-doppler` is pushed and PR #4 is open against `main`. Production is blocked on a real controlled egress proxy, execution of the proxy security integration suite, and deployed API/worker end-to-end verification.
+**PUBLISHED FOR REVIEW / NOT READY FOR PRODUCTION.** PR #4 is merged into `main` at commit `da893678780ba06ed64cb6db95ef9fa6db65dea5`. Production is blocked on a real controlled egress proxy, execution of the proxy security integration suite, and deployed API/worker end-to-end verification.
 
 ## Latest verified GitHub Actions run
 
-[Run #106 / 40684450986](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40684450986) on commit `73ca4611c83f6fa3fb433cddce5d563bdecc83a9` completed successfully for standard checks and Compose smoke. Documentation-only follow-up commits refreshed the README and release checklist; their CI runs are still in progress as of the latest inspection (runs #110 and #112). Confirm those runs on the [Actions page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) before treating the latest head as CI-verified. A subsequent report-only update records this note; verify the newest run against the live branch head before release.
+[Run #160 / 40694085326](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40694085326) on commit `da893678780ba06ed64cb6db95ef9fa6db65dea5` completed successfully. The `checks` and `compose-smoke` jobs passed; the opt-in `proxy-integration` job was skipped because its six controlled fixture secrets are not configured.
 
 | Job | Result | Interpretation |
 |---|---|---|
@@ -18,16 +18,16 @@ Run date: 2026-10-28
 
 ## Local verification reported for this commit
 
-- pytest: 23 passed; 6 infrastructure-gated tests skipped.
-- Ruff lint and format: passed.
-- mypy: passed for 21 source files.
+- pytest: 38 passed; 6 infrastructure-gated tests skipped; coverage-enabled local run reported 69% across `app`, `worker`, and `proxy`.
+- Ruff lint and format: passed from the project virtual environment.
+- mypy: passed for the CI targets (`app worker.py migrations tests`).
 - compileall and `pip check`: passed.
 - pip-audit: no known vulnerabilities at time of run.
 - SQLite migration upgrade/downgrade/upgrade: passed.
 - Compose smoke script syntax: passed.
 - Secret/artifact tracking scan: no tracked secrets, database dumps, or caches.
 
-These are local results reported for the branch. CI run #106 is the authoritative automated check evidence for the current published commit. A passing CI job does not verify production infrastructure.
+These are local results reported for the current `main` checkout. CI run #160 is the authoritative automated check evidence for the current published commit. A passing CI job does not verify production infrastructure.
 
 ## Security test hardening
 
@@ -65,7 +65,7 @@ Set these repository Actions secrets only after a controlled proxy and fixture e
 
 Then manually dispatch the workflow and verify `proxy-integration` actually executes and passes. Use the Render blueprint only after the private proxy is ready; supply the database's internal URL, a unique random JWT secret of at least 32 characters, and the private proxy URL as secret environment values. Apply migrations once through a controlled release step and perform real end-to-end verification.
 
-The available connected integrations do not expose GitHub Actions secret creation/manual dispatch or full Render deployment provisioning. No proxy or production deployment is claimed. The feature branch is published and PR #4 remains open and unmerged.
+The available connected integrations do not expose GitHub Actions secret creation/manual dispatch or full Render deployment provisioning. No real proxy integration run or production deployment is claimed. The API and worker remain undeployed and PR #4 is merged.
 
 ## Final status
 

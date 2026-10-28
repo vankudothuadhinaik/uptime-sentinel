@@ -27,7 +27,7 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 - **Security:** application-side SSRF validation, redirects disabled, production egress-proxy requirement, no forwarding of user credentials.
 - **Operations:** Alembic migrations, Docker Compose, GitHub Actions, Codecov, optional Sentry, and optional Doppler developer workflow.
 
-> **Release status:** standard CI and Compose smoke tests passed on commit `73ca4611c83f6fa3fb433cddce5d563bdecc83a9` in [run #106](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40684450986). The controlled egress-proxy integration remains **skipped** until its real proxy and fixture secrets are configured. Production deployment is **not verified**. A skipped security test is not a pass.
+> **Release status:** standard CI and Compose smoke tests passed on `main` commit `da893678780ba06ed64cb6db95ef9fa6db65dea5` in [run #160](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40694085326). The controlled egress-proxy integration remains **skipped** until its real proxy and fixture secrets are configured. Production deployment is **not verified**. A skipped security test is not a pass.
 
 ## Architecture
 
@@ -148,7 +148,7 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Latest completed CI run for commit `73ca4611c83f6fa3fb433cddce5d563bdecc83a9`: [GitHub Actions run #106](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40684450986).
+Latest completed CI run for `main` commit `da893678780ba06ed64cb6db95ef9fa6db65dea5`: [GitHub Actions run #160](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40694085326).
 
 | Check | Last verified result |
 |---|---|
@@ -157,7 +157,7 @@ Latest completed CI run for commit `73ca4611c83f6fa3fb433cddce5d563bdecc83a9`: [
 | Proxy integration | **Skipped** — controlled proxy fixture secrets are not configured |
 | Render API/worker deployment | **Not verified** |
 
-Run #106 completed successfully for commit `73ca4611c83f6fa3fb433cddce5d563bdecc83a9`. Later documentation commits triggered another run; check the [live Actions page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for its final result.
+Run #160 completed successfully for the current `main` head. The opt-in proxy job was skipped because the six controlled fixture secrets are not configured.
 
 ## Production release gates
 
