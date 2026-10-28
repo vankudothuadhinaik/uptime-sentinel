@@ -44,9 +44,13 @@ class Settings(BaseSettings):
                     "egress proxy that revalidates destinations"
                 )
             if len(self.egress_proxy_username) < 8:
-                raise ValueError("EGRESS_PROXY_USERNAME must be at least 8 characters in production")
+                raise ValueError(
+                    "EGRESS_PROXY_USERNAME must be at least 8 characters in production"
+                )
             if len(self.egress_proxy_password) < 32:
-                raise ValueError("EGRESS_PROXY_PASSWORD must be at least 32 characters in production")
+                raise ValueError(
+                    "EGRESS_PROXY_PASSWORD must be at least 32 characters in production"
+                )
             proxy = self.egress_proxy_url
             if any(ord(char) < 32 or ord(char) == 127 for char in proxy):
                 raise ValueError("EGRESS_PROXY_URL contains control characters")
