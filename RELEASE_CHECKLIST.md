@@ -2,9 +2,7 @@
 
 ## Current decision
 
-**UNPUBLISHED FEATURE BRANCH / NOT READY FOR PRODUCTION.** The branch is
-under review and has not been pushed or merged. The real egress-proxy security
-gate and deployed API/worker end-to-end checks remain blocked.
+**PUBLISHED FOR REVIEW / NOT READY FOR PRODUCTION.** Branch `integration/sentry-doppler` is pushed and PR #4 is open against `main`. The real egress-proxy security gate and deployed API/worker end-to-end checks remain blocked.
 
 ## Implemented and verified by standard CI
 
@@ -33,7 +31,7 @@ gate and deployed API/worker end-to-end checks remain blocked.
 
 ## Latest CI evidence
 
-- [Run #37 / 40595000447](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40595000447), commit `7c05f4551f472fb5e13bbecf41a81615f49f67fd): `checks` PASS, `compose-smoke` PASS, `proxy-integration` SKIPPED because controlled fixture secrets are missing.
+- [Run #50 / 40629283219](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40629283219), commit `a488ac021178875b8f8f85335dd91d5c540f8c1e`: `checks` PASS; `compose-smoke` was still running at report update; `proxy-integration` SKIPPED because controlled fixture secrets are missing. [Run #49](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40628867331) had `checks` and `compose-smoke` PASS.
 - Latest local verification: 23 tests passed, 6 infrastructure-gated tests skipped; Ruff, mypy (21 files), compileall, pip check, pip-audit, and SQLite migration round trip passed.
 - No Render API or worker deployment has been verified.
 
