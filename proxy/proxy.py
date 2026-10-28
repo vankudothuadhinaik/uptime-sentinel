@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Authenticated HTTP CONNECT/forward proxy with destination-IP SSRF controls.
 
 This is a minimal controlled egress proxy, not a general-purpose anonymous proxy.
@@ -45,7 +44,7 @@ async def _resolve_public(host: str, port: int) -> list[tuple[int, tuple]]:
         infos = await asyncio.wait_for(
             loop.getaddrinfo(host, port, type=socket.SOCK_STREAM), timeout=CONNECT_TIMEOUT
         )
-    except (OSError, asyncio.TimeoutError):
+    except (OSError, TimeoutError):
         raise ValueError("DNS resolution failed") from None
     unique: list[tuple[int, tuple]] = []
     seen: set[tuple] = set()
@@ -74,7 +73,7 @@ async def _open_pinned(host: str, port: int) -> tuple[asyncio.StreamReader, asyn
             )
             reader, writer = await asyncio.open_connection(sock=sock)
             return reader, writer
-        except (OSError, asyncio.TimeoutError) as exc:
+        except (OSError, TimeoutError) as exc:
             last_error = exc
             sock.close()
     raise OSError("Could not connect to validated destination") from last_error
@@ -88,7 +87,7 @@ async def _relay(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> 
                 break
             writer.write(data)
             await writer.drain()
-    except (OSError, asyncio.TimeoutError, asyncio.IncompleteReadError):
+    except (OSError, TimeoutError, asyncio.IncompleteReadError):
         pass
     finally:
         writer.close()
@@ -104,7 +103,7 @@ async def _tunnel(client_r, client_w, host: str, port: int) -> None:
     except PermissionError:
         client_w.write(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
         await client_w.drain()
-    except (ValueError, OSError, asyncio.TimeoutError):
+    except (ValueError, OSError, TimeoutError):
         if not client_w.is_closing():
             client_w.write(b"HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
             await client_w.drain()
@@ -117,7 +116,6 @@ async def _tunnel(client_r, client_w, host: str, port: int) -> None:
 async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter) -> None:
     upstream_w = None
     try:
-        peer = client_w.get_extra_info("peername")
         raw = await asyncio.wait_for(client_r.readuntil(b"\r\n\r\n"), timeout=10)
         if len(raw) > HEADER_LIMIT:
             client_w.write(b"HTTP/1.1 431 Request Header Fields Too Large\r\nConnection: close\r\n\r\n")
@@ -175,7 +173,7 @@ async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter)
     except PermissionError:
         if not client_w.is_closing():
             client_w.write(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
-    except (ValueError, OSError, asyncio.TimeoutError, asyncio.IncompleteReadError, UnicodeError):
+    except (ValueError, OSError, TimeoutError, asyncio.IncompleteReadError, UnicodeError):
         if not client_w.is_closing():
             client_w.write(b"HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
     finally:
