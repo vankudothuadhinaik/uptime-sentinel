@@ -43,6 +43,9 @@ def _safe_ip(value: str) -> bool:
 
 
 def _authorized(headers: dict[str, str]) -> bool:
+    # Fail closed: an internet-reachable proxy must never accept empty/default credentials.
+    if not USERNAME or not PASSWORD:
+        return False
     supplied = headers.get("proxy-authorization", "")
     expected = "Basic " + base64.b64encode(f"{USERNAME}:{PASSWORD}".encode()).decode()
     return hmac.compare_digest(supplied, expected)
