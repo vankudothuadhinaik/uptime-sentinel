@@ -1,0 +1,3 @@
+setup:
+  project: uptime-sentinel
+  config: dev_personal

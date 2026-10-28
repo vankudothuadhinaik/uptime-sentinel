@@ -40,6 +40,13 @@ For Docker Compose, copy `.env.example` to `.env`, set a unique production `JWT_
 
 For a disposable local smoke test, configure test-only values in `.env` and run `.\scripts\compose-smoke.ps1`. It validates Compose configuration, builds the images, waits for `/health/live`, prints service logs, and tears the test stack down afterward.
 
+Sentry is optional. Leave `SENTRY_DSN` empty to keep error monitoring disabled;
+when configured through a deployment secret manager, the integration disables
+default PII and request-body collection. See [DOPPLER.md](DOPPLER.md) for the
+optional Windows PowerShell workflow using the existing `uptime-sentinel`
+development configuration. Doppler is not required by the application or
+public CI.
+
 ## CI status and release gate
 
 Always use the [GitHub Actions workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) for the live status; this README is a snapshot, not a live CI indicator.
