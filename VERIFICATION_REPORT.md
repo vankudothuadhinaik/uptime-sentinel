@@ -8,7 +8,7 @@ Run date: 2026-10-28
 
 ## Latest verified GitHub Actions run
 
-[Run #106 / 40684450986](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40684450986) on commit `73ca4611c83f6fa3fb433cddce5d563bdecc83a9` completed successfully for standard checks and Compose smoke. Documentation-only follow-up commits refreshed the README and release checklist; their CI runs are still in progress as of the latest inspection (runs #110 and #112). Confirm those runs on the [Actions page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) before treating the latest head as CI-verified.
+[Run #106 / 40684450986](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40684450986) on commit `73ca4611c83f6fa3fb433cddce5d563bdecc83a9` completed successfully for standard checks and Compose smoke. Documentation-only follow-up commits refreshed the README and release checklist; their CI runs are still in progress as of the latest inspection (runs #110 and #112). Confirm those runs on the [Actions page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) before treating the latest head as CI-verified. A subsequent report-only update records this note; verify the newest run against the live branch head before release.
 
 | Job | Result | Interpretation |
 |---|---|---|
