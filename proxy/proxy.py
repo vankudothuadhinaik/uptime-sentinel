@@ -4,6 +4,7 @@ This is a minimal controlled egress proxy, not a general-purpose anonymous proxy
 Only HTTP proxy requests are accepted. DNS is resolved once per connection and
 the socket is connected to that exact resolved IP to prevent DNS-rebinding TOCTOU.
 """
+
 from __future__ import annotations
 
 import asyncio
