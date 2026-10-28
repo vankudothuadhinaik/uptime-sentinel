@@ -8,7 +8,7 @@ Run date: 2026-10-28
 
 ## Latest verified GitHub Actions run
 
-[Run #80 / 40659424347](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40659424347) on commit `c1d91747bef161630151e0d21c137fe4565340cc` completed successfully. The controlled proxy integration remains skipped because controlled fixture secrets are not configured. This run includes the explicit HTTP 403 policy-denial assertions for unsafe proxy fixtures.
+[Run #82 / 40659958443](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40659958443) on commit `092e18e214e038a50c1757c4d7f28e473faa4dc5` completed successfully. The controlled proxy integration remains skipped because controlled fixture secrets are not configured. This run includes the explicit HTTP 403 policy-denial assertions for unsafe proxy fixtures and a passing Codecov patch check.
 
 | Job | Result | Interpretation |
 |---|---|---|
@@ -30,9 +30,9 @@ The latest local report recorded:
 
 Local results are historical observations; the latest CI run above is the authoritative check for the newest published commit. A passing CI job does not verify production infrastructure.
 
-## Additional test-hardening change pending CI
+## Additional test-hardening change verified by standard CI
 
-The unsafe-target integration assertions now require an explicit HTTP 403 policy-denial response from the controlled proxy. Generic connection errors, DNS failures, timeouts, and arbitrary 5xx responses must not count as evidence that destination enforcement works. This change requires a fresh CI run and a real controlled proxy run before the gate can pass.
+The unsafe-target integration assertions now require an explicit HTTP 403 policy-denial response from the controlled proxy. Generic connection errors, DNS failures, timeouts, and arbitrary 5xx responses must not count as evidence that destination enforcement works. The change passed standard CI, but the real controlled proxy run is still required before the security gate can pass.
 
 ## Implemented
 
