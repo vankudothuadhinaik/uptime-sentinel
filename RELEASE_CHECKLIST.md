@@ -31,7 +31,7 @@
 
 ## Latest CI evidence
 
-- [Run #50 / 40629283219](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40629283219), commit `a488ac021178875b8f8f85335dd91d5c540f8c1e`: `checks` PASS; `compose-smoke` PASS; `proxy-integration` SKIPPED because controlled fixture secrets are missing. [Run #49](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40628867331) had `checks` and `compose-smoke` PASS.
+- [Run #62 / 40629653385](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40629653385), commit `ee553fea243b544bc15a54dd416c4ea30f1ce14f`: `checks` PASS; `compose-smoke` PASS; `proxy-integration` SKIPPED because controlled fixture secrets are missing.
 - Latest local verification: 23 tests passed, 6 infrastructure-gated tests skipped; Ruff, mypy (21 files), compileall, pip check, pip-audit, and SQLite migration round trip passed.
 - No Render API or worker deployment has been verified.
 
