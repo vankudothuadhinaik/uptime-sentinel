@@ -1,34 +1,84 @@
+<div align="center">
+
 # Uptime Sentinel
 
-Uptime Sentinel is a focused FastAPI service for developers and small teams to monitor HTTP/HTTPS endpoints, record latency and failures, track incidents, and publish a minimal read-only status page.
+**Know when your endpoints fail. Know when they recover.**
+
+A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency history, incident tracking, a public read-only status page, and a PostgreSQL-backed worker.
+
+[![CI](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=integration%2Fsentry-doppler)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml)
+[![Codecov](https://codecov.io/gh/vankudothuadhinaik/uptime-sentinel/branch/integration/sentry-doppler/graph/badge.svg)](https://codecov.io/gh/vankudothuadhinaik/uptime-sentinel)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![Docker Compose](https://img.shields.io/badge/Containers-Docker%20Compose-2496ED?logo=docker&logoColor=white)
+
+[Architecture](#architecture) · [Features](#features) · [Quick start](#quick-start) · [Quality gates](#quality-and-integrations) · [Security](#security-model) · [Release checklist](#production-release-gates)
+
+</div>
+
+---
+
+## At a glance
+
+- **API:** FastAPI endpoints for authentication, monitor management, health, and public status.
+- **Scheduler:** continuous worker with PostgreSQL-backed claims, leases, and fencing to reduce duplicate/stale work.
+- **Monitoring:** bounded HTTP response reads, latency/failure history, incident open/increment/recovery lifecycle.
+- **Security:** application-side SSRF validation, redirects disabled, production egress-proxy requirement, no forwarding of user credentials.
+- **Operations:** Alembic migrations, Docker Compose, GitHub Actions, Codecov, optional Sentry, and optional Doppler developer workflow.
+
+> **Release status:** standard CI and Compose smoke tests have passed on the latest verified pre-documentation commit. The controlled egress-proxy integration remains **skipped** until its real proxy and fixture secrets are configured. Production deployment is **not verified**. A skipped security test is not a pass.
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  Client --> API[FastAPI API]
-  API --> DB[(PostgreSQL)]
-  Worker[Worker processes] --> DB
-  Worker --> Check[SSRF-safe HTTP checker]
-  Check --> DB
-  Public[Public status browser] --> API
-  Redis[(Redis, optional coordination)] -. future queue/lease .- Worker
-```
+![Uptime Sentinel architecture diagram](docs/images/architecture.svg)
 
-`worker.py` polls due monitors and uses PostgreSQL row locks plus `lease_until` to claim work. Multiple PostgreSQL-backed workers can therefore avoid duplicate claims; SQLite is intended only for local tests. Redis is included for a future queue/coordination layer but is not silently required by the current worker.
+The API and worker share PostgreSQL. Workers claim due monitors with lease/fencing protection, perform bounded HTTP checks, and persist results and incident transitions. In production, the outbound destination must be revalidated by a controlled egress proxy at connection time to address DNS-rebinding risks that application-only validation cannot eliminate.
+
+## Monitor and incident lifecycle
+
+![Monitor check and incident lifecycle diagram](docs/images/check-lifecycle.svg)
+
+A failing check opens an incident once; subsequent failures update the same incident; the first successful check resolves it. Check history older than `RESULT_RETENTION_DAYS` (default 30) is purged by the worker while incident records remain.
+
+## Features
+
+| Area | Implementation |
+|---|---|
+| Authentication | Argon2 password hashing and signed JWTs |
+| Ownership | Private monitors, checks, and incidents scoped to the authenticated owner |
+| Endpoint checks | HTTP/HTTPS, timeouts, latency, bounded response streaming |
+| Incident lifecycle | Open on first failure, increment on consecutive failures, resolve on recovery |
+| Scheduling | PostgreSQL row locks, lease expiry, lease tokens/fencing |
+| SSRF defenses | Resolve and reject non-global targets, reject URL credentials, disable redirects |
+| Production guardrails | Require PostgreSQL, a strong JWT secret, and `EGRESS_PROXY_URL` |
+| Observability | Optional privacy-conscious Sentry integration |
+| Developer workflow | Optional Doppler workflow documentation; Doppler is not required by CI or runtime |
+| Operations | Health endpoints, Alembic migrations, Docker Compose smoke test, retention cleanup |
 
 ## Quick start
+
+Requirements: Python 3.12+, PostgreSQL for production-like use, and Docker Compose if you want to run the container stack.
+
+### Windows PowerShell
 
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 Copy-Item .env.example .env
+```
+
+Set local development values in `.env`, then run migrations and the API:
+
+```powershell
 alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-Open `http://127.0.0.1:8000/docs`. Example requests:
+Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+
+### Example: register and create a monitor
 
 ```powershell
 $token = (Invoke-RestMethod -Method Post http://127.0.0.1:8000/auth/register -ContentType application/json -Body '{"email":"dev@example.com","password":"correct horse battery staple"}').access_token
@@ -36,69 +86,108 @@ $headers = @{ Authorization = "Bearer $token" }
 Invoke-RestMethod -Method Post http://127.0.0.1:8000/monitors -Headers $headers -ContentType application/json -Body '{"name":"Example","url":"https://example.com","interval_seconds":60,"timeout_seconds":10,"public":true}'
 ```
 
-For Docker Compose, copy `.env.example` to `.env`, set a unique production `JWT_SECRET`, set `DATABASE_URL=postgresql+psycopg://uptime:<password>@postgres:5432/uptime_sentinel`, and set `EGRESS_PROXY_URL` to a controlled proxy that performs destination validation. Then run `docker compose up --build`. Redis is health-checked for deployment consistency but is not used by the current worker.
+Use disposable development credentials only. Never reuse example passwords or commit real secrets.
 
-For a disposable local smoke test, configure test-only values in `.env` and run `.\scripts\compose-smoke.ps1`. It validates Compose configuration, builds the images, waits for `/health/live`, prints service logs, and tears the test stack down afterward.
+### Docker Compose
 
-Sentry is optional. Leave `SENTRY_DSN` empty to keep error monitoring disabled;
-when configured through a deployment secret manager, the integration disables
-default PII and request-body collection. See [DOPPLER.md](DOPPLER.md) for the
-optional Windows PowerShell workflow using the existing `uptime-sentinel`
-development configuration. Doppler is not required by the application or
-public CI.
-
-## CI status and release gate
-
-Always use the [GitHub Actions workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) for the live status; this README is a snapshot, not a live CI indicator.
-
-- **Latest verified CI run:** [run #82](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40659958443), commit `092e18e214e038a50c1757c4d7f28e473faa4dc5`. The `checks` job passed, including dependency validation, Ruff, formatting, mypy, PostgreSQL concurrency, tests/coverage, compilation, dependency audit, and PostgreSQL/SQLite migration round trips. The Docker Compose smoke test also passed, including container build/startup and API health check. The `codecov/patch` check passed. The controlled proxy integration was skipped because its fixture secrets were not configured.
-- **Proxy integration:** skipped in run #82 because the controlled proxy fixture secrets were not configured. Skipped is not passed.
-- **Render deployment:** the PostgreSQL database is available in the dedicated Uptime Sentinel workspace. The API and worker are not yet verified as deployed.
-- **Production readiness:** not complete until a controlled destination-validating egress proxy passes the integration tests and the deployed API/worker are smoke-tested.
-
-### Required before production deployment
-
-1. Confirm the complete CI workflow, including Docker Compose smoke, passes on the latest commit.
-2. Provision an isolated, access-controlled forward proxy that independently validates destination IPs at connection time, prevents DNS-rebinding and unsafe redirects, and logs rejected destinations. Do not use a public/general-purpose proxy.
-3. Configure the six repository Actions secrets documented in [EGRESS_PROXY_TESTING.md](EGRESS_PROXY_TESTING.md): `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, and `EGRESS_BAD_TLS_URL`.
-4. Manually dispatch the CI workflow and verify the proxy integration passes against the real controlled proxy. Inspect the proxy's enforcement logs; mocked transports are not a substitute.
-5. Deploy the API and worker in the dedicated Uptime Sentinel Render workspace with PostgreSQL, a unique randomly generated `JWT_SECRET` of at least 32 characters, TLS termination, a controlled destination-validating egress proxy, and managed secrets. Never commit production secrets.
-6. Apply migrations once per release, then verify `/health/live` and `/health/ready`, registration, monitor creation, worker scheduling, and database persistence.
-7. Confirm `RESULT_RETENTION_DAYS` matches policy and monitor the worker's daily retention-cleanup logs. Expired check samples are deleted; incident records are retained.
-
-Do not describe the current branch as fully production-ready until all of these release gates are verified. A passing unit/CI checks job alone does not prove the real egress proxy or production deployment is secure.
-
-## Deployment
-
-See the [Render deployment runbook](docs/RENDER_DEPLOYMENT.md) for the API, worker, PostgreSQL, environment-variable, migration, and production release checklist. Deploy only in the dedicated Uptime Sentinel workspace. The real controlled egress-proxy integration remains a mandatory security gate before production traffic.
-
-## Data model and incident policy
-
-`users` own `monitors`; each monitor has `check_results` and `incidents`, plus UTC scheduling and lease timestamps. A non-2xx response, timeout, request failure, unsafe target, or redirect is down. The first consecutive down result opens one incident; later failures increment it; the first 2xx result resolves it. Check results older than `RESULT_RETENTION_DAYS` (default 30) are purged daily by the worker; incident records remain available. Monitor cleanup logs and schedule maintenance independently if multiple workers or data volume make per-worker cleanup inefficient.
-
-## Security
-
-- Argon2 password hashing and signed JWTs. When `APP_ENV=production`, startup rejects the built-in development JWT secret and secrets shorter than 32 characters; use a unique random secret from a secret manager.
-- Every private monitor, check, and incident query is scoped by authenticated owner.
-- Monitor count, interval, timeout, pagination, and body fields are bounded. Authentication endpoints have application rate limits.
-- SSRF checks resolve every DNS answer and reject any address that is not globally routable, including private, loopback, link-local, reserved, multicast, metadata-range, and IPv4-mapped IPv6 addresses. Credentials in URLs are rejected; redirects are treated as down and never followed.
-- DNS rebinding between validation and the HTTP client's connection remains a limitation of the application layer. Production startup now fails unless `EGRESS_PROXY_URL` is configured; the proxy must revalidate every destination and enforce public-only egress. Direct production egress is not supported.
-- Monitoring requests do not forward user headers or credentials. Response bodies are streamed only up to `MAX_RESPONSE_BYTES`; error messages are bounded and credentials are not logged.
-
-## Verification
+1. Copy `.env.example` to `.env`.
+2. Configure a local PostgreSQL URL and a development-only JWT secret.
+3. Configure `EGRESS_PROXY_URL` for the controlled proxy required by the current Compose configuration.
+4. Run:
 
 ```powershell
-ruff check .
-pytest -q
-python -m compileall -q app tests migrations
-$env:DATABASE_URL = "sqlite:///./migration_check.db"
-alembic upgrade head
-alembic downgrade base
-alembic upgrade head
+docker compose up --build
 ```
 
-The test suite uses isolated in-memory SQLite data and mocked HTTP transports. It covers authentication, ownership isolation, invalid JWTs, pagination bounds, validation, public status output, health endpoints, production JWT-secret validation, interval scheduling, paused/leased monitors, mixed DNS answers, mapped IPv6, redirects, bounded response streaming, proxy selection, and incident recovery. `tests/test_postgres_concurrency.py` runs when `POSTGRES_TEST_URL` is configured and verifies concurrent PostgreSQL claims, expiry recovery, and fencing; it is skipped locally when PostgreSQL is unavailable. `tests/test_egress_proxy_integration.py` is opt-in and requires a controlled proxy plus explicit fixture endpoints for private-IP, DNS-rebinding, redirect, and invalid-TLS cases.
+For a disposable smoke test, use `.\scripts\compose-smoke.ps1`. It validates Compose configuration, builds and starts the services, waits for `/health/live`, prints service state/logs as appropriate, and tears down the test stack.
 
-## Operations and limitations
+## Quality and integrations
 
-Use PostgreSQL, TLS termination, secret management, request rate limiting at the edge, structured JSON logs, metrics, an egress proxy or pinned transport, and a cleanup job in production. The included PostgreSQL lease is suitable for a small deployment but should be load-tested and monitored. This repository is a portfolio-quality reference implementation, not a claim of complete production readiness or a deployment.
+### Continuous integration
+
+The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
+
+- Dependency consistency check (`pip check`)
+- Ruff lint and formatting checks
+- mypy type checking
+- PostgreSQL-backed concurrency and lease/fencing tests
+- pytest with coverage output
+- Codecov coverage upload
+- Python compilation
+- pip-audit dependency vulnerability scan
+- PostgreSQL and SQLite migration upgrade/downgrade round trips
+- Docker Compose build/startup and API liveness smoke test
+
+[![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=integration%2Fsentry-doppler)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
+
+### Codecov
+
+Coverage XML is generated by pytest-cov and uploaded with `codecov/codecov-action@v5`. The workflow requires the upload step to succeed. Coverage badges and reports are supplied by Codecov and may take time to refresh.
+
+[Open Codecov report](https://codecov.io/gh/vankudothuadhinaik/uptime-sentinel)
+
+### Sentry and Doppler
+
+- **Sentry is optional.** Leave `SENTRY_DSN` empty to disable it. When configured, the integration disables default PII and request-body collection.
+- **Doppler is optional.** See [DOPPLER.md](DOPPLER.md) for the Windows PowerShell development workflow and the existing development configuration. It is not required by the app or public CI.
+- **Render:** [`render.yaml`](render.yaml) and the [deployment runbook](docs/RENDER_DEPLOYMENT.md) describe the intended API/worker setup. The presence of a blueprint is not proof that services are deployed.
+
+### Other engineering tools
+
+The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest/pytest-cov, and pip-audit. Tool badges identify integrations/configuration, not proof of a production deployment or independent security certification.
+
+## Security model
+
+- Production startup rejects the built-in development JWT secret and secrets shorter than 32 characters. Use a unique, randomly generated secret from a secret manager.
+- Private monitor, check, and incident queries are ownership-scoped.
+- Authentication endpoints are rate-limited; monitor counts, interval, timeout, pagination, and request fields are bounded.
+- SSRF checks resolve DNS answers and reject non-global addresses, including private, loopback, link-local, reserved, multicast, metadata-range, and IPv4-mapped IPv6 addresses.
+- URL credentials are rejected; redirects are not followed; user-supplied headers/credentials are not forwarded.
+- Response bodies are streamed only up to `MAX_RESPONSE_BYTES`; errors are bounded and credentials are not logged.
+- **Important limitation:** DNS can change between application validation and the HTTP connection. Production therefore requires `EGRESS_PROXY_URL` to point to a private, controlled proxy that independently validates the actual destination at connection time. Do not use an arbitrary public proxy.
+
+## Verification status
+
+Latest completed run inspected for the previous code/documentation baseline: [GitHub Actions run #88](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40681979743).
+
+| Check | Last verified result |
+|---|---|
+| `checks` job | **Passed** — dependencies, lint, formatting, type checking, PostgreSQL concurrency, tests/coverage, Codecov upload, compile, audit, migration round trips |
+| `compose-smoke` | **Passed** — container build/start and API liveness |
+| Proxy integration | **Skipped** — controlled proxy fixture secrets are not configured |
+| Render API/worker deployment | **Not verified** |
+
+This commit changes documentation and adds SVG diagrams, so use the [live Actions page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) to confirm CI for the latest commit. The results above are not a promise that the new documentation commit has already completed CI.
+
+## Production release gates
+
+- [ ] Provision an isolated, access-controlled egress proxy that validates the actual destination IP at connection time and enforces IPv4/IPv6, private/loopback/link-local/metadata, DNS-rebinding, redirect, and TLS policy.
+- [ ] Create deterministic controlled fixtures and configure these GitHub Actions repository secrets: `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, `EGRESS_BAD_TLS_URL`.
+- [ ] Manually dispatch the workflow and verify `proxy-integration` actually runs and passes. Inspect proxy enforcement logs; generic network errors and arbitrary 5xx responses are not proof of destination blocking.
+- [ ] Review Render Starter plan costs before provisioning paid services.
+- [ ] Resolve the existing free PostgreSQL resource's expiry (recorded as **2026-11-26**) before relying on it for production continuity.
+- [ ] Configure production `DATABASE_URL`, a unique `JWT_SECRET` of at least 32 characters, and the private `EGRESS_PROXY_URL` for both API and worker.
+- [ ] Apply migrations once through a controlled release step.
+- [ ] Verify `/health/live`, `/health/ready`, registration, monitor creation, worker execution, result/incident persistence, recovery after restart, and retention cleanup.
+- [ ] Record actual proxy test results, deployment IDs/URLs, migration result, and end-to-end observations in [VERIFICATION_REPORT.md](VERIFICATION_REPORT.md).
+
+**Do not label this project production-ready until every applicable release gate is genuinely verified.** Standard CI and unit tests cannot replace a real controlled egress-proxy test or deployed end-to-end smoke test.
+
+## Useful links
+
+- [API docs (local)](http://127.0.0.1:8000/docs)
+- [GitHub Actions](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
+- [Codecov](https://codecov.io/gh/vankudothuadhinaik/uptime-sentinel)
+- [Render runbook](docs/RENDER_DEPLOYMENT.md)
+- [Egress proxy test plan](EGRESS_PROXY_TESTING.md)
+- [Release checklist](RELEASE_CHECKLIST.md)
+- [Verification report](VERIFICATION_REPORT.md)
+- [Doppler workflow](DOPPLER.md)
+
+---
+
+<div align="center">
+
+**Built around a simple rule: prove the failure path, not just the happy path.**
+
+</div>
