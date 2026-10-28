@@ -101,11 +101,15 @@ async def _tunnel(client_r, client_w, host: str, port: int) -> None:
         await client_w.drain()
         await asyncio.gather(_relay(client_r, upstream_w), _relay(upstream_r, client_w))
     except PermissionError:
-        client_w.write(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
+        client_w.write(
+                    b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
+                )
         await client_w.drain()
     except (ValueError, OSError, TimeoutError):
         if not client_w.is_closing():
-            client_w.write(b"HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
+            client_w.write(
+                b"HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
+            )
             await client_w.drain()
     finally:
         if upstream_w:
@@ -118,7 +122,9 @@ async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter)
     try:
         raw = await asyncio.wait_for(client_r.readuntil(b"\r\n\r\n"), timeout=10)
         if len(raw) > HEADER_LIMIT:
-            client_w.write(b"HTTP/1.1 431 Request Header Fields Too Large\r\nConnection: close\r\n\r\n")
+            client_w.write(
+                b"HTTP/1.1 431 Request Header Fields Too Large\r\nConnection: close\r\n\r\n"
+            )
             return
         lines = raw.decode("iso-8859-1").split("\r\n")
         method, target, _version = lines[0].split(" ", 2)
@@ -132,10 +138,14 @@ async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter)
             headers[key.strip().lower()] = value.strip()
 
         if method.upper() == "GET" and target == "/healthz":
-            client_w.write(b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 3\r\nConnection: close\r\n\r\nok\n")
+            client_w.write(
+                b"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 3\r\nConnection: close\r\n\r\nok\n"
+            )
             return
         if not _authorized(headers):
-            client_w.write(b"HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic realm=\"controlled-egress\"\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
+            client_w.write(
+                b'HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic realm="controlled-egress"\r\nConnection: close\r\nContent-Length: 0\r\n\r\n'
+            )
             return
 
         if method.upper() == "CONNECT":
@@ -144,19 +154,25 @@ async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter)
             host, port_text = target.rsplit(":", 1)
             port = int(port_text)
             if not host or not (1 <= port <= 65535) or port not in (443, 8443):
-                client_w.write(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
+                client_w.write(
+                    b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
+                )
                 return
             await _tunnel(client_r, client_w, host.strip("[]"), port)
             return
 
         parsed = urlsplit(target)
         if parsed.scheme != "http" or not parsed.hostname:
-            client_w.write(b"HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
+            client_w.write(
+                b"HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
+            )
             return
         host = parsed.hostname
         port = parsed.port or 80
         if port != 80:
-            client_w.write(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
+            client_w.write(
+                    b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
+                )
             return
         upstream_r, upstream_w = await _open_pinned(host, port)
         path = parsed.path or "/"
@@ -172,10 +188,14 @@ async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter)
         await asyncio.gather(_relay(client_r, upstream_w), _relay(upstream_r, client_w))
     except PermissionError:
         if not client_w.is_closing():
-            client_w.write(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
+            client_w.write(
+                    b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
+                )
     except (ValueError, OSError, TimeoutError, asyncio.IncompleteReadError, UnicodeError):
         if not client_w.is_closing():
-            client_w.write(b"HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
+            client_w.write(
+                b"HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
+            )
     finally:
         if upstream_w:
             upstream_w.close()
