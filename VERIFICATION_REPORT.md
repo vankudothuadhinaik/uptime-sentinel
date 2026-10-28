@@ -8,7 +8,7 @@ Run date: 2026-10-28
 
 ## Latest verified GitHub Actions run
 
-[Run #78 / 40659061977](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40659061977) on commit `418d2c4c2d0d54aa661e59e3f94be95de03333cc` completed successfully. The controlled proxy integration remains skipped because controlled fixture secrets are not configured. This run includes the explicit HTTP 403 policy-denial assertions for unsafe proxy fixtures.
+[Run #80 / 40659424347](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40659424347) on commit `c1d91747bef161630151e0d21c137fe4565340cc` completed successfully. The controlled proxy integration remains skipped because controlled fixture secrets are not configured. This run includes the explicit HTTP 403 policy-denial assertions for unsafe proxy fixtures.
 
 | Job | Result | Interpretation |
 |---|---|---|
