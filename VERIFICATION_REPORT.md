@@ -8,12 +8,12 @@ Run date: 2026-10-28
 
 ## Latest verified GitHub Actions run
 
-[Run #50 / 40629283219](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40629283219) on commit `a488ac021178875b8f8f85335dd91d5c540f8c1e` has a successful `checks` job; `compose-smoke` was still running at report update and `proxy-integration` was skipped. [Run #49](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40628867331) completed the checks and Compose smoke jobs successfully.
+[Run #50 / 40629283219](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40629283219) on commit `a488ac021178875b8f8f85335dd91d5c540f8c1e` completed with `checks` PASS and `compose-smoke` PASS; `proxy-integration` was skipped. [Run #49](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40628867331) completed the checks and Compose smoke jobs successfully.
 
 | Job | Result | Interpretation |
 |---|---|---|
 | `checks` | PASS | Dependency consistency, Ruff lint/format, mypy, PostgreSQL concurrency test, pytest, compileall, pip-audit, PostgreSQL migration round trip, and SQLite migration round trip all succeeded. |
-| `compose-smoke` | PASS | Compose configuration/build/startup and API liveness check succeeded. |
+| `compose-smoke` | PASS in run #49 and run #50 | Compose configuration/build/startup and API liveness check succeeded. |
 | `proxy-integration` | SKIPPED | Controlled proxy fixture secrets are not configured. This is not a security pass. |
 
 ## Previously recorded local verification
