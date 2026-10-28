@@ -8,7 +8,7 @@ Run date: 2026-10-28
 
 ## Latest verified GitHub Actions run
 
-[Run #62 / 40629653385](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40629653385) on commit `ee553fea243b544bc15a54dd416c4ea30f1ce14f` completed with `checks` PASS and `compose-smoke` PASS; `proxy-integration` was skipped because controlled fixture secrets are not configured.
+[Run #70 / 40657045946](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40657045946) on commit `c9d671b2a24aae6a195a4d905189971dae296f82` completed successfully. The controlled proxy integration remains skipped because controlled fixture secrets are not configured. This run predates the proxy-test assertion improvement below.
 
 | Job | Result | Interpretation |
 |---|---|---|
@@ -29,6 +29,10 @@ The latest local report recorded:
 - PostgreSQL concurrency and Compose smoke checks: passed in CI.
 
 Local results are historical observations; the latest CI run above is the authoritative check for the newest published commit. A passing CI job does not verify production infrastructure.
+
+## Additional test-hardening change pending CI
+
+The unsafe-target integration assertions now require an explicit HTTP 403 policy-denial response from the controlled proxy. Generic connection errors, DNS failures, timeouts, and arbitrary 5xx responses must not count as evidence that destination enforcement works. This change requires a fresh CI run and a real controlled proxy run before the gate can pass.
 
 ## Implemented
 
