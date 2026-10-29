@@ -8,7 +8,7 @@ Run date: 2026-10-29
 
 ## Latest completed end-to-end CI evidence
 
-[Run #215](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40843348386) on commit `1a55e65059408f7c311fdd3b6b424af5bdf1dcc0` completed successfully for PR #10.
+[Run #217](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40843731458) on commit `d76753cfe89c1c99c005bde2aaf2693f7294885e` completed successfully for PR #10.
 
 | Job | Result | What it establishes |
 |---|---|---|
@@ -16,7 +16,7 @@ Run date: 2026-10-29
 | `compose-smoke` | **PASS** | Compose configuration validation, container build/start, API liveness, registration/login, monitor creation, worker check persistence, and public status all passed. |
 | `proxy-integration` | **SKIPPED** | Controlled proxy fixture URLs/secrets are not configured. This is not a security pass. |
 
-Run #215 also validates the CI concurrency optimization that cancels superseded runs and conserves free runner minutes.
+Run #217 also validates the CI concurrency optimization that cancels superseded runs and conserves free runner minutes.
 
 The final PR branch adds deterministic proxy request-validation and cleanup regression coverage. Its checks job passed the full suite, PostgreSQL concurrency test, migrations, dependency audit, compilation, and formatting/type checks. Its Compose job passed the registration-to-worker E2E flow. The external proxy job remained skipped because the six controlled fixture secrets are not configured.
 
@@ -33,7 +33,7 @@ The final PR branch adds deterministic proxy request-validation and cleanup regr
 
 ## Verification limits
 
-- The latest CI end-to-end run #215 verifies readiness, registration/login, monitor creation, worker check persistence, and public status against `https://example.com`. Run #215 completed successfully: `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
+- The latest CI end-to-end run #217 verifies readiness, registration/login, monitor creation, worker check persistence, and public status against `https://example.com`. Run #217 completed successfully: `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
 - A separate local Docker Compose run was completed on 2026-10-29 using an isolated Compose project (`uptime-sentinel-audit`); the real registration-to-worker E2E flow passed. See **Local Docker Compose verification (2026-10-29)** below.
 - External proxy integration tests remain skipped because controlled fixtures/secrets are not configured. Do not treat the skip as a pass.
 - The old public test proxy has not passed the controlled security suite and must not be used for sensitive or production traffic.
