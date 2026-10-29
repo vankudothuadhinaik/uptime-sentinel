@@ -358,9 +358,7 @@ def test_total_deadline_includes_slow_streamed_body(monkeypatch):
         lambda: Settings(max_response_bytes=1024),
     )
     wall_clock_timeout = asyncio.timeout
-    monkeypatch.setattr(
-        monitoring.asyncio, "timeout", lambda _: wall_clock_timeout(0.02)
-    )
+    monkeypatch.setattr(monitoring.asyncio, "timeout", lambda _: wall_clock_timeout(0.02))
     monitor = Monitor(
         name="slow-stream",
         url="https://example.com",
@@ -395,9 +393,7 @@ def test_total_deadline_includes_slow_streamed_body(monkeypatch):
             return SlowResponse()
 
     monkeypatch.setattr(monitoring.httpx, "AsyncClient", FakeAsyncClient)
-    status_code, is_up, error_category, _ = asyncio.run(
-        monitoring._request_with_deadline(monitor)
-    )
+    status_code, is_up, error_category, _ = asyncio.run(monitoring._request_with_deadline(monitor))
 
     assert status_code is None
     assert is_up is False
