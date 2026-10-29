@@ -32,23 +32,41 @@ class Settings(BaseSettings):
                 "change-me",
                 "secret",
             }
-            if self.jwt_secret.strip().lower() in weak_values or len(self.jwt_secret) < 32:
+            def is_placeholder(value: str) -> bool:
+                normalized = value.strip().lower()
+                markers = (
+                    "replace_with",
+                    "replace-with",
+                    "your-",
+                    "your_",
+                    "placeholder",
+                    "example",
+                    "change-me",
+                    "changeme",
+                )
+                return not normalized or any(marker in normalized for marker in markers)
+
+            if (
+                self.jwt_secret.strip().lower() in weak_values
+                or len(self.jwt_secret) < 32
+                or is_placeholder(self.jwt_secret)
+            ):
                 raise ValueError(
                     "JWT_SECRET must be a unique, randomly generated value of at least 32 "
                     "characters when APP_ENV=production"
                 )
             if not self.database_url.startswith(("postgresql://", "postgresql+psycopg://")):
                 raise ValueError("DATABASE_URL must use PostgreSQL when APP_ENV=production")
-            if not self.egress_proxy_url.strip():
+            if not self.egress_proxy_url.strip() or is_placeholder(self.egress_proxy_url):
                 raise ValueError(
                     "EGRESS_PROXY_URL is required when APP_ENV=production; use a controlled "
                     "egress proxy that revalidates destinations"
                 )
-            if len(self.egress_proxy_username) < 8:
+            if len(self.egress_proxy_username) < 8 or is_placeholder(self.egress_proxy_username):
                 raise ValueError(
                     "EGRESS_PROXY_USERNAME must be at least 8 characters in production"
                 )
-            if len(self.egress_proxy_password) < 32:
+            if len(self.egress_proxy_password) < 32 or is_placeholder(self.egress_proxy_password):
                 raise ValueError(
                     "EGRESS_PROXY_PASSWORD must be at least 32 characters in production"
                 )
