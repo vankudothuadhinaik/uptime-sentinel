@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from types import SimpleNamespace
+from typing import cast
 
 import pytest
+from sqlalchemy.orm import Session
 
 from app.leases import _as_utc, claim_monitor, finish_claim
 
@@ -46,7 +48,7 @@ def test_claim_monitor_rolls_back_and_reraises_commit_failure():
     db = FailingSession(monitor)
 
     with pytest.raises(RuntimeError, match="synthetic database commit failure"):
-        claim_monitor(db, monitor_id=7)
+        claim_monitor(cast(Session, db), monitor_id=7)
 
     assert db.rolled_back is True
     assert monitor.lease_token is not None
@@ -57,5 +59,8 @@ def test_finish_claim_rolls_back_and_returns_false_on_database_failure():
     db = FailingSession()
     next_check = datetime.now(timezone.utc)
 
-    assert finish_claim(db, monitor_id=7, token="old-token", next_check_at=next_check) is False
+    assert (
+        finish_claim(cast(Session, db), monitor_id=7, token="old-token", next_check_at=next_check)
+        is False
+    )
     assert db.rolled_back is True
