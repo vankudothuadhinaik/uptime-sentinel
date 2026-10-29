@@ -126,15 +126,15 @@ def test_incident_history_has_stable_paginated_response(db_session):
             [
                 Incident(monitor_id=monitor.id, started_at=now, failure_count=1),
                 Incident(monitor_id=monitor.id, started_at=now, failure_count=2),
-                Incident(monitor_id=monitor.id, started_at=now - timedelta(seconds=1), failure_count=3),
+                Incident(
+                    monitor_id=monitor.id, started_at=now - timedelta(seconds=1), failure_count=3
+                ),
             ]
         )
         db_session.commit()
 
         page_one = client.get(f"/monitors/{monitor_id}/incidents?limit=2", headers=headers)
-        page_two = client.get(
-            f"/monitors/{monitor_id}/incidents?limit=2&offset=2", headers=headers
-        )
+        page_two = client.get(f"/monitors/{monitor_id}/incidents?limit=2&offset=2", headers=headers)
         assert page_one.status_code == page_two.status_code == 200
         ids_one = [item["id"] for item in page_one.json()]
         ids_two = [item["id"] for item in page_two.json()]

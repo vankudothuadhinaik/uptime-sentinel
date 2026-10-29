@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, cast
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
@@ -192,9 +192,7 @@ def check_monitor(
             db,
             claimed_monitor.id,
             token,
-            datetime.now(timezone.utc) + __import__("datetime").timedelta(
-                seconds=claimed_monitor.interval_seconds
-            ),
+            datetime.now(timezone.utc) + timedelta(seconds=claimed_monitor.interval_seconds),
         )
 
 

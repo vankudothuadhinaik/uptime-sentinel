@@ -34,9 +34,11 @@ def claim_monitor(
     if monitor_id is not None:
         statement = statement.where(Monitor.id == monitor_id)
     if due_only:
-        statement = statement.where(
-            or_(Monitor.next_check_at.is_(None), Monitor.next_check_at <= current)
-        ).order_by(Monitor.next_check_at.asc().nulls_first(), Monitor.id).limit(1)
+        statement = (
+            statement.where(or_(Monitor.next_check_at.is_(None), Monitor.next_check_at <= current))
+            .order_by(Monitor.next_check_at.asc().nulls_first(), Monitor.id)
+            .limit(1)
+        )
     statement = statement.with_for_update(skip_locked=True)
     monitor = db.scalar(statement)
     if monitor is None:

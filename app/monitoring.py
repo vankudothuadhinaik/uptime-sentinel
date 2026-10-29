@@ -16,7 +16,9 @@ class StaleLease(RuntimeError):
     """Raised when a monitor check finishes after another worker owns its lease."""
 
 
-async def _request_with_deadline(monitor: Monitor) -> tuple[int | None, bool, str | None, str | None]:
+async def _request_with_deadline(
+    monitor: Monitor,
+) -> tuple[int | None, bool, str | None, str | None]:
     """Perform the complete HTTP exchange under one wall-clock deadline."""
     settings = get_settings()
     timeout_seconds = monitor.timeout_seconds
