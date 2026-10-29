@@ -346,8 +346,6 @@ def test_response_size_limit_is_enforced(db_session, monkeypatch):
 
 
 def test_monitor_client_uses_configured_proxy(monkeypatch, db_session):
-    import asyncio
-
     from app import monitoring
 
     user = User(email="proxy@example.com", password_hash="test-hash")
