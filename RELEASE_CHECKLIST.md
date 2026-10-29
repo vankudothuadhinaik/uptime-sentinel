@@ -38,12 +38,12 @@ The external proxy workflow is now an explicit opt-in on manual dispatch (`run_e
 
 ## Active PR hardening status — 2026-10-29
 
-PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery` at commit `273dba7`. CI run #325 passed for parent commit `4adefa5`; the external proxy job remains blocked without controlled fixtures. CI for `273dba7` is pending.
+PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery` at commit `6bec54c`. CI run #325 passed for parent commit `4adefa5`; the external proxy job remains blocked without controlled fixtures. The latest-SHA checks page is still loading and has no completed result.
 
 - [x] Shared manual/scheduled lease protocol, persisted-result fencing, wall-clock request deadline, PATCH explicit-null 422 validation.
 - [x] PostgreSQL guard for one open incident per monitor; regression test for concurrent failure transitions.
 - [x] Concurrency-safe monitor quota check and stable bounded incident/check pagination.
-- [x] Local final suite: 72 passed, 8 skipped, 3 warnings; Ruff, formatting, configured mypy, compileall, pip check, pip-audit, and diff check passed.
+- [x] Local final suite: 73 passed, 8 skipped, 3 warnings; Ruff, formatting, configured mypy, compileall, pip check, pip-audit, and diff check passed.
 - [x] Docker PostgreSQL 16 migrations and real two-session concurrency/fencing tests passed (2 tests).
 - [x] Docker Compose smoke passed, including API migrations/readiness, authentication, worker persistence, and public status.
 - [ ] External controlled-proxy integration: **not run** because controlled fixture endpoints/secrets have not been configured.
@@ -55,7 +55,7 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery` at commit `273
 
 ## Latest verified evidence and remaining work
 
-- The final completed PR validation is run #325 for `4adefa5`; required jobs passed. The latest `273dba7` push still requires a completed workflow. The external `proxy-integration` job is blocked because external controlled fixture URLs/configuration are unavailable.
+- The final completed PR validation is run #325 for `4adefa5`; required jobs passed. The latest `6bec54c` checks page is still loading and requires a completed workflow result. The external `proxy-integration` job is blocked because external controlled fixture URLs/configuration are unavailable.
 - Proxy fail-closed authentication regression was merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6).
 - A free Render test proxy exists at https://uptime-sentinel-egress-proxy.onrender.com, but its inbound allowlist is `0.0.0.0/0`; it is a test service, not a production security boundary.
 - The Render PostgreSQL free instance has a recorded expiry of 2026-11-26. This does not affect local Docker Compose or GitHub-only portfolio completion; do not depend on it for persistent production data.

@@ -4,7 +4,7 @@ Run date: 2026-10-29
 
 ## Current change
 
-PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pushed commit is `273dba7` (`Close test database engines and cover proxy success`). GitHub Actions run [#325](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40924701371) passed for parent commit `4adefa5`; no completed run for `273dba7` was visible at the time of this report.
+PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pushed commit is `6bec54c` (`Document latest proxy fixture verification`). GitHub Actions run [#325](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40924701371) passed for parent commit `4adefa5`; GitHub's checks page for `6bec54c` is still loading and does not expose a completed result, so the latest-SHA CI gate is **PENDING/BLOCKED**.
 
 ## Release gates
 
@@ -13,7 +13,7 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pu
 | Local dependencies | **PASS** | `pip check`: no broken requirements. |
 | Lint and formatting | **PASS** | Ruff check passed; 37 files already formatted. |
 | Configured type check | **PASS** | `mypy app worker.py migrations tests`: no issues in 27 files. |
-| Application test suite | **PASS** | `pytest -q`: 72 passed, 8 skipped, 3 warnings. |
+| Application test suite | **PASS** | `pytest -q`: 73 passed, 8 skipped, 3 warnings. |
 | Compilation | **PASS** | `compileall` completed successfully. |
 | Dependency audit | **PASS** | `pip-audit --skip-editable`: no known vulnerabilities. |
 | PostgreSQL 16 migrations | **PASS** | Docker PostgreSQL 16 migration upgrade completed. |
@@ -22,7 +22,7 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pu
 | Local egress proxy security | **PASS** | Real local fixture tests cover private/mixed DNS answers, DNS failures, resolver pinning, redirects, auth, unsupported methods/ports, target credentials, invalid TLS, overload 503, and oversized headers. |
 | External controlled egress proxy | **BLOCKED** | All six fixture variables are unset; `tests/test_egress_proxy_integration.py` reported 5 skipped. No external security pass is claimed. |
 | GitHub Actions run #325 | **PASS** | Required CI jobs passed for parent commit `4adefa5`; opt-in `proxy-integration` was skipped. |
-| CI for latest commit `273dba7` | **PENDING** | The push is present on the remote branch, but GitHub had not exposed a completed workflow for this SHA during verification. |
+| CI for latest commit `6bec54c` | **PENDING/BLOCKED** | The push is present on the remote branch, but GitHub's public checks page is still loading and no completed workflow result is exposed for this SHA. |
 
 ## Changes made
 
