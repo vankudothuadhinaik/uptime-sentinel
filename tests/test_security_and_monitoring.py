@@ -346,7 +346,6 @@ def test_response_size_limit_is_enforced(db_session, monkeypatch):
     assert result.error_category == "response_too_large"
 
 
-
 def test_total_deadline_includes_slow_streamed_body(monkeypatch):
     import asyncio
 
