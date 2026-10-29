@@ -50,7 +50,7 @@ The final PR branch adds deterministic proxy request-validation and cleanup regr
 - [x] External proxy integration limitations clearly documented.
 - [x] Run the complete demo locally with Docker Compose, including worker-backed check persistence (2026-10-29; isolated project and preserved existing resources).
 - [x] Review GitHub Secret scanning → Alerts in the GitHub UI (user-provided screenshot dated 2026-10-29 shows 0 open and 0 closed alerts); a separate Advanced Security screenshot dated 2026-10-29 shows Push Protection On.
-- [x] Run deterministic local proxy regressions for mixed DNS answers, DNS failures, request authentication, unsupported methods/ports, target credentials, resolver pinning, unsafe redirects, and TLS verification. The final local proxy selection reported **28 passed, 1 skipped**.
+- [x] Run deterministic local proxy regressions for mixed DNS answers, DNS failures, request authentication, unsupported methods/ports, target credentials, resolver pinning, unsafe redirects, and TLS verification. The final local proxy selection reported **28 passed, 1 skipped**. Supplemental direct proxy checks also denied loopback/private/link-local/mapped IPv6 targets (HTTP 403), allowed a public HTTPS fixture (HTTP 200), and rejected invalid proxy credentials (HTTP 407); these are local checks, not proof of external DNS-rebinding enforcement.
 
 ## Production-only work — intentionally out of scope
 
