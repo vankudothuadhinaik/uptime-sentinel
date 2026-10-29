@@ -62,7 +62,7 @@ def run_once(now: datetime | None = None) -> int:
             monitor, token = claimed
             monitor_id = monitor.id
             try:
-                perform_check(db, monitor)
+                perform_check(db, monitor, lease_token=token)
                 checked += 1
                 logger.info("monitor_check_completed", extra={"monitor_id": monitor_id})
             except StaleLease:
