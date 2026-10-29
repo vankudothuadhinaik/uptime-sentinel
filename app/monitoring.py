@@ -50,26 +50,26 @@ async def _request_with_deadline(
                     headers={"User-Agent": settings.check_user_agent},
                 ) as response,
             ):
-                    status_code = response.status_code
-                    response_bytes = 0
-                    async for chunk in response.aiter_bytes():
-                        response_bytes += len(chunk)
-                        if response_bytes > settings.max_response_bytes:
-                            return (
-                                status_code,
-                                False,
-                                "response_too_large",
-                                "response exceeded configured size limit",
-                            )
-                    if 300 <= status_code < 400:
+                status_code = response.status_code
+                response_bytes = 0
+                async for chunk in response.aiter_bytes():
+                    response_bytes += len(chunk)
+                    if response_bytes > settings.max_response_bytes:
                         return (
                             status_code,
                             False,
-                            "unsafe_redirect",
-                            "redirects are not followed by the monitor",
+                            "response_too_large",
+                            "response exceeded configured size limit",
                         )
-                    is_up = 200 <= status_code < 300
-                    return status_code, is_up, None if is_up else "http_error", None
+                if 300 <= status_code < 400:
+                    return (
+                        status_code,
+                        False,
+                        "unsafe_redirect",
+                        "redirects are not followed by the monitor",
+                    )
+                is_up = 200 <= status_code < 300
+                return status_code, is_up, None if is_up else "http_error", None
     except (TimeoutError, httpx.TimeoutException):
         return None, False, "timeout", "request timed out"
     except UnsafeTarget:
