@@ -101,7 +101,7 @@ Use disposable development credentials only. Never reuse example passwords or co
 docker compose up --build
 ```
 
-For a disposable smoke test, use `.\scripts\compose-smoke.ps1`. It validates Compose configuration, builds and starts the services, waits for `/health/live`, prints service state/logs as appropriate, and tears down the test stack.
+For a disposable end-to-end smoke test, use `.\scripts\compose-smoke.ps1`. It validates Compose configuration, builds and starts the services, waits for `/health/live`, then exercises readiness, registration/login, monitor creation, worker check persistence, and public status before tearing down the test stack. The smoke test checks `https://example.com`, so outbound HTTPS access is required.
 
 ## Quality and integrations
 
