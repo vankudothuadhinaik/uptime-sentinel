@@ -1,16 +1,18 @@
-# Render deployment runbook
+# Historical Render deployment notes — not part of the portfolio scope
 
-This runbook is for the **dedicated Uptime Sentinel Render workspace** (workspace ID `tea-dbghjus9v7es73dnq900`). Do not deploy this project into an unrelated workspace. The PostgreSQL resource `uptime-sentinel-db` (`dpg-dbghkmc9v7es73dns2ig-a`) is available in Singapore. A free test egress-proxy service is deployed and reports Render status `live` at `https://uptime-sentinel-egress-proxy.onrender.com` from branch `integration/sentry-doppler`. It is internet-reachable and has not passed the controlled integration suite, so it is not approved for production. The API and continuous worker have not been deployed.
+**Status:** this document is retained as historical reference only. The current project goal is a free GitHub portfolio project with local Docker Compose and CI; do not create paid Render services for this scope.
 
-## Render Blueprint
+This document describes an earlier deployment exploration for a dedicated Uptime Sentinel Render workspace. Do not deploy this project into an unrelated workspace. The PostgreSQL resource `uptime-sentinel-db` (`dpg-dbghkmc9v7es73dns2ig-a`) is available in Singapore. A free test egress-proxy service is deployed and reports Render status `live` at `https://uptime-sentinel-egress-proxy.onrender.com` from branch `integration/sentry-doppler`. It is internet-reachable and has not passed the controlled integration suite, so it is not approved for production. The API and continuous worker have not been deployed.
 
-The repository now includes a `render.yaml` defining the API web service and a genuine continuous background worker. Review it before using **New Blueprint Instance** in the Uptime Sentinel workspace.
+## Former Render Blueprint (removed)
+
+The `render.yaml` blueprint has been removed because it specified paid Starter plans for the API and worker. There is no current blueprint to deploy.
 
 Important:
 - The blueprint does **not** create another database or an egress proxy. Reuse the existing PostgreSQL instance and provide its internal connection URL when prompted.
 - It requires `DATABASE_URL`, `JWT_SECRET`, `EGRESS_PROXY_URL`, `EGRESS_PROXY_USERNAME`, and `EGRESS_PROXY_PASSWORD` to be configured as secret environment values for both services. Do not enter dummy values or commit secrets.
 - Configure the private, destination-validating proxy before deploying production services. The application intentionally refuses production startup without `EGRESS_PROXY_URL`.
-- The blueprint uses Render Starter service plans for the API and worker. Review current pricing in the dashboard before creating resources; deploying the blueprint may incur charges.
+- The earlier blueprint used paid Render Starter service plans for the API and worker. It was removed; do not recreate it as part of the free-only project.
 - A successful blueprint parse or service creation is not proof that the proxy is secure or that the application works end to end.
 
 ## Required architecture
