@@ -32,6 +32,7 @@ class Settings(BaseSettings):
                 "change-me",
                 "secret",
             }
+
             def is_placeholder(value: str) -> bool:
                 normalized = value.strip().lower()
                 markers = (
