@@ -28,7 +28,11 @@ async def lifespan(_: FastAPI):
     yield
 
 
-limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["120/minute"],
+    storage_uri=get_settings().rate_limit_storage_uri,
+)
 app = FastAPI(title="Uptime Sentinel", version="0.1.0", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, cast(Any, _rate_limit_exceeded_handler))
