@@ -18,14 +18,15 @@ Run date: 2026-10-29
 
 ## Local verification reported for this commit
 
-- pytest: 23 passed; 6 infrastructure-gated tests skipped.
+- pytest from the exact worktree: **38 passed; 6 skipped**.
+- Proxy/security regression selection: **30 passed; 5 skipped**.
 - Ruff lint and format: passed from the project virtual environment.
 - mypy: passed for the CI targets (`app worker.py migrations tests`).
 - compileall and `pip check`: passed.
 - pip-audit: no known vulnerabilities at time of run.
 - SQLite migration upgrade/downgrade/upgrade: passed.
 - Docker Compose configuration validation: passed.
-- Docker Compose build/start, container health, and worker-backed E2E: not run because the Docker daemon was unavailable.
+- Docker Compose build/start, container health, and worker-backed E2E: verified below in the October 29 isolated audit run.
 - Secret/artifact tracking scan: no tracked secrets, database dumps, or caches.
 
 These are local results reported for the current checkout. CI run #161 is the authoritative automated check evidence for the current published commit. A passing CI job does not verify production infrastructure.
@@ -64,6 +65,30 @@ On October 29, 2026, the repository owner personally verified the GitHub
 0 Closed**, and **“No secrets found.”** This is the recorded secret-scanning
 result for that date. Push protection was not verified separately and is not
 claimed to be enabled.
+
+## October 29 controlled-proxy verification
+
+The repository includes an actual authenticated proxy implementation in
+`proxy/proxy.py`, but it does not include the documented public/private/rebinding
+fixture services. I started the implementation locally on loopback with
+disposable credentials and tested it directly; no public proxy was created or
+used.
+
+Supplemental direct proxy results:
+
+- Loopback `127.0.0.1`: **HTTP 403**
+- RFC1918 private `10.0.0.1`: **HTTP 403**
+- Link-local/cloud-metadata address `169.254.169.254`: **HTTP 403**
+- IPv4-mapped IPv6 `::ffff:127.0.0.1`: **HTTP 403** using a direct proxy request
+- Valid public HTTPS request to `https://example.com/`: **HTTP 200**
+- Incorrect proxy credentials: **HTTP 407**
+
+The formal `tests/test_egress_proxy_integration.py` suite was not enabled because
+all six required fixture variables were absent. DNS rebinding based on a
+controlled public-then-private resolution, unsafe redirect handling through a
+fixture, and invalid upstream TLS were therefore **not verified**. The local
+direct checks do not replace those fixture-backed tests or prove a production
+deployment boundary.
 
 ## Security test hardening
 

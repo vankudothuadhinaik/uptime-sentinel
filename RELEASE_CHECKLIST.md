@@ -31,14 +31,16 @@
 - [ ] Execute disposable end-to-end checks for account registration, monitor creation, worker execution, check/result/incident persistence, recovery after restart, and cleanup.
 - [ ] Resolve the existing database's Free-plan expiry (recorded as 2026-11-26) before production continuity depends on it.
 - [ ] Update the verification report with actual proxy test results, workflow run ID, deployed service IDs/URLs, migration result, and end-to-end observations.
+- [x] Run supplemental local checks against the repository proxy for loopback, private, link-local/metadata, mapped IPv6, public HTTPS, and invalid authentication. These checks do not replace controlled fixture integration.
 
 ## Latest CI evidence
 
 - [Run #161 / 40695272332](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40695272332), commit `49907457ebd976229e47a126dd5922ff56c5d9ab`: `checks` and `compose-smoke` passed. `proxy-integration` was skipped because the six controlled fixture secrets are not configured. A skipped proxy job is not a security pass.
 - The current `main` head is the merged result of PR #4. No failed or in-progress `main` run was present in the inspected workflow history.
 - No Render API or continuous worker deployment has been verified.
-- Local Docker Compose configuration validation passed, but image build/start and worker-backed E2E verification were blocked because the Docker daemon was unavailable.
+- Local Docker Compose configuration, image build/start, health checks, and worker-backed E2E verification passed in the isolated October 29 audit run.
 - The existing PostgreSQL Free plan is recorded to expire on 2026-11-26; resolve continuity before relying on it for production.
+- GitHub Secret Scanning screenshot verification on 2026-10-29 showed 0 open, 0 closed, and “No secrets found”; push protection was not separately verified.
 
 
 Do not mark production ready until every unchecked security and deployment gate is genuinely verified.
