@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import shutil
 import socket
 import ssl
@@ -64,6 +65,17 @@ async def _proxy_server(monkeypatch: pytest.MonkeyPatch) -> tuple[asyncio.Abstra
     return server, server.sockets[0].getsockname()[1]
 
 
+async def _raw_proxy_request(port: int, request: bytes) -> bytes:
+    reader, writer = await asyncio.open_connection("127.0.0.1", port)
+    try:
+        writer.write(request)
+        await writer.drain()
+        return await reader.read()
+    finally:
+        writer.close()
+        await writer.wait_closed()
+
+
 async def _local_resolver(port: int, calls: list[tuple[str, int]], host: str, target_port: int):
     calls.append((host, target_port))
     return [(socket.AF_INET, ("127.0.0.1", port))]
@@ -119,6 +131,60 @@ async def test_actual_proxy_does_not_follow_local_unsafe_redirect(
         await proxy_server.wait_closed()
         fixture_server.close()
         await fixture_server.wait_closed()
+
+
+@pytest.mark.asyncio
+async def test_proxy_rejects_unauthorized_and_unsupported_requests(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proxy_server, proxy_port = await _proxy_server(monkeypatch)
+    try:
+        unauthorized = await _raw_proxy_request(
+            proxy_port,
+            b"GET http://example.test/ HTTP/1.1\r\nHost: example.test\r\nConnection: close\r\n\r\n",
+        )
+        assert unauthorized.startswith(b"HTTP/1.1 407 Proxy Authentication Required")
+
+        encoded = base64.b64encode(f"{PROXY_USERNAME}:{PROXY_PASSWORD}".encode()).decode()
+        unsupported = await _raw_proxy_request(
+            proxy_port,
+            (
+                b"TRACE http://example.test/ HTTP/1.1\r\n"
+                b"Host: example.test\r\n"
+                + f"Proxy-Authorization: Basic {encoded}\r\n".encode()
+                + b"Connection: close\r\n\r\n"
+            ),
+        )
+        assert unsupported.startswith(b"HTTP/1.1 405 Method Not Allowed")
+    finally:
+        proxy_server.close()
+        await proxy_server.wait_closed()
+
+
+@pytest.mark.asyncio
+async def test_proxy_rejects_target_credentials_and_unsupported_connect_port(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    proxy_server, proxy_port = await _proxy_server(monkeypatch)
+    encoded = base64.b64encode(f"{PROXY_USERNAME}:{PROXY_PASSWORD}".encode()).decode()
+    auth = f"Proxy-Authorization: Basic {encoded}\r\n".encode()
+    try:
+        credentials = await _raw_proxy_request(
+            proxy_port,
+            b"GET http://user:password@example.test/ HTTP/1.1\r\n"
+            b"Host: example.test\r\n" + auth + b"Connection: close\r\n\r\n",
+        )
+        assert credentials.startswith(b"HTTP/1.1 400 Bad Request")
+
+        unsupported_port = await _raw_proxy_request(
+            proxy_port,
+            b"CONNECT example.test:80 HTTP/1.1\r\n"
+            b"Host: example.test\r\n" + auth + b"Connection: close\r\n\r\n",
+        )
+        assert unsupported_port.startswith(b"HTTP/1.1 403 Forbidden")
+    finally:
+        proxy_server.close()
+        await proxy_server.wait_closed()
 
 
 def _create_self_signed_certificate(directory: Path) -> tuple[Path, Path]:
