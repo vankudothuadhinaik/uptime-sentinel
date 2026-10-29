@@ -122,13 +122,12 @@ def test_invalid_jwt_and_pagination_bounds(monkeypatch):
 
 
 def test_incident_history_has_stable_paginated_response(db_session, monkeypatch):
-    from app.main import limiter
-
-    monkeypatch.setattr(limiter, "enabled", False)
     from datetime import datetime, timedelta, timezone
 
+    from app.main import limiter
     from app.models import Incident, Monitor
 
+    monkeypatch.setattr(limiter, "enabled", False)
     with TestClient(app) as client:
         headers = auth(client, "incident-history@example.com")
         created = client.post(
@@ -140,27 +139,28 @@ def test_incident_history_has_stable_paginated_response(db_session, monkeypatch)
         monitor_id = created.json()["id"]
         monitor = db_session.get(Monitor, monitor_id)
         now = datetime.now(timezone.utc)
-        db_session.add_all(
-            [
-                Incident(monitor_id=monitor.id, started_at=now, resolved_at=now, failure_count=1),
-                Incident(monitor_id=monitor.id, started_at=now, resolved_at=now, failure_count=2),
-                Incident(
-                    monitor_id=monitor.id,
-                    started_at=now - timedelta(seconds=1),
-                    resolved_at=now - timedelta(seconds=1),
-                    failure_count=3,
-                ),
-            ]
-        )
+        history = [
+            Incident(monitor_id=monitor.id, started_at=now, resolved_at=now, failure_count=1),
+            Incident(monitor_id=monitor.id, started_at=now, resolved_at=now, failure_count=2),
+            Incident(
+                monitor_id=monitor.id,
+                started_at=now - timedelta(seconds=1),
+                resolved_at=now - timedelta(seconds=1),
+                failure_count=3,
+            ),
+        ]
+        db_session.add_all(history)
         db_session.commit()
+        expected_ids = [
+            item.id for item in sorted(history, key=lambda item: (item.started_at, item.id), reverse=True)
+        ]
 
         page_one = client.get(f"/monitors/{monitor_id}/incidents?limit=2", headers=headers)
         page_two = client.get(f"/monitors/{monitor_id}/incidents?limit=2&offset=2", headers=headers)
         assert page_one.status_code == page_two.status_code == 200
-        ids_one = [item["id"] for item in page_one.json()]
-        ids_two = [item["id"] for item in page_two.json()]
-        assert len(ids_one) == 2 and len(ids_two) == 1
-        assert ids_one[0] > ids_one[1] > ids_two[0]
+        items = page_one.json() + page_two.json()
+        assert len(page_one.json()) == 2 and len(page_two.json()) == 1
+        assert [item["id"] for item in items] == expected_ids
 
 
 def test_public_status_does_not_expose_private_fields(monkeypatch):

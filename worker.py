@@ -79,7 +79,7 @@ def run_once(now: datetime | None = None) -> int:
                     db,
                     monitor_id,
                     token,
-                    datetime.now(timezone.utc) + timedelta(seconds=monitor.interval_seconds),
+                    current_time + timedelta(seconds=monitor.interval_seconds),
                 )
     return checked
 
