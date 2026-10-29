@@ -8,7 +8,7 @@ Run date: 2026-10-29
 
 ## Latest completed end-to-end CI evidence
 
-[Run #192](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40832294190) on commit `f415f7993cd06e7b8a00731fdbdb6580b446a64c` completed successfully.
+[Run #197](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40837386321) on commit `4a955bc2c3df1a8a9809438bdd0121031997b648` completed successfully.
 
 | Job | Result | What it establishes |
 |---|---|---|
@@ -16,7 +16,7 @@ Run date: 2026-10-29
 | `compose-smoke` | **PASS** | Compose configuration validation, container build/start, API liveness, registration/login, monitor creation, worker check persistence, and public status all passed. |
 | `proxy-integration` | **SKIPPED** | Controlled proxy fixture URLs/secrets are not configured. This is not a security pass. |
 
-Run #192 also validates the CI concurrency optimization that cancels superseded runs and conserves free runner minutes.
+Run #197 also validates the CI concurrency optimization that cancels superseded runs and conserves free runner minutes.
 
 ## Implemented project capabilities
 
@@ -31,7 +31,7 @@ Run #192 also validates the CI concurrency optimization that cancels superseded 
 
 ## Verification limits
 
-- The CI end-to-end test verifies readiness, registration/login, monitor creation, worker check persistence, and public status against `https://example.com`.
+- The latest CI end-to-end run #197 verifies readiness, registration/login, monitor creation, worker check persistence, and public status against `https://example.com`. Run #197 completed successfully: `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
 - A separate local Docker Compose run was completed on 2026-10-29 using an isolated Compose project (`uptime-sentinel-audit`); the real registration-to-worker E2E flow passed. See **Local Docker Compose verification (2026-10-29)** below.
 - External proxy integration tests remain skipped because controlled fixtures/secrets are not configured. Do not treat the skip as a pass.
 - The old public test proxy has not passed the controlled security suite and must not be used for sensitive or production traffic.
