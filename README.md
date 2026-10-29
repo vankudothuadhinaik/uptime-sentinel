@@ -151,17 +151,17 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Verified end-to-end CI run: [run #192](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40832294190) on commit `f415f7993cd06e7b8a00731fdbdb6580b446a64c`. Check [all workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for newer documentation-only runs.
+Latest main-branch verification: [CI run #222](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40847422445) on merge commit `80ec36f4c91ba1d30704a5401b6a5db9cd111bb5` completed successfully on 2026-10-29. `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets are not configured.
 
 | Check | Verified result |
 |---|---|
 | `checks` job | **Passed** — dependencies, lint, formatting, type checking, PostgreSQL concurrency, tests/coverage, Codecov upload, compile, dependency audit, and migration round trips |
 | `compose-smoke` | **Passed** — Compose configuration, container build/start, API health, registration/login, monitor creation, worker check persistence, and public status |
 | `proxy-integration` | **Skipped** — opt-in controlled proxy fixture secrets are not configured; this is not a security pass |
-| Manual run on a developer machine | **Not independently verified in this session** |
+| Local Docker Compose end-to-end demo (2026-10-29) | **Passed** — isolated stack; registration/login, monitor creation, worker processing, persisted HTTP 200 result, and public status |
 | Render API/worker deployment | **Not deployed or required** |
 
-Run #192 validates the CI concurrency setting that cancels superseded runs to conserve free runner minutes. The end-to-end Compose test does not prove the external proxy security boundary or production readiness.
+Run #222 is the latest verified main-branch run after PR #10 merged. Local Compose verification was also completed on 2026-10-29. These checks do not prove the external proxy security boundary or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
