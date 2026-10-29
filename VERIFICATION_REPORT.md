@@ -32,9 +32,38 @@ These are local results reported for the current checkout. CI run #161 is the au
 
 The follow-up local audit was performed on branch `audit/final-local-verification`. Docker CLI and Compose are installed, but Docker Desktop's Linux engine is unavailable at the configured named pipe, so no containers were started. `gh` and `psql` are not installed; no authenticated GitHub security-alert query or local PostgreSQL concurrency run was possible. `POSTGRES_TEST_URL` and all six proxy fixture variables were absent from the environment and local dotenv file.
 
+## October 29 Docker Compose E2E verification
+
+Docker Desktop was subsequently available with Docker Engine `29.9.2` and Docker
+Compose `v5.6.1`. The branch was built and run in an isolated Compose project
+named `uptime-sentinel-audit` with host port `8001`; existing Compose projects,
+containers, and volumes were not stopped or removed.
+
+- `docker compose config --quiet`: **PASS**
+- API and worker image build: **PASS**
+- PostgreSQL and Redis health checks: **PASS**
+- API readiness on `http://127.0.0.1:8001/health/ready`: **HTTP 200**
+- Registration: **HTTP 201**
+- Login: **HTTP 200**
+- Monitor creation for `https://example.com/`: **HTTP 201**
+- Worker processing and persisted check result: **PASS** — one persisted result,
+  `is_up=True`, HTTP status `200`
+- Public status endpoint: **HTTP 200**, status `up`, with a populated `last_check`
+- Sanitized API logs showed the expected registration, login, monitor, checks,
+  and status requests without credential values.
+- The isolated audit containers and network were stopped successfully without
+  deleting the audit named volume (`uptime-sentinel-audit_pgdata`).
+
+This is a local development Compose verification, not a production deployment
+or proxy security verification.
+
 ## GitHub secret-scanning access
 
-The repository Security page was reachable, but the browser session was unauthenticated and displayed a GitHub sign-in link. The dedicated secret-scanning alerts page was therefore not accessible. No alert count or alert state is inferred from this limitation. To inspect it manually, sign in with repository security-administration access and open **Repository → Security → Secret scanning → Alerts**. Do not treat the local tracked-file pattern scan as a substitute for GitHub's alert view.
+On October 29, 2026, the repository owner personally verified the GitHub
+**Security → Secret scanning → Alerts** page. The screenshot showed **0 Open,
+0 Closed**, and **“No secrets found.”** This is the recorded secret-scanning
+result for that date. Push protection was not verified separately and is not
+claimed to be enabled.
 
 ## Security test hardening
 
