@@ -151,7 +151,7 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Latest completed end-to-end CI baseline: [run #187](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40831202247) on commit `e17788aefba0d76d980f4b304432306650db75c1`. The later CI concurrency optimization has its own run; see [all workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for the current status.
+Latest completed CI run: [run #189](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40831569902) on commit `49284c6f0fcba9dd1577e2770debe65ef33788da`.
 
 | Check | Verified result |
 |---|---|
@@ -161,7 +161,7 @@ Latest completed end-to-end CI baseline: [run #187](https://github.com/vankudoth
 | Manual run on a developer machine | **Not independently verified in this session** |
 | Render API/worker deployment | **Not deployed or required** |
 
-Run #187 confirms the new automated end-to-end Compose workflow works in GitHub Actions. It does not prove the external proxy security boundary or production readiness.
+Run #189 also validates the CI concurrency setting that cancels superseded runs to conserve free runner minutes. The end-to-end Compose test does not prove the external proxy security boundary or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 

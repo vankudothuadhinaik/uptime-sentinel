@@ -8,7 +8,7 @@ Run date: 2026-10-29
 
 ## Latest completed end-to-end CI evidence
 
-[Run #187](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40831202247) on commit `e17788aefba0d76d980f4b304432306650db75c1` completed successfully.
+[Run #189](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40831569902) on commit `49284c6f0fcba9dd1577e2770debe65ef33788da` completed successfully.
 
 | Job | Result | What it establishes |
 |---|---|---|
@@ -16,7 +16,7 @@ Run date: 2026-10-29
 | `compose-smoke` | **PASS** | Compose configuration validation, container build/start, API liveness, registration/login, monitor creation, worker check persistence, and public status all passed. |
 | `proxy-integration` | **SKIPPED** | Controlled proxy fixture URLs/secrets are not configured. This is not a security pass. |
 
-A CI concurrency optimization was committed after run #187 to cancel superseded runs and conserve free runner minutes. Check [the workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for that change's latest run status.
+Run #189 also validates the CI concurrency optimization that cancels superseded runs and conserves free runner minutes.
 
 ## Implemented project capabilities
 
