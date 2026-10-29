@@ -18,7 +18,7 @@
 
 ## Free-only completion gates
 
-- [x] Verify [PR #14 CI run #320](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40922811255): `checks`, `compose-smoke`, `proxy-local-integration`, and Codecov patch passed. The external proxy job was skipped because controlled fixtures are not configured.
+- [x] Verify [PR #14 CI run #325](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40924701371): required jobs passed for parent commit `4adefa5`; the external proxy job was skipped because controlled fixtures are not configured.
 - [x] Run the documented app locally with Docker Compose. On 2026-10-29 an isolated stack built and became healthy; registration, login, monitor creation, worker processing, persisted HTTP 200 check, and public status all passed. Existing stacks/volumes were preserved.
 - [x] Search indexed source for common private-key, GitHub-token, AWS-key, and live Stripe-key markers; no matches were returned. This static search is not a substitute for GitHub secret-scanning alerts or rotating any credential that may have been exposed.
 - [x] Review GitHub Secret scanning → Alerts in the UI. The user's screenshot dated 2026-10-29 showed 0 open and 0 closed alerts and “No secrets found.” A separate Advanced Security screenshot dated 2026-10-29 showed Secret Protection → Push protection **On**.
@@ -38,7 +38,7 @@ The external proxy workflow is now an explicit opt-in on manual dispatch (`run_e
 
 ## Active PR hardening status — 2026-10-29
 
-PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery` at commit `d3b327a`. [CI run #320](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40922811255) passed the required jobs. The external proxy job remains blocked without controlled fixtures.
+PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery` at commit `273dba7`. CI run #325 passed for parent commit `4adefa5`; the external proxy job remains blocked without controlled fixtures. CI for `273dba7` is pending.
 
 - [x] Shared manual/scheduled lease protocol, persisted-result fencing, wall-clock request deadline, PATCH explicit-null 422 validation.
 - [x] PostgreSQL guard for one open incident per monitor; regression test for concurrent failure transitions.
@@ -55,7 +55,7 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery` at commit `d3b
 
 ## Latest verified evidence and remaining work
 
-- The final PR validation is [run #320](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40922811255); required jobs passed. The external `proxy-integration` job is blocked because external controlled fixture URLs/configuration are unavailable.
+- The final completed PR validation is run #325 for `4adefa5`; required jobs passed. The latest `273dba7` push still requires a completed workflow. The external `proxy-integration` job is blocked because external controlled fixture URLs/configuration are unavailable.
 - Proxy fail-closed authentication regression was merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6).
 - A free Render test proxy exists at https://uptime-sentinel-egress-proxy.onrender.com, but its inbound allowlist is `0.0.0.0/0`; it is a test service, not a production security boundary.
 - The Render PostgreSQL free instance has a recorded expiry of 2026-11-26. This does not affect local Docker Compose or GitHub-only portfolio completion; do not depend on it for persistent production data.

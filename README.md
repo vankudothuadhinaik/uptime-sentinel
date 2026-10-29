@@ -126,7 +126,7 @@ The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
 - Compose end-to-end smoke: registration/login, monitor creation, worker check persistence, and public status
 - Deterministic local proxy security regressions; the external controlled-proxy suite remains opt-in
 
-PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`; the latest pushed commit is `d3b327a`. GitHub Actions run [#320](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40922811255) is the current CI validation. The external controlled-proxy job remains opt-in and is not claimed as passed.
+PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`; the latest pushed commit is `273dba7`. CI run [#325](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40924701371) passed for parent commit `4adefa5`; CI for `273dba7` remained pending at the time of this report. The external controlled-proxy job remains opt-in and is not claimed as passed.
 
 [![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
 
@@ -160,13 +160,13 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 The current pull-request branch adds a shared lease path for manual and scheduled checks, a wall-clock deadline spanning streamed HTTP bodies, strict PATCH null validation, fenced result persistence, one-open-incident database enforcement, concurrent quota serialization, stable bounded incident/check pagination, and regression coverage.
 
-The current branch also corrects the retained failed-check metric to a gauge name, covers metric values/types and proxy overload/oversized-header responses, and makes the PostgreSQL concurrency test deterministic on persistent databases.
+The current branch also corrects the retained failed-check metric to a gauge name, covers metric values/types and proxy overload/oversized-header responses, adds allowed-forwarding socket coverage, disposes test engines, and makes the PostgreSQL concurrency test deterministic on persistent databases.
 
 **Remaining external gate:** the opt-in controlled-proxy test is blocked because independently controlled fixture URLs/configuration are not available. Do not treat this as evidence that DNS rebinding, private-IP blocking, redirects, and invalid TLS have been verified against an externally operated proxy. PR #14 remains open; no release tag has been created.
 
 ## Verification status
 
-Local verification passed; CI run [#320](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40922811255) is the corresponding GitHub validation for commit `d3b327a`.
+Local verification passed; CI run #325 passed for parent commit `4adefa5`. The latest commit `273dba7` still needs its own completed workflow result.
 
 | Check | Verified result |
 |---|---|

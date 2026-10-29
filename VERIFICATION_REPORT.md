@@ -4,7 +4,7 @@ Run date: 2026-10-29
 
 ## Current change
 
-PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The pushed commit is `d3b327a` (`Fix metrics and proxy hardening regressions`). GitHub Actions run [#320](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40922811255) completed successfully for the required push jobs.
+PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pushed commit is `273dba7` (`Close test database engines and cover proxy success`). GitHub Actions run [#325](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40924701371) passed for parent commit `4adefa5`; no completed run for `273dba7` was visible at the time of this report.
 
 ## Release gates
 
@@ -21,12 +21,14 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The pushed co
 | Docker Compose smoke | **PASS** | Images built; PostgreSQL/Redis health, API migrations/readiness, auth, monitor creation, worker persistence, and public status passed. |
 | Local egress proxy security | **PASS** | Real local fixture tests cover private/mixed DNS answers, DNS failures, resolver pinning, redirects, auth, unsupported methods/ports, target credentials, invalid TLS, overload 503, and oversized headers. |
 | External controlled egress proxy | **BLOCKED** | All six fixture variables are unset; `tests/test_egress_proxy_integration.py` reported 5 skipped. No external security pass is claimed. |
-| GitHub Actions run #320 | **PASS** | `checks`, `compose-smoke`, `proxy-local-integration`, and Codecov patch passed; opt-in `proxy-integration` was skipped. |
+| GitHub Actions run #325 | **PASS** | Required CI jobs passed for parent commit `4adefa5`; opt-in `proxy-integration` was skipped. |
+| CI for latest commit `273dba7` | **PENDING** | The push is present on the remote branch, but GitHub had not exposed a completed workflow for this SHA during verification. |
 
 ## Changes made
 
 - Renamed the retained failed-check metric from an `_total` name to a gauge name and added assertions for empty/populated values and types.
 - Added deterministic proxy overload and oversized-header regression tests; oversized headers now return HTTP 431 instead of escaping as an unhandled stream-reader exception.
+- Added a real socket-level allowed-forwarding fixture and disposed every SQLite test engine to eliminate test-resource warnings.
 - Made the PostgreSQL concurrency regression test isolate unrelated existing monitors and restore their state, so persistent test databases cannot invalidate the exclusive-claim assertion.
 - Corrected proxy, README, and release-checklist documentation where literal escape sequences or stale behavior descriptions were present.
 
