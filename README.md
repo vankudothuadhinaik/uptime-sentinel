@@ -29,6 +29,10 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 
 > **Project status:** this is a GitHub portfolio project with a local Docker Compose demo; paid hosting is not required. The [GitHub Actions run history](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) records standard checks and Compose smoke-test results; consult individual runs for the exact commit and jobs verified. The proxy-authentication fail-closed fix is merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6). The external proxy integration job is an explicit opt-in on manual workflow dispatch and requires six fixture URL/configuration secrets for infrastructure you control; ordinary CI uses deterministic local proxy fixtures. The external job is not claimed as passed. Render deployment is not production-certified: the configured proxy service is on a separate integration branch and its external security fixture matrix remains unverified. Never use the public test proxy for sensitive or production traffic.
 
+
+
+For the hardened self-host deployment profile, see the [production deployment guide](docs/PRODUCTION_DEPLOYMENT.md), [production Compose file](docker-compose.production.yml), and [Caddy TLS configuration](Caddyfile.production). This profile still requires a private controlled egress proxy and host-level egress firewall; it is not a production certification.
+
 ## Architecture
 
 ![Uptime Sentinel architecture diagram](docs/images/architecture.svg)
