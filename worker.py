@@ -6,7 +6,7 @@ from signal import SIGINT, SIGTERM, signal
 from threading import Event
 from types import FrameType
 
-from sqlalchemy import delete
+from sqlalchemy import delete, or_, select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
