@@ -1,54 +1,44 @@
-# Uptime Sentinel release checklist
+# Uptime Sentinel project checklist
 
-## Current decision
+## Project scope
 
-**NOT READY FOR PRODUCTION.** The fail-closed proxy authentication fix is merged into `main` (PR [#6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6)). Standard CI and Compose smoke tests passed in [run #40697076205](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40697076205). The controlled proxy is live at https://uptime-sentinel-egress-proxy.onrender.com, but it still allows ingress from `0.0.0.0/0`; live authenticated/unauthenticated requests and controlled security fixtures have not been independently verified. The API and continuous worker are not deployed.
+**Goal: a polished, working GitHub portfolio project using free tools only.** Paid hosting and production uptime guarantees are explicitly out of scope. The main deliverable is the source code, automated CI, Docker Compose demo, documentation, and honest security limitations.
 
-## Implemented and verified by standard CI
+## Implemented
 
-- [x] FastAPI API, authentication, ownership-scoped monitor operations, and health endpoints.
-- [x] PostgreSQL-compatible Alembic migrations through `0003_lease_tokens`.
-- [x] Database-backed scheduler claims with lease tokens and conditional completion.
-- [x] Application-side SSRF validation, redirect disabling, and bounded response streaming.
-- [x] Production configuration validation for PostgreSQL, strong JWT secret, controlled egress proxy URL, and proxy credentials.
-- [x] Proxy authentication fails closed if username or password is missing/empty; regression coverage is merged.
-- [x] Proxy rejects non-public destination IP ranges and pins sockets to validated DNS answers.
-- [x] Ruff lint/format, mypy, pytest, compilation, dependency audit, PostgreSQL concurrency/fencing test, and migration round trips in standard CI.
-- [x] Docker Compose build/start and API liveness smoke test in CI.
-- [x] Render blueprint defines an API service and a genuine continuous background worker.
-- [x] Render deployment runbook and explicit release blockers.
+- [x] FastAPI uptime-monitoring API with authentication and ownership-scoped monitor operations.
+- [x] PostgreSQL-compatible Alembic migrations.
+- [x] Database-backed scheduler with leases and fencing to reduce duplicate/stale worker work.
+- [x] Bounded HTTP checks, latency/failure history, and incident open/update/recovery lifecycle.
+- [x] Application SSRF validation, redirect disabling, and response-size bounds.
+- [x] Production configuration validation for database, JWT, and controlled egress proxy credentials.
+- [x] Egress proxy authentication fails closed when credentials are absent, with regression coverage merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6).
+- [x] CI workflow for lint, formatting, typing, tests, dependency audit, migrations, and Docker Compose smoke test.
+- [x] README, architecture/lifecycle diagrams, local setup, and this scope-aware checklist.
 
-## Remaining production blockers
+## Free-only completion gates
 
-### Proxy security and integration
+- [ ] Verify the latest GitHub Actions run on `main` completes successfully: [GitHub Actions](https://github.com/vankudothuadhinaik/uptime-sentinel/actions).
+- [ ] Run the documented app locally with Docker Compose and verify `/health/live`, registration/login, monitor creation, and worker processing using disposable local data.
+- [ ] Review repository for accidentally committed secrets and remove any if found; keep all credentials in local environment files that are git-ignored.
+- [ ] Clearly document that external proxy integration tests are opt-in and require controlled fixture URLs/secrets; do not count skipped tests as passed.
+- [ ] Keep the Render public test proxy out of production use. It allows public ingress and has not completed independent live security verification.
+- [ ] Keep instructions for local development accurate and ensure no paid hosting is required to clone, test, or demonstrate the project.
 
-- [ ] Restrict proxy ingress using a supported private-network/ingress control before production. Current allowlist is `0.0.0.0/0`; authentication is an additional control, not a substitute for network isolation.
-- [ ] Independently verify a valid authenticated proxy request succeeds and missing/invalid credentials receive HTTP 407. Do not expose or print the credentials in logs or reports.
-- [ ] Deploy controlled test fixtures and prove private destinations and DNS-rebinding destinations receive explicit HTTP 403 responses. Also test public HTTPS, redirect non-following, and invalid TLS rejection.
-- [ ] Configure and verify the six GitHub Actions repository secrets only after the fixtures are deployed and validated: `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, `EGRESS_BAD_TLS_URL`.
-- [ ] Manually dispatch CI and verify `proxy-integration` executes and passes. A skipped job is not a pass.
+## Optional, explicitly out of scope
 
-### Deployment and database continuity
+- Paid Render API/background-worker hosting.
+- Production database upgrades, paid backups, high availability, and production SLOs.
+- External proxy fixture infrastructure and live internet security testing requiring controlled hosts and repository secrets.
+- Public production deployment and production readiness claims.
 
-- [ ] Deploy `render.yaml` in the dedicated Uptime Sentinel Render workspace, reusing the existing PostgreSQL database. The connected Render API tool does not expose a blueprint-deploy or background-worker-create action; use Render's supported Blueprint workflow rather than substituting a cron job or public web service for a continuous worker.
-- [ ] Securely configure `DATABASE_URL`, unique random `JWT_SECRET` (at least 32 characters), `EGRESS_PROXY_URL`, `EGRESS_PROXY_USERNAME`, and `EGRESS_PROXY_PASSWORD` for both API and worker.
-- [ ] Apply migrations once through a controlled release step.
-- [ ] Verify API liveness/readiness and inspect API/worker logs for errors and accidental secret leakage.
-- [ ] Resolve the existing PostgreSQL Free-plan expiry recorded as **2026-11-26**. Review the cost and backup/restore options before any paid upgrade; test a restore before production reliance.
-- [ ] Configure monitoring/alerts, document rollback, and establish a tested recovery procedure.
+## Latest known evidence and limitations
 
-### End-to-end verification
+- Previous standard CI run [#40697076205](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40697076205): `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
+- Proxy fail-closed authentication regression was merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6).
+- A free Render test proxy exists at https://uptime-sentinel-egress-proxy.onrender.com, but its inbound allowlist is `0.0.0.0/0`; it is a test service, not a production security boundary.
+- The Render PostgreSQL free instance has a recorded expiry of 2026-11-26. This does not affect local Docker Compose or GitHub-only portfolio completion; do not depend on it for persistent production data.
+- The API and continuous worker are not deployed in Render. That is intentional for the free-only portfolio scope.
+- Check GitHub Actions for the latest CI state; a run that is still in progress is not a pass.
 
-- [ ] Execute disposable end-to-end checks for account registration/login, monitor creation, worker execution, check/result/incident persistence, incident recovery, restart/lease recovery, and retention cleanup.
-- [ ] Verify actual alert delivery if alerting is configured.
-- [ ] Update this checklist with real test evidence, workflow run ID, deployed service IDs/URLs, migration result, and end-to-end observations.
-
-## Latest verified evidence
-
-- Standard CI run [#40697076205](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40697076205): `checks` and `compose-smoke` passed; `proxy-integration` was skipped because it is opt-in and controlled fixtures/secrets are not configured.
-- Render proxy service: `srv-dbguqv6tlv9c73den9t0`, URL https://uptime-sentinel-egress-proxy.onrender.com. Latest observed live deployment: `dep-dbgvhljbc2fs73bnct00`, commit `e7f5c547a034c051cc4d35afbefc23b93a78dc86`. Render reports ingress allowlist `0.0.0.0/0`.
-- Render Postgres: `dpg-dbghkmc9v7es73dns2ig-a`, status available, Free plan, Singapore, expiry `2026-11-26T21:40:41.74375Z`. External query access is not configured (empty IP allowlist).
-- Render currently lists no API or continuous worker service.
-- A direct HTTP check from the available execution container could not run because that environment could not resolve external DNS; no live proxy behavior is claimed as tested here.
-
-Do not mark production ready until every unchecked security, continuity, and deployment gate is genuinely verified.
+No paid resources are required for the project goal. Do not label this deployment production-ready; it is a portfolio project with local demo and CI verification.
