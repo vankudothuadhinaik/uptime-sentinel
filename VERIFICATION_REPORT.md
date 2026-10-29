@@ -8,7 +8,7 @@ Run date: 2026-10-29
 
 ## Latest completed end-to-end CI evidence
 
-[Main-branch run #227](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40848379667) on commit `df99d957e16aec2b1d0566c791c85ad867874350` completed successfully on 2026-10-29 after the proxy-hardening changes and final documentation updates.
+[Main-branch run #233](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849831440) completed successfully on 2026-10-29 after the latest documentation updates. The new local proxy security job was independently verified in [run #229](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849371364), with 29 tests passing.
 
 | Job | Result | What it establishes |
 |---|---|---|
@@ -16,7 +16,7 @@ Run date: 2026-10-29
 | `compose-smoke` | **PASS** | Compose configuration validation, container build/start, API liveness, registration/login, monitor creation, worker check persistence, and public status all passed. |
 | `proxy-integration` | **SKIPPED** | Controlled proxy fixture URLs/secrets are not configured. This is not a security pass. |
 
-Run #227 is the latest successful main-branch CI result. It verifies the code checks and Compose E2E flow; the external proxy job remains skipped.
+Run #233 is the latest successful main-branch CI result after the documentation changes. Run #229 verifies the new local proxy security job; the external proxy job remains skipped.
 
 The final PR branch adds deterministic proxy request-validation and cleanup regression coverage. Its checks job passed the full suite, PostgreSQL concurrency test, migrations, dependency audit, compilation, and formatting/type checks. Its Compose job passed the registration-to-worker E2E flow. The external proxy job remained skipped because the six controlled fixture secrets are not configured.
 
@@ -87,4 +87,4 @@ The user-provided screenshot of the repository's **Secret scanning alerts** page
 
 ## Final assessment
 
-**Portfolio project with passing automated CI, end-to-end Compose smoke, and required local proxy security regression tests; not represented as production-ready.** CI run #229 passed `checks`, `compose-smoke`, and `proxy-local-integration` (29 tests). The separate external controlled-proxy integration suite remains unverified because its dedicated fixture secrets are not configured. Local fixtures validate the repository's proxy behavior but do not certify an independently operated production proxy. No production deployment is claimed.
+**Portfolio project with passing automated CI, end-to-end Compose smoke, and required local proxy security regression tests; not represented as production-ready.** CI run #233 passed after the latest documentation updates; run #229 passed `checks`, `compose-smoke`, and `proxy-local-integration` (29 tests). The separate external controlled-proxy integration suite remains unverified because its dedicated fixture secrets are not configured. Local fixtures validate the repository's proxy behavior but do not certify an independently operated production proxy. No production deployment is claimed.
