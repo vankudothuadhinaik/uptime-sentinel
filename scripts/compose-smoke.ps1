@@ -26,7 +26,11 @@ try {
     if (-not $ready) {
         throw "API healthcheck did not become ready within 60 seconds."
     }
-    Write-Output "Compose smoke test passed: API live health endpoint returned HTTP 200."
+    py scripts/compose-e2e.py
+    if ($LASTEXITCODE -ne 0) {
+        throw "Compose end-to-end smoke test failed."
+    }
+    Write-Output "Compose smoke test passed: API health and registration-to-worker workflow succeeded."
 } finally {
     docker compose logs --no-color
     docker compose down
