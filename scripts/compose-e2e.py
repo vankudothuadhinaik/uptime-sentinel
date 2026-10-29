@@ -43,9 +43,7 @@ def main() -> None:
     )
     assert status == 201 and registered.get("access_token"), registered
 
-    status, logged_in = request_json(
-        "POST", "/auth/login", {"email": EMAIL, "password": PASSWORD}
-    )
+    status, logged_in = request_json("POST", "/auth/login", {"email": EMAIL, "password": PASSWORD})
     assert status == 200 and logged_in.get("access_token"), logged_in
     token = logged_in["access_token"]
 
