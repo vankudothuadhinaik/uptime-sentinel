@@ -152,7 +152,8 @@ def test_incident_history_has_stable_paginated_response(db_session, monkeypatch)
         db_session.add_all(history)
         db_session.commit()
         expected_ids = [
-            item.id for item in sorted(history, key=lambda item: (item.started_at, item.id), reverse=True)
+            item.id
+            for item in sorted(history, key=lambda item: (item.started_at, item.id), reverse=True)
         ]
 
         page_one = client.get(f"/monitors/{monitor_id}/incidents?limit=2", headers=headers)
