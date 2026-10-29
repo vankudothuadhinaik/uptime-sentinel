@@ -4,7 +4,7 @@ Run date: 2026-10-30
 
 ## Current change
 
-PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pushed commit is `6bec54c` (`Document latest proxy fixture verification`). GitHub Actions run [#325](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40924701371) passed for parent commit `4adefa5`; GitHub's checks page for `6bec54c` is still loading and does not expose a completed result, so the latest-SHA CI gate is **PENDING/BLOCKED**.
+PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pushed commit at the time of this report is `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2` (`Refresh verification report with latest CI evidence`). GitHub Actions run [#336](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40933176847) completed successfully for this exact commit: `checks`, `proxy-local-integration`, and `compose-smoke` passed; the opt-in external `proxy-integration` job was skipped because controlled fixture infrastructure is not configured.
 
 ## Release gates
 
@@ -21,8 +21,7 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pu
 | Docker Compose smoke | **PASS** | Images built; PostgreSQL/Redis health, API migrations/readiness, auth, monitor creation, worker persistence, and public status passed. |
 | Local egress proxy security | **PASS** | Real local fixture tests cover private/mixed DNS answers, DNS failures, resolver pinning, redirects, auth, unsupported methods/ports, target credentials, invalid TLS, overload 503, and oversized headers. |
 | External controlled egress proxy | **BLOCKED** | All six fixture variables are unset; `tests/test_egress_proxy_integration.py` reported 5 skipped. No external security pass is claimed. |
-| GitHub Actions run #333 | **PASS** | Required CI workflow completed successfully for code commit `2292cc131e805e04cfa541f8ff30db0bb9835342`; opt-in `proxy-integration` was skipped. |
-| CI for README documentation update | **PENDING** | README status was refreshed after run #333; verify the workflow triggered by the documentation commit before declaring the newest branch head CI-verified. |
+| GitHub Actions run #336 | **PASS** | Workflow completed successfully for exact head `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2`; `checks`, local proxy integration, and Compose smoke passed. External `proxy-integration` was skipped. |
 
 ## Changes made
 
@@ -37,6 +36,10 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pu
 The local test suite previously reported eight skips, including the five external proxy cases, PostgreSQL tests without a configured URL in the host virtual environment, and an OpenSSL-dependent fixture. The local invalid-TLS test has now been tightened to require a certificate-verification-specific error; run #333 passed with this assertion. The PostgreSQL tests were separately run against Docker PostgreSQL 16 and passed. The external proxy cases require an independently controlled authenticated proxy plus public, private, rebinding, redirect, and invalid-TLS fixture URLs. They cannot be safely invented or replaced with mocks.
 
 The project is not production-certified. Production use still requires controlled proxy infrastructure, real external proxy integration evidence, production secrets, migration/release procedures, and operational continuity controls.
+
+## Render deployment observation
+
+The Render workspace contains `uptime-sentinel-egress-proxy` at `https://uptime-sentinel-egress-proxy.onrender.com`, currently configured to deploy from `integration/sentry-doppler` (not this PR branch). Render reports the deployment as live from commit `e7f5c547a034c051cc4d35afbefc23b93a78dc86`. The service's IP allowlist permits all source IPs, so its safety depends on the proxy's fail-closed authentication and destination validation. I did not change service settings or expose/read secret values. A live deployment is not proof that the external proxy security matrix passed; fixture-backed verification remains blocked.
 
 ## Git state
 
