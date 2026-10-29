@@ -141,8 +141,6 @@ def perform_check(
         status_code, is_up, error_category, error_message = _request_with_injected_client(
             monitor, client
         )
-        # Injected clients remain the test seam, but production creates its own
-        # configured async client and applies a strict deadline to the full body.
 
     # The monitor row is the serialization point for incident transitions.
     # PostgreSQL holds this lock until the check and incident update commit.
