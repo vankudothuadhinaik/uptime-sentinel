@@ -4,7 +4,7 @@ Run date: 2026-10-30
 
 ## Current change
 
-PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest code-validated commit is `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2` (`Refresh verification report with latest CI evidence`). GitHub Actions run [#336](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40933176847) completed successfully for that commit: `checks`, `proxy-local-integration`, and `compose-smoke` passed; the opt-in external `proxy-integration` job was skipped because controlled fixture infrastructure is not configured. Subsequent commits only refresh this report and README; their latest-head workflow is being checked separately.
+PR #14 was merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`. The latest code-validated commit before the documentation-only refreshes is `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2`; GitHub Actions run [#336](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40933176847) passed with `checks`, `proxy-local-integration`, and `compose-smoke` successful. Post-merge CI run [#344](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934459207) was queued after the merge; do not treat it as passed until GitHub reports completion. The opt-in external `proxy-integration` job remains skipped because controlled fixture infrastructure is not configured.
 
 ## Release gates
 
@@ -22,6 +22,7 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest co
 | Local egress proxy security | **PASS** | Real local fixture tests cover private/mixed DNS answers, DNS failures, resolver pinning, redirects, auth, unsupported methods/ports, target credentials, invalid TLS, overload 503, and oversized headers. |
 | External controlled egress proxy | **BLOCKED** | All six fixture variables are unset; `tests/test_egress_proxy_integration.py` reported 5 skipped. No external security pass is claimed. |
 | GitHub Actions run #336 | **PASS** | Workflow completed successfully for code-validated commit `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2`; `checks`, local proxy integration, and Compose smoke passed. External `proxy-integration` was skipped. |
+| Post-merge CI run #344 | **PENDING** | Queued for merge commit `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`; completion not yet confirmed. |
 
 ## Changes made
 
@@ -45,5 +46,5 @@ The Render workspace contains `uptime-sentinel-egress-proxy` at `https://uptime-
 
 - Remote: `https://github.com/vankudothuadhinaik/uptime-sentinel.git`
 - Branch: `hardening/ops-metrics-proxy-limits-recovery`
-- PR: #14, open, not merged
+- PR: #14, merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`
 - No new repository, remote, tag, or force push was created.
