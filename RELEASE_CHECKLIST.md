@@ -14,7 +14,7 @@
 - [x] Egress proxy authentication fails closed when credentials are absent.
 - [x] Proxy destination-policy, redirect, resolver pinning, TLS, overload, and malformed/unsupported request regression coverage.
 - [x] Prometheus operational gauges and bounded proxy concurrency/overload handling.
-- [x] Dockerfiles, Docker Compose demo, README, runbook, verification report, and CI workflow.
+- [x] Dockerfiles, Docker Compose demo, README, runbook, verification report, CI workflow, and portfolio demo/interview walkthrough.
 
 ## Final verification — 2026-10-30
 
