@@ -32,7 +32,7 @@ Run #192 also validates the CI concurrency optimization that cancels superseded 
 ## Verification limits
 
 - The CI end-to-end test verifies readiness, registration/login, monitor creation, worker check persistence, and public status against `https://example.com`.
-- A separate manual run on a developer machine has **not** been performed in this session.
+- A separate local Docker Compose run was completed on 2026-10-29 using an isolated Compose project (`uptime-sentinel-audit`); the real registration-to-worker E2E flow passed. See **Local Docker Compose verification (2026-10-29)** below.
 - External proxy integration tests remain skipped because controlled fixtures/secrets are not configured. Do not treat the skip as a pass.
 - The old public test proxy has not passed the controlled security suite and must not be used for sensitive or production traffic.
 - Historical local verification notes from 2026-10-28 reported 38 tests passed, six infrastructure-gated tests skipped, and 69% coverage. Those are historical notes, not a fresh local run in this session.
@@ -46,12 +46,41 @@ Run #192 also validates the CI concurrency optimization that cancels superseded 
 - [x] README, profile README, and release checklist explain the free-only scope.
 - [x] Paid Render blueprint removed; historical deployment notes clearly say deployment is out of scope.
 - [x] External proxy integration limitations clearly documented.
-- [ ] Run the complete demo manually on a developer machine.
-- [ ] Review GitHub's repository security/secret-scanning alerts in the GitHub UI.
+- [x] Run the complete demo locally with Docker Compose, including worker-backed check persistence (2026-10-29; isolated project and preserved existing resources).
+- [x] Review GitHub Secret scanning → Alerts in the GitHub UI (user-provided screenshot dated 2026-10-29 shows 0 open and 0 closed alerts; push protection was not separately checked).
 
 ## Production-only work — intentionally out of scope
 
 Production use would require a private controlled egress proxy that independently validates destination IPs at connection time, controlled public/private/DNS-rebinding/redirect/invalid-TLS fixtures, a successful real proxy integration run, deployment and database continuity planning, and further production-focused verification. None of that is claimed complete, and no paid service should be created for this portfolio goal.
+
+
+## Local Docker Compose verification (2026-10-29)
+
+A local run was performed after Docker Desktop's Linux engine became available. The audit used a separate Compose project name, a temporary host-port override (API on port 8001), and an isolated named volume. Existing stacks and their volumes were preserved.
+
+| Check | Result |
+|---|---|
+| Docker Engine / Compose | 29.9.2 / 5.6.1 |
+| Compose config validation | **PASS** |
+| API and worker image build | **PASS** |
+| PostgreSQL and Redis health | **PASS** |
+| API readiness | **PASS** — HTTP 200 |
+| Registration | **PASS** — HTTP 201 |
+| Login | **PASS** — HTTP 200 |
+| Monitor creation | **PASS** — HTTP 201 |
+| Worker processed check | **PASS** |
+| Persisted result | **PASS** — `is_up=True`, HTTP status 200 |
+| Public status | **PASS** — HTTP 200, status `up`, `last_check` populated |
+| Regression suite | **PASS** — 23 passed, 6 skipped |
+| Ruff lint / format, mypy, diff check | **PASS** |
+
+The temporary audit containers and network were stopped with `docker compose down --remove-orphans`; the audit named volume was intentionally retained. Pre-existing containers remained running. No production resources were touched and no application code fix was required.
+
+Skipped tests remain explicit: five controlled proxy integration tests require fixture URLs/credentials, and one PostgreSQL concurrency test requires `POSTGRES_TEST_URL`. These skips are not counted as passes.
+
+## GitHub secret-scanning alert review (2026-10-29)
+
+The user-provided screenshot of the repository's **Secret scanning alerts** page showed **0 Open**, **0 Closed**, and “No secrets found.” This verifies the alert view at the time of the screenshot. It does not prove that no secret was ever present or that GitHub detects every possible secret. **Push protection was not separately verified.**
 
 ## Final assessment
 

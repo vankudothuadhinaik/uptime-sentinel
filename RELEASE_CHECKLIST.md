@@ -19,9 +19,9 @@
 ## Free-only completion gates
 
 - [x] Verify the latest GitHub Actions run on `main` completes successfully: [run #192](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40832294190) passed `checks` and `compose-smoke`, including the new registration-to-worker end-to-end smoke.
-- [ ] Run the documented app manually on a developer machine with Docker Compose. CI now automates readiness, registration/login, monitor creation, worker check persistence, and public status, but a local manual run has not been performed from this session.
+- [x] Run the documented app locally with Docker Compose. On 2026-10-29 an isolated stack built and became healthy; registration, login, monitor creation, worker processing, persisted HTTP 200 check, and public status all passed. Existing stacks/volumes were preserved.
 - [x] Search indexed source for common private-key, GitHub-token, AWS-key, and live Stripe-key markers; no matches were returned. This static search is not a substitute for GitHub secret-scanning alerts or rotating any credential that may have been exposed.
-- [ ] Review GitHub's repository security/secret-scanning alerts in the GitHub UI; that private security-alert view was not available through the connected tools.
+- [x] Review GitHub Secret scanning → Alerts in the UI. The user's screenshot dated 2026-10-29 showed 0 open and 0 closed alerts and “No secrets found.” Push protection was not separately verified.
 - [x] Clearly document that external proxy integration tests are opt-in and require controlled fixture URLs/secrets; the latest run skipped this job, so it is not counted as passed.
 - [x] Keep the Render public test proxy out of production use. It allows public ingress and has not completed independent live security verification; it is explicitly marked as test-only in the docs.
 - [x] Keep instructions for local development aligned with the free-only scope; no paid hosting is required to clone, test, or demonstrate the project.
