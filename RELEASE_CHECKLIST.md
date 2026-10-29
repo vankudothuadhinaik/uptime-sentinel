@@ -2,7 +2,7 @@
 
 ## Current decision
 
-**NOT READY FOR PRODUCTION.** PR #4 was merged into `main`; the current verified head is commit `da893678780ba06ed64cb6db95ef9fa6db65dea5`. A free Render test proxy is live at `https://uptime-sentinel-egress-proxy.onrender.com`, but it is internet-reachable and its credentials/protocol/security fixtures are not independently verified. The API and continuous worker are not deployed.
+**NOT READY FOR PRODUCTION.** PR #4 was merged into `main`; the current verified head is commit `49907457ebd976229e47a126dd5922ff56c5d9ab`. A free Render test proxy is live at `https://uptime-sentinel-egress-proxy.onrender.com`, but it is internet-reachable and its credentials/protocol/security fixtures are not independently verified. The API and continuous worker are not deployed.
 
 ## Implemented and verified by standard CI
 
@@ -34,9 +34,10 @@
 
 ## Latest CI evidence
 
-- [Run #160 / 40694085326](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40694085326), commit `da893678780ba06ed64cb6db95ef9fa6db65dea5`: `checks` and `compose-smoke` passed. `proxy-integration` was skipped because the six controlled fixture secrets are not configured. A skipped proxy job is not a security pass.
+- [Run #161 / 40695272332](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40695272332), commit `49907457ebd976229e47a126dd5922ff56c5d9ab`: `checks` and `compose-smoke` passed. `proxy-integration` was skipped because the six controlled fixture secrets are not configured. A skipped proxy job is not a security pass.
 - The current `main` head is the merged result of PR #4. No failed or in-progress `main` run was present in the inspected workflow history.
 - No Render API or continuous worker deployment has been verified.
+- Local Docker Compose configuration validation passed, but image build/start and worker-backed E2E verification were blocked because the Docker daemon was unavailable.
 - The existing PostgreSQL Free plan is recorded to expire on 2026-11-26; resolve continuity before relying on it for production.
 
 

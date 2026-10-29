@@ -27,7 +27,7 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 - **Security:** application-side SSRF validation, redirects disabled, production egress-proxy requirement, no forwarding of user credentials.
 - **Operations:** Alembic migrations, Docker Compose, GitHub Actions, Codecov, optional Sentry, and optional Doppler developer workflow.
 
-> **Release status:** standard CI and Compose smoke tests passed on `main` commit `da893678780ba06ed64cb6db95ef9fa6db65dea5` in [run #160](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40694085326). The controlled egress-proxy integration remains **skipped** until its real proxy and fixture secrets are configured. Production deployment is **not verified**. A skipped security test is not a pass.
+> **Release status:** standard CI and Compose smoke tests passed on `main` commit `49907457ebd976229e47a126dd5922ff56c5d9ab` in [run #161](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40695272332). The controlled egress-proxy integration remains **skipped** until its real proxy and fixture secrets are configured. Production deployment is **not verified**. A skipped security test is not a pass.
 
 ## Architecture
 
@@ -148,7 +148,7 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Latest completed CI run for `main` commit `da893678780ba06ed64cb6db95ef9fa6db65dea5`: [GitHub Actions run #160](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40694085326).
+Latest completed CI run for `main` commit `49907457ebd976229e47a126dd5922ff56c5d9ab`: [GitHub Actions run #161](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40695272332).
 
 | Check | Last verified result |
 |---|---|

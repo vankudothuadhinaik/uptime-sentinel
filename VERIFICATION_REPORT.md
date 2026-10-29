@@ -1,14 +1,14 @@
 # Uptime Sentinel verification report
 
-Run date: 2026-10-28
+Run date: 2026-10-29
 
 ## Release decision
 
-**PUBLISHED FOR REVIEW / NOT READY FOR PRODUCTION.** PR #4 is merged into `main` at commit `da893678780ba06ed64cb6db95ef9fa6db65dea5`. Production is blocked on a real controlled egress proxy, execution of the proxy security integration suite, and deployed API/worker end-to-end verification.
+**PUBLISHED FOR REVIEW / NOT READY FOR PRODUCTION.** PR #4 is merged into `main`; the latest published verification commit is `49907457ebd976229e47a126dd5922ff56c5d9ab`. Production is blocked on a real controlled egress proxy, execution of the proxy security integration suite, and deployed API/worker end-to-end verification.
 
 ## Latest verified GitHub Actions run
 
-[Run #160 / 40694085326](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40694085326) on commit `da893678780ba06ed64cb6db95ef9fa6db65dea5` completed successfully. The `checks` and `compose-smoke` jobs passed; the opt-in `proxy-integration` job was skipped because its six controlled fixture secrets are not configured.
+[Run #161 / 40695272332](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40695272332) on commit `49907457ebd976229e47a126dd5922ff56c5d9ab` completed successfully. The `checks` and `compose-smoke` jobs passed; the opt-in `proxy-integration` job was skipped because its six controlled fixture secrets are not configured.
 
 | Job | Result | Interpretation |
 |---|---|---|
@@ -18,16 +18,21 @@ Run date: 2026-10-28
 
 ## Local verification reported for this commit
 
-- pytest: 38 passed; 6 infrastructure-gated tests skipped; coverage-enabled local run reported 69% across `app`, `worker`, and `proxy`.
+- pytest: 23 passed; 6 infrastructure-gated tests skipped.
 - Ruff lint and format: passed from the project virtual environment.
 - mypy: passed for the CI targets (`app worker.py migrations tests`).
 - compileall and `pip check`: passed.
 - pip-audit: no known vulnerabilities at time of run.
 - SQLite migration upgrade/downgrade/upgrade: passed.
-- Compose smoke script syntax: passed.
+- Docker Compose configuration validation: passed.
+- Docker Compose build/start, container health, and worker-backed E2E: not run because the Docker daemon was unavailable.
 - Secret/artifact tracking scan: no tracked secrets, database dumps, or caches.
 
-These are local results reported for the current `main` checkout. CI run #160 is the authoritative automated check evidence for the current published commit. A passing CI job does not verify production infrastructure.
+These are local results reported for the current checkout. CI run #161 is the authoritative automated check evidence for the current published commit. A passing CI job does not verify production infrastructure.
+
+## GitHub secret-scanning access
+
+The repository Security page was reachable, but the browser session was unauthenticated and displayed a GitHub sign-in link. The dedicated secret-scanning alerts page was therefore not accessible. No alert count or alert state is inferred from this limitation. To inspect it manually, sign in with repository security-administration access and open **Repository → Security → Secret scanning → Alerts**. Do not treat the local tracked-file pattern scan as a substitute for GitHub's alert view.
 
 ## Security test hardening
 
