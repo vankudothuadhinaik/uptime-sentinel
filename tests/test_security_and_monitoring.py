@@ -346,6 +346,64 @@ def test_response_size_limit_is_enforced(db_session, monkeypatch):
     assert result.error_category == "response_too_large"
 
 
+
+def test_total_deadline_includes_slow_streamed_body(monkeypatch):
+    import asyncio
+
+    from app import monitoring
+
+    monkeypatch.setattr("app.monitoring.validate_target", lambda _: None)
+    monkeypatch.setattr(
+        "app.monitoring.get_settings",
+        lambda: Settings(max_response_bytes=1024),
+    )
+    wall_clock_timeout = asyncio.timeout
+    monkeypatch.setattr(
+        monitoring.asyncio, "timeout", lambda _: wall_clock_timeout(0.02)
+    )
+    monitor = Monitor(
+        name="slow-stream",
+        url="https://example.com",
+        interval_seconds=60,
+        timeout_seconds=1,
+    )
+
+    class SlowResponse:
+        status_code = 200
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_):
+            return False
+
+        async def aiter_bytes(self):
+            await asyncio.sleep(0.08)
+            yield b"ok"
+
+    class FakeAsyncClient:
+        def __init__(self, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_):
+            return False
+
+        def stream(self, *args, **kwargs):
+            return SlowResponse()
+
+    monkeypatch.setattr(monitoring.httpx, "AsyncClient", FakeAsyncClient)
+    status_code, is_up, error_category, _ = asyncio.run(
+        monitoring._request_with_deadline(monitor)
+    )
+
+    assert status_code is None
+    assert is_up is False
+    assert error_category == "timeout"
+
+
 def test_monitor_client_uses_configured_proxy(monkeypatch, db_session):
     from app import monitoring
 
