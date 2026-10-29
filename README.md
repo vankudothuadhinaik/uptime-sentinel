@@ -151,17 +151,18 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Latest main-branch verification: [CI run #227](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40848379667) completed successfully on 2026-10-29. `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets are not configured.
+Latest CI verification: [run #229](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849371364) passed on PR #11 (2026-10-29), including the newly added `proxy-local-integration` job.
 
 | Check | Verified result |
 |---|---|
 | `checks` job | **Passed** — dependencies, lint, formatting, type checking, PostgreSQL concurrency, tests/coverage, Codecov upload, compile, dependency audit, and migration round trips |
 | `compose-smoke` | **Passed** — Compose configuration, container build/start, API health, registration/login, monitor creation, worker check persistence, and public status |
-| `proxy-integration` | **Skipped** — opt-in controlled proxy fixture secrets are not configured; this is not a security pass |
+| `proxy-local-integration` | **Passed** — 29 controlled local proxy security tests covering address policy, DNS failures/mixed answers, connection pinning, redirects, authentication, unsupported requests, and TLS verification |
+| `proxy-integration` | **Skipped** — optional independently operated proxy fixtures/secrets are not configured; this is not a security pass for any external/production proxy |
 | Local Docker Compose end-to-end demo (2026-10-29) | **Passed** — isolated stack; registration/login, monitor creation, worker processing, persisted HTTP 200 result, and public status |
 | Render API/worker deployment | **Not deployed or required** |
 
-Run #227 is the latest successful main-branch CI run after the proxy hardening and final documentation updates. Local Compose verification was also completed on 2026-10-29. These checks do not prove the external proxy security boundary or production readiness.
+PR #11 has been merged to main. Run #229 passed all required CI jobs; the separate external `proxy-integration` job remains opt-in and skipped. These checks validate the repository's local proxy implementation and test fixtures, not an independently operated production proxy or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
