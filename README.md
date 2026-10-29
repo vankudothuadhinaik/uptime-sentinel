@@ -126,7 +126,7 @@ The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
 - Compose end-to-end smoke: registration/login, monitor creation, worker check persistence, and public status
 - Deterministic local proxy security regressions; the external controlled-proxy suite remains opt-in
 
-PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`; the latest pushed commit is `6bec54c`. CI run [#325](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40924701371) passed for parent commit `4adefa5`; the latest-SHA checks page is still loading and has no completed result. The external controlled-proxy job remains opt-in and is not claimed as passed.
+PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`; the latest verified head is `2292cc131e805e04cfa541f8ff30db0bb9835342`. GitHub Actions run [#333](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40932673232) completed successfully for this commit. The opt-in external controlled-proxy job was skipped because its independently controlled fixture infrastructure is not configured; that skip is not a security pass.
 
 [![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
 
@@ -166,7 +166,7 @@ The current branch also corrects the retained failed-check metric to a gauge nam
 
 ## Verification status
 
-Local verification passed; CI run #325 passed for parent commit `4adefa5`. The latest commit `6bec54c` still needs its own completed workflow result.
+The latest pushed commit `2292cc131e805e04cfa541f8ff30db0bb9835342` has a completed successful GitHub Actions run: [run #333](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40932673232). The external controlled-proxy job was skipped and remains a release blocker for production use.
 
 | Check | Verified result |
 |---|---|
