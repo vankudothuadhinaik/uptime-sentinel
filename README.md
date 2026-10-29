@@ -156,40 +156,35 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 - Response bodies are streamed only up to `MAX_RESPONSE_BYTES`; errors are bounded and credentials are not logged.
 - **Important limitation:** DNS can change between application validation and the HTTP connection. Production therefore requires `EGRESS_PROXY_URL` to point to a private, controlled proxy that independently validates the actual destination at connection time. Do not use an arbitrary public proxy.
 
-## Current P0 reliability/security hardening (PR #14)
+## Recent hardening
 
-The current pull-request branch adds a shared lease path for manual and scheduled checks, a wall-clock deadline spanning streamed HTTP bodies, strict PATCH null validation, fenced result persistence, one-open-incident database enforcement, concurrent quota serialization, stable bounded incident/check pagination, and regression coverage.
+PR #14, **Harden proxy limits and operational metrics**, is merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`. It adds bounded proxy concurrency and overload handling, operational Prometheus gauges, and regression coverage.
 
-The current branch also corrects the retained failed-check metric to a gauge name, covers metric values/types and proxy overload/oversized-header responses, adds allowed-forwarding socket coverage, disposes test engines, and makes the PostgreSQL concurrency test deterministic on persistent databases.
+## Verification status — 2026-10-30
 
-**Remaining external gate:** the opt-in controlled-proxy test is blocked because independently controlled fixture URLs/configuration are not available. Do not treat this as evidence that DNS rebinding, private-IP blocking, redirects, and invalid TLS have been verified against an externally operated proxy. PR #14 remains open; no release tag has been created.
+**Portfolio scope: implementation and standard CI are verified.** The latest main-branch workflow [run #346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) completed successfully for commit `c857035f783514be763d397e90610a221e54e613`.
 
-## Verification status
-
-The latest pushed commit `2292cc131e805e04cfa541f8ff30db0bb9835342` has a completed successful GitHub Actions run: [run #333](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40932673232). The external controlled-proxy job was skipped and remains a release blocker for production use.
-
-| Check | Verified result |
+| Check | Result |
 |---|---|
-| `checks` job | **Passed** — dependencies, lint, formatting, type checking, PostgreSQL concurrency, tests/coverage, Codecov upload, compile, dependency audit, and migration round trips |
-| `compose-smoke` | **Passed** — Compose configuration, container build/start, API health, registration/login, monitor creation, worker check persistence, and public status |
-| `proxy-local-integration` | **Passed** — controlled local proxy security tests covering address policy, DNS failures/mixed answers, connection pinning, redirects, authentication, unsupported requests, and TLS verification |
-| `proxy-integration` | **Skipped** — optional independently operated proxy fixtures/secrets are not configured; this is not a security pass for any external/production proxy |
-| Local Docker Compose end-to-end demo (2026-10-29) | **Passed** — isolated stack; registration/login, monitor creation, worker processing, persisted HTTP 200 result, and public status |
-| Render API/worker deployment | **Not deployed or required** |
+| Main CI checks (lint, formatting, typing, tests, migrations, dependency audit) | **Passed** |
+| Controlled local proxy security integration | **Passed** |
+| Docker Compose end-to-end smoke | **Passed** |
+| External controlled-proxy integration | **Not run — requires independently controlled fixtures and secrets** |
+| Render API/background-worker production deployment | **Not deployed; outside the free-only portfolio scope** |
 
-PR #14 is not merged. The external `proxy-integration` job remains opt-in and blocked until controlled fixture infrastructure exists. These checks validate the repository's local proxy implementation and deterministic fixtures, not an independently operated production proxy or production readiness.
+The local tests and green CI are evidence for the repository and deterministic local fixtures. They do **not** prove that a separately operated public proxy is secure, and this project must not be described as production-certified.
 
-## Production-only release gates (out of scope for this portfolio project)
+The existing Render proxy is a test service on the `integration/sentry-doppler` branch, with public ingress allowed. It is not a production egress-security boundary and must not be used for sensitive or production traffic.
 
-- [ ] Provision an isolated, access-controlled egress proxy that validates the actual destination IP at connection time and enforces IPv4/IPv6, private/loopback/link-local/metadata, DNS-rebinding, redirect, and TLS policy.
-- [ ] Only if you operate a controlled proxy and deterministic fixtures, configure these GitHub Actions repository secrets (they are fixture URLs/configuration, not values to invent): `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, `EGRESS_BAD_TLS_URL`.
-- [ ] Manually dispatch the workflow with `run_external_proxy_tests` checked and verify `proxy-integration` actually runs and passes. Inspect proxy enforcement logs; generic network errors and arbitrary 5xx responses are not proof of destination blocking.
-- [ ] Configure production `DATABASE_URL`, a unique `JWT_SECRET` of at least 32 characters, and the private `EGRESS_PROXY_URL` for both API and worker.
-- [ ] Apply migrations once through a controlled release step.
-- [ ] Verify `/health/live`, `/health/ready`, registration, monitor creation, worker execution, result/incident persistence, recovery after restart, and retention cleanup.
-- [ ] Record actual proxy test results, deployment IDs/URLs, migration result, and end-to-end observations in [VERIFICATION_REPORT.md](VERIFICATION_REPORT.md).
+## Optional production-only gates (not required to finish the free portfolio project)
 
-**Do not label this project production-ready until every applicable release gate is genuinely verified.** Standard CI and unit tests cannot replace a real controlled egress-proxy test or deployed end-to-end smoke test.
+- [ ] Provision a private, access-controlled egress proxy with connection-time destination-IP enforcement.
+- [ ] Operate controlled public/private/DNS-rebinding/redirect/invalid-TLS fixtures and configure the six `EGRESS_*` GitHub Actions secrets.
+- [ ] Manually dispatch CI with `run_external_proxy_tests` enabled and verify the external job and proxy logs.
+- [ ] Separately approve hosting costs and deploy API plus a genuine background worker; configure secrets, run migrations once, and perform deployed end-to-end recovery checks.
+- [ ] Plan database continuity before relying on the expiring free Render PostgreSQL instance.
+
+**No further action is required from you to use, clone, test, or demonstrate the free-only portfolio project.** The items above are additional work only if you want a production deployment and its independent security evidence.
 
 ## Useful links
 
