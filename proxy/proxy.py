@@ -22,6 +22,8 @@ PASSWORD = os.getenv("PROXY_PASSWORD", "")
 HEADER_LIMIT = 32 * 1024
 CONNECT_TIMEOUT = 8
 IDLE_TIMEOUT = 60
+MAX_CONCURRENT_CONNECTIONS = max(1, int(os.getenv("PROXY_MAX_CONNECTIONS", "128")))
+_connection_slots = asyncio.Semaphore(MAX_CONCURRENT_CONNECTIONS)
 FORWARD_METHODS = {"DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"}
 
 
@@ -133,7 +135,7 @@ async def _tunnel(client_r, client_w, host: str, port: int) -> None:
         client_w.close()
 
 
-async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter) -> None:
+async def _handle_connection(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter) -> None:
     upstream_w = None
     try:
         raw = await asyncio.wait_for(client_r.readuntil(b"\r\n\r\n"), timeout=10)
@@ -234,10 +236,32 @@ async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter)
             pass
 
 
+async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter) -> None:
+    """Bound concurrent client sessions and reject excess load without unbounded queuing."""
+    if _connection_slots.locked():
+        client_w.write(
+            b"HTTP/1.1 503 Service Unavailable\r\nConnection: close\r\n"
+            b"Retry-After: 1\r\nContent-Length: 0\r\n\r\n"
+        )
+        try:
+            await client_w.drain()
+        finally:
+            client_w.close()
+            try:
+                await client_w.wait_closed()
+            except OSError:
+                pass
+        return
+    async with _connection_slots:
+        await _handle_connection(client_r, client_w)
+
+
 async def main() -> None:
     if len(USERNAME) < 8 or len(PASSWORD) < 32:
         raise SystemExit("PROXY_USERNAME must be >=8 chars and PROXY_PASSWORD >=32 chars")
-    server = await asyncio.start_server(handle, HOST, PORT, limit=HEADER_LIMIT + 1)
+    server = await asyncio.start_server(
+        handle, HOST, PORT, limit=HEADER_LIMIT + 1, backlog=128
+    )
     async with server:
         await server.serve_forever()
 
