@@ -298,8 +298,16 @@ async def test_actual_proxy_preserves_tls_verification(
             async with httpx.AsyncClient(
                 proxy=proxy, follow_redirects=False, trust_env=False, verify=True
             ) as client:
-                with pytest.raises(httpx.HTTPError):
+                with pytest.raises(httpx.ConnectError) as exc_info:
                     await client.get("https://invalid-tls.test/")
+
+            # A refused connection or timeout is not evidence of TLS validation.
+            # Require the failure to be caused by the self-signed upstream cert.
+            message = str(exc_info.value).lower()
+            assert "certificate verify failed" in message or "self-signed certificate" in message, (
+                "expected an upstream certificate verification failure, "
+                f"got connection error: {exc_info.value}"
+            )
         finally:
             proxy_server.close()
             await proxy_server.wait_closed()
