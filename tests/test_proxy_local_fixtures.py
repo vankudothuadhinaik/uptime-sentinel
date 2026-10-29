@@ -5,9 +5,9 @@ import shutil
 import socket
 import ssl
 import subprocess
+from collections.abc import Awaitable, Callable
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Awaitable, Callable
 
 import httpx
 import pytest
@@ -107,7 +107,9 @@ async def test_actual_proxy_does_not_follow_local_unsafe_redirect(
             f"http://127.0.0.1:{proxy_port}",
             auth=(PROXY_USERNAME, PROXY_PASSWORD),
         )
-        async with httpx.AsyncClient(proxy=proxy, follow_redirects=False, trust_env=False) as client:
+        async with httpx.AsyncClient(
+            proxy=proxy, follow_redirects=False, trust_env=False
+        ) as client:
             response = await client.get("http://redirect-fixture.test/")
         assert response.status_code == 302
         assert response.headers["location"] == "http://127.0.0.1/private"
@@ -157,9 +159,7 @@ async def test_actual_proxy_preserves_tls_verification(
         certificate, key = _create_self_signed_certificate(Path(temporary_directory))
         tls_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         tls_context.load_cert_chain(certificate, key)
-        fixture_server = await asyncio.start_server(
-            _tls_response, "127.0.0.1", 0, ssl=tls_context
-        )
+        fixture_server = await asyncio.start_server(_tls_response, "127.0.0.1", 0, ssl=tls_context)
         proxy_server, proxy_port = await _proxy_server(monkeypatch)
 
         async def resolver(_: str, __: int):
