@@ -138,9 +138,25 @@ def perform_check(
             _request_with_deadline(monitor)
         )
     else:
+        settings = get_settings()
+        deadline = time.monotonic() + monitor.timeout_seconds
+        proxy = (
+            httpx.Proxy(
+                settings.egress_proxy_url,
+                auth=(
+                    (settings.egress_proxy_username, settings.egress_proxy_password)
+                    if settings.egress_proxy_username
+                    else None
+                ),
+            )
+            if settings.egress_proxy_url
+            else None
+        )
         status_code, is_up, error_category, error_message = _request_with_injected_client(
             monitor, client
         )
+        # Injected clients remain the test seam, but production creates its own
+        # configured async client and applies a strict deadline to the full body.
 
     # The monitor row is the serialization point for incident transitions.
     # PostgreSQL holds this lock until the check and incident update commit.

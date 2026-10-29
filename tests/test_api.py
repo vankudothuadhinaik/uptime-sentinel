@@ -12,7 +12,10 @@ def auth(client, email):
     return {"Authorization": f"Bearer {response.json()['access_token']}"}
 
 
-def test_health_and_auth():
+def test_health_and_auth(monkeypatch):
+    from app.main import limiter
+
+    monkeypatch.setattr(limiter, "enabled", False)
     with TestClient(app) as client:
         assert client.get("/health/live").json() == {"status": "ok"}
         headers = auth(client, "alice@example.com")
@@ -25,7 +28,10 @@ def test_health_and_auth():
         )
 
 
-def test_cross_user_isolation_and_public_status():
+def test_cross_user_isolation_and_public_status(monkeypatch):
+    from app.main import limiter
+
+    monkeypatch.setattr(limiter, "enabled", False)
     with TestClient(app) as client:
         alice = auth(client, "alice2@example.com")
         bob = auth(client, "bob@example.com")
@@ -41,7 +47,10 @@ def test_cross_user_isolation_and_public_status():
         assert public.status_code == 200 and set(public.json()) == {"name", "status", "last_check"}
 
 
-def test_validation_and_pause_update():
+def test_validation_and_pause_update(monkeypatch):
+    from app.main import limiter
+
+    monkeypatch.setattr(limiter, "enabled", False)
     with TestClient(app) as client:
         headers = auth(client, "carol@example.com")
         assert (
@@ -63,7 +72,10 @@ def test_validation_and_pause_update():
     "field",
     ["name", "url", "interval_seconds", "timeout_seconds", "is_paused", "public"],
 )
-def test_patch_rejects_explicit_null_for_non_nullable_fields(field):
+def test_patch_rejects_explicit_null_for_non_nullable_fields(field, monkeypatch):
+    from app.main import limiter
+
+    monkeypatch.setattr(limiter, "enabled", False)
     with TestClient(app) as client:
         headers = auth(client, f"null-{field}@example.com")
         created_response = client.post(
@@ -80,7 +92,10 @@ def test_patch_rejects_explicit_null_for_non_nullable_fields(field):
         assert response.status_code == 422
 
 
-def test_invalid_jwt_and_pagination_bounds():
+def test_invalid_jwt_and_pagination_bounds(monkeypatch):
+    from app.main import limiter
+
+    monkeypatch.setattr(limiter, "enabled", False)
     with TestClient(app) as client:
         assert (
             client.get("/monitors", headers={"Authorization": "Bearer not-a-jwt"}).status_code
@@ -106,7 +121,10 @@ def test_invalid_jwt_and_pagination_bounds():
         )
 
 
-def test_incident_history_has_stable_paginated_response(db_session):
+def test_incident_history_has_stable_paginated_response(db_session, monkeypatch):
+    from app.main import limiter
+
+    monkeypatch.setattr(limiter, "enabled", False)
     from datetime import datetime, timedelta, timezone
 
     from app.models import Incident, Monitor
@@ -142,7 +160,10 @@ def test_incident_history_has_stable_paginated_response(db_session):
         assert ids_one[0] > ids_one[1] > ids_two[0]
 
 
-def test_public_status_does_not_expose_private_fields():
+def test_public_status_does_not_expose_private_fields(monkeypatch):
+    from app.main import limiter
+
+    monkeypatch.setattr(limiter, "enabled", False)
     with TestClient(app) as client:
         headers = auth(client, "public@example.com")
         created = client.post(
@@ -156,6 +177,9 @@ def test_public_status_does_not_expose_private_fields():
 
 
 def test_manual_check_claims_and_fences_lease(monkeypatch):
+    from app.main import limiter
+
+    monkeypatch.setattr(limiter, "enabled", False)
     from app import main as main_module
     from app.monitoring import StaleLease
 
