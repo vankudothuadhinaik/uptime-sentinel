@@ -45,7 +45,7 @@ PR #12 was merged into `main` on 2026-10-29 as commit `aa7fc8e64a5f9f3a7cdb5a8a7
 - [x] Concurrency-safe monitor quota check and stable bounded incident/check pagination.
 - [x] Slow-stream timeout regression, full test suite, PostgreSQL concurrency, formatting/type/lint, dependency audit, and PostgreSQL/SQLite migration round-trips passed in run #285. The final local suite reported 60 passed and 8 skipped.
 - [ ] External controlled-proxy integration: **not run** because controlled fixture endpoints/secrets have not been configured.
-- [x] Shared rate-limit backend is configurable via `RATE_LIMIT_STORAGE_URI`; default `memory://` is single-process only. Set a protected Redis URL before running multiple API replicas.
+- [x] Shared rate-limit backend is configurable via `RATE_LIMIT_STORAGE_URI`; default `memory://` is single-process only. Set a protected Redis URL before running multiple API replicas.\n- [x] Added `/metrics` Prometheus text endpoint for overdue checks, expired leases, open incidents, and retained failed-check history. Scheduler errors remain structured logs, not a durable counter.\n- [x] Bounded proxy concurrent sessions with `PROXY_MAX_CONNECTIONS` (default 128), overload 503/Retry-After response, and a bounded listen backlog.
 - [x] PR #12 merged into `main` as `aa7fc8e64a5f9f3a7cdb5a8a74313e9e26ea23ce`.
 - [ ] Release tag: **not created**.
 
