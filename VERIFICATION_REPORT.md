@@ -8,7 +8,7 @@ Run date: 2026-10-29
 
 ## Latest completed end-to-end CI evidence
 
-[Main-branch run #222](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40847422445) on merge commit `80ec36f4c91ba1d30704a5401b6a5db9cd111bb5` completed successfully on 2026-10-29 after PR #10 merged.
+[Main-branch run #227](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40848379667) on commit `df99d957e16aec2b1d0566c791c85ad867874350` completed successfully on 2026-10-29 after the proxy-hardening changes and final documentation updates.
 
 | Job | Result | What it establishes |
 |---|---|---|
@@ -16,7 +16,7 @@ Run date: 2026-10-29
 | `compose-smoke` | **PASS** | Compose configuration validation, container build/start, API liveness, registration/login, monitor creation, worker check persistence, and public status all passed. |
 | `proxy-integration` | **SKIPPED** | Controlled proxy fixture URLs/secrets are not configured. This is not a security pass. |
 
-Run #222 is the latest verified main-branch CI result after the proxy hardening changes were merged.
+Run #227 is the latest successful main-branch CI result. It verifies the code checks and Compose E2E flow; the external proxy job remains skipped.
 
 The final PR branch adds deterministic proxy request-validation and cleanup regression coverage. Its checks job passed the full suite, PostgreSQL concurrency test, migrations, dependency audit, compilation, and formatting/type checks. Its Compose job passed the registration-to-worker E2E flow. The external proxy job remained skipped because the six controlled fixture secrets are not configured.
 
@@ -87,4 +87,4 @@ The user-provided screenshot of the repository's **Secret scanning alerts** page
 
 ## Final assessment
 
-**Portfolio project with a passing automated CI and end-to-end Compose baseline; not represented as production-ready.** Remaining manual/security checks are explicitly identified rather than silently marked complete.
+**Portfolio project with passing automated CI and end-to-end Compose baseline; not represented as production-ready.** The external controlled-proxy integration suite is still unverified: its six dedicated fixture secrets are not configured, and the job was skipped in run #227. Local proxy regression tests and direct checks are useful evidence but do not replace a real controlled proxy test. No production deployment is claimed.
