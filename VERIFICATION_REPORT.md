@@ -30,6 +30,8 @@ Run date: 2026-10-29
 
 These are local results reported for the current checkout. CI run #161 is the authoritative automated check evidence for the current published commit. A passing CI job does not verify production infrastructure.
 
+The follow-up local audit was performed on branch `audit/final-local-verification`. Docker CLI and Compose are installed, but Docker Desktop's Linux engine is unavailable at the configured named pipe, so no containers were started. `gh` and `psql` are not installed; no authenticated GitHub security-alert query or local PostgreSQL concurrency run was possible. `POSTGRES_TEST_URL` and all six proxy fixture variables were absent from the environment and local dotenv file.
+
 ## GitHub secret-scanning access
 
 The repository Security page was reachable, but the browser session was unauthenticated and displayed a GitHub sign-in link. The dedicated secret-scanning alerts page was therefore not accessible. No alert count or alert state is inferred from this limitation. To inspect it manually, sign in with repository security-administration access and open **Repository → Security → Secret scanning → Alerts**. Do not treat the local tracked-file pattern scan as a substitute for GitHub's alert view.
