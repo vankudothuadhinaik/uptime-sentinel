@@ -19,11 +19,11 @@
 ## Final verification — 2026-10-30
 
 - [x] PR #14 merged into `main`: [PR #14](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/14), merge commit `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`.
-- [x] Latest main CI passed: [run #346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581), commit `c857035f783514be763d397e90610a221e54e613`.
+- [x] Latest main CI passed: [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101), documentation commit `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`; code-focused run [#346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) also passed.
 - [x] Main CI checks passed.
 - [x] Controlled local proxy security integration passed.
 - [x] Docker Compose smoke passed.
-- [x] Repository docs updated to reflect the current merge and CI state.
+- [x] Repository docs updated to reflect the current merge and CI state; stale queued-run references removed.
 - [x] No paid Render resources were created for this portfolio scope.
 - [ ] External controlled-proxy security suite: **not run**; intentionally optional for the free portfolio scope and required before claiming production proxy security.
 - [ ] Production deployment: **not performed**; outside the selected free-only scope.
