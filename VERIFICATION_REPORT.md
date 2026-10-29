@@ -1,6 +1,6 @@
 # Uptime Sentinel verification report
 
-Run date: 2026-10-29
+Run date: 2026-10-30
 
 ## Current change
 
@@ -21,8 +21,8 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pu
 | Docker Compose smoke | **PASS** | Images built; PostgreSQL/Redis health, API migrations/readiness, auth, monitor creation, worker persistence, and public status passed. |
 | Local egress proxy security | **PASS** | Real local fixture tests cover private/mixed DNS answers, DNS failures, resolver pinning, redirects, auth, unsupported methods/ports, target credentials, invalid TLS, overload 503, and oversized headers. |
 | External controlled egress proxy | **BLOCKED** | All six fixture variables are unset; `tests/test_egress_proxy_integration.py` reported 5 skipped. No external security pass is claimed. |
-| GitHub Actions run #325 | **PASS** | Required CI jobs passed for parent commit `4adefa5`; opt-in `proxy-integration` was skipped. |
-| CI for latest commit `6bec54c` | **PENDING/BLOCKED** | The push is present on the remote branch, but GitHub's public checks page is still loading and no completed workflow result is exposed for this SHA. |
+| GitHub Actions run #333 | **PASS** | Required CI workflow completed successfully for code commit `2292cc131e805e04cfa541f8ff30db0bb9835342`; opt-in `proxy-integration` was skipped. |
+| CI for README documentation update | **PENDING** | README status was refreshed after run #333; verify the workflow triggered by the documentation commit before declaring the newest branch head CI-verified. |
 
 ## Changes made
 
@@ -34,7 +34,7 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pu
 
 ## Skips and blockers
 
-The eight local test skips include the five external proxy cases, PostgreSQL tests without a configured URL in the host virtual environment, and an OpenSSL-dependent fixture. The PostgreSQL tests were separately run against Docker PostgreSQL 16 and passed. The external proxy cases require an independently controlled authenticated proxy plus public, private, rebinding, redirect, and invalid-TLS fixture URLs. They cannot be safely invented or replaced with mocks.
+The local test suite previously reported eight skips, including the five external proxy cases, PostgreSQL tests without a configured URL in the host virtual environment, and an OpenSSL-dependent fixture. The local invalid-TLS test has now been tightened to require a certificate-verification-specific error; run #333 passed with this assertion. The PostgreSQL tests were separately run against Docker PostgreSQL 16 and passed. The external proxy cases require an independently controlled authenticated proxy plus public, private, rebinding, redirect, and invalid-TLS fixture URLs. They cannot be safely invented or replaced with mocks.
 
 The project is not production-certified. Production use still requires controlled proxy infrastructure, real external proxy integration evidence, production secrets, migration/release procedures, and operational continuity controls.
 
