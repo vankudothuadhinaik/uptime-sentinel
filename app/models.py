@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text, func, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -63,6 +63,15 @@ class CheckResult(Base):
 
 class Incident(Base):
     __tablename__ = "incidents"
+    __table_args__ = (
+        Index(
+            "uq_incidents_one_open_per_monitor",
+            "monitor_id",
+            unique=True,
+            postgresql_where=text("resolved_at IS NULL"),
+            sqlite_where=text("resolved_at IS NULL"),
+        ),
+    )
     id: Mapped[int] = mapped_column(primary_key=True)
     monitor_id: Mapped[int] = mapped_column(
         ForeignKey("monitors.id", ondelete="CASCADE"), index=True
