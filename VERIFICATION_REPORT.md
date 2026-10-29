@@ -8,7 +8,7 @@ Run date: 2026-10-29
 
 ## Latest completed end-to-end CI evidence
 
-[Run #197](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40837386321) on commit `4a955bc2c3df1a8a9809438bdd0121031997b648` completed successfully.
+[Run #200](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40837738417) on commit `91ac1b553664aedc139c52c11b16ccdfc841018f` completed successfully.
 
 | Job | Result | What it establishes |
 |---|---|---|
@@ -31,7 +31,7 @@ Run #197 also validates the CI concurrency optimization that cancels superseded 
 
 ## Verification limits
 
-- The latest CI end-to-end run #197 verifies readiness, registration/login, monitor creation, worker check persistence, and public status against `https://example.com`. Run #197 completed successfully: `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
+- The latest confirmed successful CI run #200 verifies the repository workflow. Earlier run #197 verified readiness, registration/login, monitor creation, worker check persistence, and public status against `https://example.com`. The controlled proxy-integration job remains skipped because its dedicated fixture URLs/secrets are not configured.
 - A separate local Docker Compose run was completed on 2026-10-29 using an isolated Compose project (`uptime-sentinel-audit`); the real registration-to-worker E2E flow passed. See **Local Docker Compose verification (2026-10-29)** below.
 - External proxy integration tests remain skipped because controlled fixtures/secrets are not configured. Do not treat the skip as a pass.
 - The old public test proxy has not passed the controlled security suite and must not be used for sensitive or production traffic.
@@ -47,7 +47,8 @@ Run #197 also validates the CI concurrency optimization that cancels superseded 
 - [x] Paid Render blueprint removed; historical deployment notes clearly say deployment is out of scope.
 - [x] External proxy integration limitations clearly documented.
 - [x] Run the complete demo locally with Docker Compose, including worker-backed check persistence (2026-10-29; isolated project and preserved existing resources).
-- [x] Review GitHub Secret scanning → Alerts in the GitHub UI (user-provided screenshot dated 2026-10-29 shows 0 open and 0 closed alerts; push protection was not separately checked).
+- [x] Review GitHub Secret scanning → Alerts in the UI (screenshot dated 2026-10-29 shows 0 open and 0 closed alerts).
+- [x] Verify GitHub push protection is enabled (user-provided Advanced Security screenshot dated 2026-10-29 shows Secret Protection / Push protection **On**).
 
 ## Production-only work — intentionally out of scope
 
@@ -80,7 +81,29 @@ Skipped tests remain explicit: five controlled proxy integration tests require f
 
 ## GitHub secret-scanning alert review (2026-10-29)
 
-The user-provided screenshot of the repository's **Secret scanning alerts** page showed **0 Open**, **0 Closed**, and “No secrets found.” This verifies the alert view at the time of the screenshot. It does not prove that no secret was ever present or that GitHub detects every possible secret. **Push protection was not separately verified.**
+The user-provided screenshot of the repository's **Secret scanning alerts** page showed **0 Open**, **0 Closed**, and “No secrets found.” A separate user-provided Advanced Security settings screenshot dated 2026-10-29 shows **Secret Protection → Push protection: On**. These screenshots verify the visible settings at capture time; they do not prove that no secret was ever present or that GitHub detects every possible secret.
+
+
+## Local controlled-proxy supplemental checks (2026-10-29)
+
+The local audit ran the repository's actual authenticated proxy implementation (proxy/proxy.py) on loopback with disposable test credentials. No public proxy was created or used.
+
+| Direct proxy check | Result |
+|---|---|
+| Loopback destination 127.0.0.1 | **PASS** — HTTP 403 |
+| RFC1918 private destination 10.0.0.1 | **PASS** — HTTP 403 |
+| Link-local / metadata destination 169.254.169.254 | **PASS** — HTTP 403 |
+| IPv4-mapped IPv6 loopback | **PASS** — HTTP 403 using a direct proxy-protocol request |
+| Valid public HTTPS to https://example.com/ | **PASS** — HTTP 200 |
+| Invalid proxy credentials | **PASS** — HTTP 407 |
+
+These are supplemental direct checks, not a substitute for the formal fixture-backed integration suite. The formal suite tests/test_egress_proxy_integration.py remains **5 skipped** because dedicated fixture endpoints are absent. DNS rebinding (controlled public-then-private resolution), unsafe redirect behavior against the fixture, and invalid upstream TLS fixture behavior therefore remain **unverified**. Do not claim full egress-proxy security verification.
+
+The local audit reported the following from the repository worktree: full pytest **38 passed, 6 skipped**; proxy/security selection **30 passed, 5 skipped**; Ruff lint, Ruff format check, mypy, and git diff --check all passed. The 6 infrastructure-gated skips and 5 proxy fixture skips are not counted as passes.
+
+## Push protection setting
+
+The user's screenshot of GitHub Settings → Advanced Security dated 2026-10-29 shows **Secret Protection → Push protection: On**. This closes the earlier verification gap for the visible repository setting. Secret scanning alerts showed 0 open and 0 closed alerts in the separate screenshot. Neither observation guarantees that all possible secrets will be detected.
 
 ## Final assessment
 
