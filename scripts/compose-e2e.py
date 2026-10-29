@@ -12,7 +12,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 BASE_URL = os.environ.get("UPTIME_SENTINEL_BASE_URL", "http://127.0.0.1:8000")
-EMAIL = "compose-smoke@example.com"
+EMAIL = f"compose-smoke-{time.time_ns()}@example.com"
 PASSWORD = "ci-only-password-12345"
 TARGET_URL = "https://example.com"
 
