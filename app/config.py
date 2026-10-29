@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     database_url: str = "sqlite:///./uptime_sentinel.db"
     redis_url: str = "redis://localhost:6379/0"
+    rate_limit_storage_uri: str = "memory://"
     egress_proxy_url: str = ""
     egress_proxy_username: str = ""
     egress_proxy_password: str = ""
