@@ -122,7 +122,7 @@ The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
 - Compose end-to-end smoke: registration/login, monitor creation, worker check persistence, and public status
 - Deterministic local proxy security regressions; the external controlled-proxy suite remains opt-in
 
-The latest PR #12 validation is [run #283](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40892273614) for commit `cc170dc97f9afe0a68d85a5fd8399d2f5c9bc878`. Its `checks`, `compose-smoke`, and `proxy-local-integration` jobs passed. The external controlled-proxy job was skipped because its fixture URLs and secrets are not configured; skipped is not passed.
+The latest PR #12 validation is [run #285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad`. Its `checks`, `compose-smoke`, and `proxy-local-integration` jobs passed. The external controlled-proxy job was skipped because its fixture URLs and secrets are not configured; skipped is not passed. GitHub also reports an independent `codecov/patch` check failure.
 
 [![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
 
@@ -156,13 +156,13 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 The current pull-request branch adds a shared lease path for manual and scheduled checks, a wall-clock deadline spanning streamed HTTP bodies, strict PATCH null validation, fenced result persistence, one-open-incident database enforcement, concurrent quota serialization, stable bounded incident/check pagination, and regression coverage.
 
-CI run [#283](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40892273614) for commit `cc170dc97f9afe0a68d85a5fd8399d2f5c9bc878` passed `checks`, `compose-smoke`, and `proxy-local-integration`.
+CI run [#285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad` passed `checks`, `compose-smoke`, and `proxy-local-integration`.
 
 **Not complete:** the opt-in external controlled-proxy test is skipped because independently controlled fixture URLs/secrets are not configured. Do not treat this skip as evidence that DNS rebinding, private-IP blocking, redirects, and invalid TLS have been verified against an externally operated proxy. PR #12 is open, not merged; no release tag has been created.
 
 ## Verification status
 
-Latest PR CI verification: [run #283](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40892273614) passed the required code, Compose, and deterministic local proxy jobs.
+Latest PR CI verification: [run #285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) passed the required code, Compose, and deterministic local proxy jobs.
 
 | Check | Verified result |
 |---|---|
@@ -173,7 +173,7 @@ Latest PR CI verification: [run #283](https://github.com/vankudothuadhinaik/upti
 | Local Docker Compose end-to-end demo (2026-10-29) | **Passed** — isolated stack; registration/login, monitor creation, worker processing, persisted HTTP 200 result, and public status |
 | Render API/worker deployment | **Not deployed or required** |
 
-PR #12 remains open and unmerged. Run #283 passed the required CI jobs; the separate external `proxy-integration` job remains opt-in and skipped. These checks validate the repository's local proxy implementation and test fixtures, not an independently operated production proxy or production readiness.
+PR #12 remains open and unmerged. Run #285 passed the required CI jobs; the separate external `proxy-integration` job remains opt-in and skipped. A separate `codecov/patch` check failed. These checks validate the repository's local proxy implementation and test fixtures, not an independently operated production proxy or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
