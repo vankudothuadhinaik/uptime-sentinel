@@ -1,97 +1,20 @@
-# Historical Render deployment notes — not part of the portfolio scope
+# Historical Render deployment notes
 
-**Status:** this document is retained as historical reference only. The current project goal is a free GitHub portfolio project with local Docker Compose and CI; do not create paid Render services for this scope.
+**Status: out of scope.** Uptime Sentinel is being completed as a free GitHub portfolio project with automated CI and a local Docker Compose demo. Paid hosting is not required, and this document is not an instruction to deploy services.
 
-This document describes an earlier deployment exploration for a dedicated Uptime Sentinel Render workspace. Do not deploy this project into an unrelated workspace. The PostgreSQL resource `uptime-sentinel-db` (`dpg-dbghkmc9v7es73dns2ig-a`) is available in Singapore. A free test egress-proxy service is deployed and reports Render status `live` at `https://uptime-sentinel-egress-proxy.onrender.com` from branch `integration/sentry-doppler`. It is internet-reachable and has not passed the controlled integration suite, so it is not approved for production. The API and continuous worker have not been deployed.
+The earlier Render exploration included:
+- A free test egress-proxy service at `https://uptime-sentinel-egress-proxy.onrender.com`.
+- A free PostgreSQL instance with an expiry date; it is not required by the local demo.
+- A proposed API/worker blueprint using paid Starter plans.
 
-## Former Render Blueprint (removed)
+The paid `render.yaml` blueprint was removed on 2026-10-29. No Render API or worker deployment is claimed. Do not recreate paid services just to complete the portfolio project.
 
-The `render.yaml` blueprint has been removed because it specified paid Starter plans for the API and worker. There is no current blueprint to deploy.
+## Security warning
 
-Important:
-- The blueprint does **not** create another database or an egress proxy. Reuse the existing PostgreSQL instance and provide its internal connection URL when prompted.
-- It requires `DATABASE_URL`, `JWT_SECRET`, `EGRESS_PROXY_URL`, `EGRESS_PROXY_USERNAME`, and `EGRESS_PROXY_PASSWORD` to be configured as secret environment values for both services. Do not enter dummy values or commit secrets.
-- Configure the private, destination-validating proxy before deploying production services. The application intentionally refuses production startup without `EGRESS_PROXY_URL`.
-- The earlier blueprint used paid Render Starter service plans for the API and worker. It was removed; do not recreate it as part of the free-only project.
-- A successful blueprint parse or service creation is not proof that the proxy is secure or that the application works end to end.
+The old test proxy was publicly reachable and had not passed the controlled egress-proxy integration suite. Do not use it for sensitive or production traffic. Application-side URL/DNS validation alone cannot fully prevent DNS-rebinding time-of-check/time-of-use attacks; production use would require a private, independently verified egress proxy.
 
-## Required architecture
+## If production deployment is considered later
 
-Use these resources in the dedicated workspace and the same region:
+Treat it as a separate project decision. Before provisioning any service, explicitly review current costs and approve the budget. Then separately plan private proxy enforcement, controlled integration fixtures, secrets, database continuity, migrations, and end-to-end verification. A skipped proxy integration job is not a security pass, and a green CI run is not production-readiness evidence.
 
-1. **Existing Render PostgreSQL** database, with backups appropriate to the data's importance.
-2. **Web service** from this repository, using the Docker runtime and repository-root Dockerfile. Health check path: `/health/ready`.
-3. **Background worker** from the same repository and Dockerfile, with Docker command overridden to `python worker.py`. Do not expose a public HTTP port for the worker.
-4. A **controlled egress proxy** reachable from both services. It must enforce public destination IP policy itself and log rejections. Do not use a public/general-purpose proxy.
-
-Use the same repository branch/commit for the API and worker. The Dockerfile installs the Python package and defaults to running the API with Uvicorn.
-
-## Environment variables
-
-Set these in the Render dashboard for **both API and worker** unless noted:
-
-| Key | Value |
-| --- | --- |
-| APP_ENV | production |
-| DATABASE_URL | Existing Render PostgreSQL internal connection URL, using `postgresql+psycopg://` if required by SQLAlchemy |
-| JWT_SECRET | Unique random secret generated in a password manager; at least 32 characters |
-| EGRESS_PROXY_URL | URL of the controlled proxy without embedded credentials; reachable from both services |
-| EGRESS_PROXY_USERNAME | Proxy username (at least 8 characters) |
-| EGRESS_PROXY_PASSWORD | Random proxy password (at least 32 characters) |
-| RESULT_RETENTION_DAYS | 30 unless the data policy specifies otherwise |
-| ACCESS_TOKEN_MINUTES | 60 unless a shorter token lifetime is required |
-| CHECK_USER_AGENT | UptimeSentinel/0.1 or an approved identifying value |
-| MAX_MONITORS_PER_USER | 50 |
-| MAX_RESPONSE_BYTES | 65536 |
-
-Do not commit production values to Git. Do not use the Compose-only local database password in production. Do not set `DATABASE_URL` to SQLite. Redis is not required by the current worker implementation.
-
-## API service settings
-
-- Runtime: Docker
-- Dockerfile path: `./Dockerfile`
-- Docker context: `.`
-- Health check path: `/health/ready`
-- Start command: use the Dockerfile default (Uvicorn)
-- Keep automatic deploys enabled only for the intended production branch.
-
-The API container's default command does not run migrations. Before the first release and after each schema-changing release, run `alembic upgrade head` once against the production database using a controlled one-off command/job with the same image and database environment. Do not run migrations independently in both API and worker processes.
-
-## Worker service settings
-
-- Runtime: Docker
-- Dockerfile path: `./Dockerfile`
-- Docker context: `.`
-- Docker command override: `python worker.py`
-- Use the same production environment variables as the API.
-- Do not add a public HTTP health check or expose a port for this service. Monitor worker logs and restart events.
-
-## GitHub Actions proxy integration
-
-Configure these **repository Actions secrets** only after the controlled proxy and fixture endpoints exist:
-
-- `EGRESS_PROXY_TEST_URL`
-- `EGRESS_PUBLIC_URL`
-- `EGRESS_PRIVATE_URL`
-- `EGRESS_REBIND_URL`
-- `EGRESS_REDIRECT_URL`
-- `EGRESS_BAD_TLS_URL`
-
-Then manually dispatch the CI workflow and confirm that `proxy-integration` actually executes and passes. Inspect the proxy enforcement logs. A skipped job is not a security pass.
-
-## Pre-launch release gate
-
-Before accepting user traffic, verify all of the following:
-
-- [ ] A dedicated workspace is selected and the API, worker, database, and proxy are in the intended region.
-- [ ] The existing database URL is private/internal and uses PostgreSQL.
-- [ ] The JWT secret is unique, random, and at least 32 characters.
-- [ ] The controlled proxy is reachable and blocks private, loopback, link-local, reserved, multicast, metadata, mapped IPv6, DNS-rebinding, and unsafe redirect destinations.
-- [ ] Proxy fixture endpoints and all six GitHub Actions secrets are configured.
-- [ ] Manually run CI and verify `proxy-integration` passes; inspect proxy enforcement logs.
-- [ ] Apply migrations once, then verify `/health/live` and `/health/ready` return success.
-- [ ] Register a disposable test account, create a test monitor for an allowed public fixture, confirm worker scheduling and check/result persistence, verify recovery behavior, then clean up test data.
-- [ ] Confirm API and worker logs contain no secrets and that TLS, access controls, alerts, and backups are appropriate.
-- [ ] Review the existing database's current plan and expiry. Upgrade/renew it before its expiry if production continuity is required.
-
-A successful Docker Compose smoke test is not a production deployment. Do not mark the proxy security gate complete based on mocked unit tests, a successful API health check, or blueprint creation alone.
+For the current free-only scope, use the [README quick start](../README.md#quick-start), [CI workflow](../.github/workflows/ci.yml), and [release checklist](../RELEASE_CHECKLIST.md).
