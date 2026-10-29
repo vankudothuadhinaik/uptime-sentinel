@@ -142,10 +142,13 @@ def test_incident_history_has_stable_paginated_response(db_session, monkeypatch)
         now = datetime.now(timezone.utc)
         db_session.add_all(
             [
-                Incident(monitor_id=monitor.id, started_at=now, failure_count=1),
-                Incident(monitor_id=monitor.id, started_at=now, failure_count=2),
+                Incident(monitor_id=monitor.id, started_at=now, resolved_at=now, failure_count=1),
+                Incident(monitor_id=monitor.id, started_at=now, resolved_at=now, failure_count=2),
                 Incident(
-                    monitor_id=monitor.id, started_at=now - timedelta(seconds=1), failure_count=3
+                    monitor_id=monitor.id,
+                    started_at=now - timedelta(seconds=1),
+                    resolved_at=now - timedelta(seconds=1),
+                    failure_count=3,
                 ),
             ]
         )
