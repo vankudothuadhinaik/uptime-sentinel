@@ -195,6 +195,7 @@ The existing Render proxy is a test service on the `integration/sentry-doppler` 
 - [Egress proxy test plan](EGRESS_PROXY_TESTING.md)
 - [Release checklist](RELEASE_CHECKLIST.md)
 - [Verification report](VERIFICATION_REPORT.md)
+- [Portfolio demo and interview walkthrough](docs/PORTFOLIO_DEMO.md)
 - [Doppler workflow](DOPPLER.md)
 
 ---
