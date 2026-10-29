@@ -27,6 +27,8 @@
 - [x] Keep the Render public test proxy out of production use. It allows public ingress and has not completed independent live security verification; it is explicitly marked as test-only in the docs.
 - [x] Keep instructions for local development aligned with the free-only scope; no paid hosting is required to clone, test, or demonstrate the project.
 
+The external proxy workflow is now an explicit opt-in on manual dispatch (`run_external_proxy_tests`). The six `EGRESS_*` values are fixture URLs/configuration, not passwords; only set them when you control the proxy and fixtures. Normal CI requires no such values and runs the local proxy security suite.
+
 ## Optional, explicitly out of scope
 
 - Paid Render API/background-worker hosting.

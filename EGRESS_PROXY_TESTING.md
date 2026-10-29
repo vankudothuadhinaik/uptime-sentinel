@@ -24,9 +24,7 @@ Run the application with a test-only secret and PostgreSQL URL, then set
 through the application check endpoint and inspect both application and proxy
 logs:
 
-The repository also contains an opt-in HTTPX integration test. With the
-controlled proxy and fixture endpoints running, set these test-only variables
-and run it from the project root:
+The repository also contains an opt-in HTTPX integration test. The six `EGRESS_*` values below are **fixture URLs/configuration, not passwords**; they must point to infrastructure you control and cannot be guessed or safely replaced with arbitrary URLs. No values are required for normal CI. To run the external job, configure the six GitHub Actions repository secrets and manually dispatch the CI workflow with `run_external_proxy_tests` checked. With the controlled proxy and fixture endpoints running, set the same test-only variables locally and run from the project root:
 
 ```powershell
 $env:RUN_EGRESS_PROXY_INTEGRATION = "1"
@@ -64,4 +62,4 @@ controlled proxy and the proxy logs demonstrate destination-IP enforcement.
 
 The invalid-upstream-TLS test creates a disposable self-signed certificate and keeps client TLS verification enabled. It uses OpenSSL when available and skips that single test when certificate-generation tooling is unavailable. GitHub Actions Linux CI has OpenSSL available and should execute this test rather than skip it.
 
-These deterministic local tests complement but do not replace the six external fixture-backed integration tests. The external suite still requires a controlled proxy plus its dedicated fixture URLs/secrets; a skipped external suite is not a security pass.
+These deterministic local tests complement but do not replace the six external fixture-backed integration tests. Ordinary CI runs the local suite without external fixture configuration. The external job is deliberately disabled on a normal manual workflow dispatch unless `run_external_proxy_tests` is checked; when enabled, it requires the controlled proxy plus its dedicated fixture URL secrets. A skipped external suite is not a security pass.

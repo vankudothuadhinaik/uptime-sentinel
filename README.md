@@ -27,7 +27,7 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 - **Security:** application-side SSRF validation, redirects disabled, production egress-proxy requirement, no forwarding of user credentials.
 - **Operations:** Alembic migrations, Docker Compose, GitHub Actions, Codecov, optional Sentry, and optional Doppler developer workflow.
 
-> **Project status:** this is a GitHub portfolio project with a local Docker Compose demo; paid hosting is not required. The [GitHub Actions run history](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) records standard checks and Compose smoke-test results; consult individual runs for the exact commit and jobs verified. The proxy-authentication fail-closed fix is merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6). The opt-in external proxy integration job is skipped because controlled fixture URLs/secrets are not configured; it is not claimed as passed. Render deployment is out of scope. Never use the public test proxy for sensitive or production traffic.
+> **Project status:** this is a GitHub portfolio project with a local Docker Compose demo; paid hosting is not required. The [GitHub Actions run history](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) records standard checks and Compose smoke-test results; consult individual runs for the exact commit and jobs verified. The proxy-authentication fail-closed fix is merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6). The external proxy integration job is an explicit opt-in on manual workflow dispatch and requires six fixture URL/configuration secrets for infrastructure you control; ordinary CI uses deterministic local proxy fixtures. The external job is not claimed as passed. Render deployment is out of scope. Never use the public test proxy for sensitive or production traffic.
 
 ## Architecture
 
@@ -175,8 +175,8 @@ PR #11 has been merged to main. Run #233 passed on main after documentation upda
 ## Production-only release gates (out of scope for this portfolio project)
 
 - [ ] Provision an isolated, access-controlled egress proxy that validates the actual destination IP at connection time and enforces IPv4/IPv6, private/loopback/link-local/metadata, DNS-rebinding, redirect, and TLS policy.
-- [ ] Create deterministic controlled fixtures and configure these GitHub Actions repository secrets: `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, `EGRESS_BAD_TLS_URL`.
-- [ ] Manually dispatch the workflow and verify `proxy-integration` actually runs and passes. Inspect proxy enforcement logs; generic network errors and arbitrary 5xx responses are not proof of destination blocking.
+- [ ] Only if you operate a controlled proxy and deterministic fixtures, configure these GitHub Actions repository secrets (they are fixture URLs/configuration, not values to invent): `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, `EGRESS_BAD_TLS_URL`.
+- [ ] Manually dispatch the workflow with `run_external_proxy_tests` checked and verify `proxy-integration` actually runs and passes. Inspect proxy enforcement logs; generic network errors and arbitrary 5xx responses are not proof of destination blocking.
 - [ ] Configure production `DATABASE_URL`, a unique `JWT_SECRET` of at least 32 characters, and the private `EGRESS_PROXY_URL` for both API and worker.
 - [ ] Apply migrations once through a controlled release step.
 - [ ] Verify `/health/live`, `/health/ready`, registration, monitor creation, worker execution, result/incident persistence, recovery after restart, and retention cleanup.
