@@ -83,7 +83,9 @@ Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 ```powershell
 $token = (Invoke-RestMethod -Method Post http://127.0.0.1:8000/auth/register -ContentType application/json -Body '{"email":"dev@example.com","password":"correct horse battery staple"}').access_token
 $headers = @{ Authorization = "Bearer $token" }
-Invoke-RestMethod -Method Post http://127.0.0.1:8000/monitors -Headers $headers -ContentType application/json -Body '{"name":"Example","url":"https://example.com","interval_seconds":60,"timeout_seconds":10,"public":true}'
+$monitor = Invoke-RestMethod -Method Post http://127.0.0.1:8000/monitors -Headers $headers -ContentType application/json -Body '{"name":"Example","url":"https://example.com","interval_seconds":60,"timeout_seconds":10,"public":true}'
+$monitor
+Invoke-RestMethod -Method Post "http://127.0.0.1:8000/monitors/$($monitor.id)/check" -Headers $headers
 ```
 
 Use disposable development credentials only. Never reuse example passwords or commit real secrets.
@@ -92,7 +94,7 @@ Use disposable development credentials only. Never reuse example passwords or co
 
 1. Copy `.env.example` to `.env`.
 2. Configure a local PostgreSQL URL and a development-only JWT secret.
-3. Configure `EGRESS_PROXY_URL` for the controlled proxy required by the current Compose configuration.
+3. For a local development demo, `EGRESS_PROXY_URL` may be blank and checks use direct outbound connections. **Production must use a private, controlled egress proxy**; never point production at an arbitrary public proxy.
 4. Run:
 
 ```powershell
