@@ -151,7 +151,7 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Latest CI verification: [run #229](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849371364) passed on PR #11 (2026-10-29), including the newly added `proxy-local-integration` job.
+Latest main-branch CI verification: [run #233](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849831440) passed after the documentation updates. The security-test change was verified in [run #229](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849371364), where `proxy-local-integration` passed all 29 tests.
 
 | Check | Verified result |
 |---|---|
@@ -162,7 +162,7 @@ Latest CI verification: [run #229](https://github.com/vankudothuadhinaik/uptime-
 | Local Docker Compose end-to-end demo (2026-10-29) | **Passed** — isolated stack; registration/login, monitor creation, worker processing, persisted HTTP 200 result, and public status |
 | Render API/worker deployment | **Not deployed or required** |
 
-PR #11 has been merged to main. Run #229 passed all required CI jobs; the separate external `proxy-integration` job remains opt-in and skipped. These checks validate the repository's local proxy implementation and test fixtures, not an independently operated production proxy or production readiness.
+PR #11 has been merged to main. Run #233 passed on main after documentation updates, and run #229 verified all required CI jobs including 29 local proxy security tests. The separate external `proxy-integration` job remains opt-in and skipped. These checks validate the repository's local proxy implementation and test fixtures, not an independently operated production proxy or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
