@@ -126,7 +126,7 @@ The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
 - Compose end-to-end smoke: registration/login, monitor creation, worker check persistence, and public status
 - Deterministic local proxy security regressions; the external controlled-proxy suite remains opt-in
 
-PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. GitHub Actions run [#336](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40933176847) completed successfully for code/documentation head `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2`: required checks, local proxy integration, and Compose smoke passed. The opt-in external controlled-proxy job was skipped because its independently controlled fixture infrastructure is not configured; that skip is not a security pass. Later edits to the verification report and README trigger a fresh workflow run.
+PR #14 was merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`. GitHub Actions run [#336](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40933176847) passed for the validated code commit `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2`: required checks, local proxy integration, and Compose smoke passed. Post-merge CI run [#344](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934459207) is queued. The opt-in external controlled-proxy job remains unverified because controlled fixture infrastructure is not configured; that skip is not a security pass.
 
 [![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
 
