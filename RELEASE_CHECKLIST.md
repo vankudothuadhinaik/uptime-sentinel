@@ -18,12 +18,12 @@
 
 ## Free-only completion gates
 
-- [ ] Verify the latest GitHub Actions run on `main` completes successfully: [GitHub Actions](https://github.com/vankudothuadhinaik/uptime-sentinel/actions).
+- [x] Verify the latest GitHub Actions run on `main` completes successfully: [run #173](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40829991424) passed `checks` and `compose-smoke`.
 - [ ] Run the documented app locally with Docker Compose and verify `/health/live`, registration/login, monitor creation, and worker processing using disposable local data.
 - [ ] Review repository for accidentally committed secrets and remove any if found; keep all credentials in local environment files that are git-ignored.
-- [ ] Clearly document that external proxy integration tests are opt-in and require controlled fixture URLs/secrets; do not count skipped tests as passed.
+- [x] Clearly document that external proxy integration tests are opt-in and require controlled fixture URLs/secrets; the latest run skipped this job, so it is not counted as passed.
 - [ ] Keep the Render public test proxy out of production use. It allows public ingress and has not completed independent live security verification.
-- [ ] Keep instructions for local development accurate and ensure no paid hosting is required to clone, test, or demonstrate the project.
+- [x] Keep instructions for local development aligned with the free-only scope; no paid hosting is required to clone, test, or demonstrate the project.
 
 ## Optional, explicitly out of scope
 
@@ -32,13 +32,13 @@
 - External proxy fixture infrastructure and live internet security testing requiring controlled hosts and repository secrets.
 - Public production deployment and production readiness claims.
 
-## Latest known evidence and limitations
+## Latest verified evidence and remaining work
 
-- Previous standard CI run [#40697076205](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40697076205): `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
+- Latest standard CI run [#173](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40829991424) on commit `b0ba9abdda6ac6f47e92a5f4c7272058b675b98c`: `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
 - Proxy fail-closed authentication regression was merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6).
 - A free Render test proxy exists at https://uptime-sentinel-egress-proxy.onrender.com, but its inbound allowlist is `0.0.0.0/0`; it is a test service, not a production security boundary.
 - The Render PostgreSQL free instance has a recorded expiry of 2026-11-26. This does not affect local Docker Compose or GitHub-only portfolio completion; do not depend on it for persistent production data.
 - The API and continuous worker are not deployed in Render. That is intentional for the free-only portfolio scope.
-- Check GitHub Actions for the latest CI state; a run that is still in progress is not a pass.
+- CI status above was checked on 2026-10-29. A future run still in progress is not a pass.
 
 No paid resources are required for the project goal. Do not label this deployment production-ready; it is a portfolio project with local demo and CI verification.
