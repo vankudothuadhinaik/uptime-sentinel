@@ -56,13 +56,16 @@ def ready(db: Session = Depends(get_db)):
 def metrics(db: Session = Depends(get_db)) -> Response:
     """Expose low-cardinality scheduler/database health metrics for scraping."""
     now = datetime.now(timezone.utc)
-    overdue = db.scalar(
-        select(func.count(Monitor.id)).where(
-            Monitor.is_paused.is_(False),
-            Monitor.next_check_at.is_not(None),
-            Monitor.next_check_at <= now,
+    overdue = (
+        db.scalar(
+            select(func.count(Monitor.id)).where(
+                Monitor.is_paused.is_(False),
+                Monitor.next_check_at.is_not(None),
+                Monitor.next_check_at <= now,
+            )
         )
-    ) or 0
+        or 0
+    )
     expired_leases = db.scalar(
         select(func.count(Monitor.id)).where(
             Monitor.lease_until.is_not(None),
