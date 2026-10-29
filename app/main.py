@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from typing import Any, cast
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -50,6 +50,52 @@ def ready(db: Session = Depends(get_db)):
     except Exception as exc:
         raise HTTPException(503, "database unavailable") from exc
     return {"status": "ready"}
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics(db: Session = Depends(get_db)) -> Response:
+    """Expose low-cardinality scheduler/database health metrics for scraping."""
+    now = datetime.now(timezone.utc)
+    overdue = (
+        db.scalar(
+            select(func.count(Monitor.id)).where(
+                Monitor.is_paused.is_(False),
+                Monitor.next_check_at.is_not(None),
+                Monitor.next_check_at <= now,
+            )
+        )
+        or 0
+    )
+    expired_leases = (
+        db.scalar(
+            select(func.count(Monitor.id)).where(
+                Monitor.lease_until.is_not(None),
+                Monitor.lease_until <= now,
+            )
+        )
+        or 0
+    )
+    open_incidents = (
+        db.scalar(select(func.count(Incident.id)).where(Incident.resolved_at.is_(None))) or 0
+    )
+    failed_checks = (
+        db.scalar(select(func.count(CheckResult.id)).where(CheckResult.is_up.is_(False))) or 0
+    )
+    payload = (
+        "# HELP uptime_sentinel_overdue_checks Monitors due for a check.\n"
+        "# TYPE uptime_sentinel_overdue_checks gauge\n"
+        f"uptime_sentinel_overdue_checks {overdue}\n"
+        "# HELP uptime_sentinel_expired_leases Expired monitor leases awaiting reclaim.\n"
+        "# TYPE uptime_sentinel_expired_leases gauge\n"
+        f"uptime_sentinel_expired_leases {expired_leases}\n"
+        "# HELP uptime_sentinel_open_incidents Currently unresolved incidents.\n"
+        "# TYPE uptime_sentinel_open_incidents gauge\n"
+        f"uptime_sentinel_open_incidents {open_incidents}\n"
+        "# HELP uptime_sentinel_failed_checks Persisted failed checks in retained history.\n"
+        "# TYPE uptime_sentinel_failed_checks gauge\n"
+        f"uptime_sentinel_failed_checks {failed_checks}\n"
+    )
+    return Response(payload, media_type="text/plain; version=0.0.4; charset=utf-8")
 
 
 @app.post("/auth/register", response_model=Token, status_code=201)

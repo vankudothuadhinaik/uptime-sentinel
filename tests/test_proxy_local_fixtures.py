@@ -43,6 +43,16 @@ async def _fixture_response(reader: asyncio.StreamReader, writer: asyncio.Stream
         await writer.wait_closed()
 
 
+async def _ok_fixture_response(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    try:
+        await reader.readuntil(b"\r\n\r\n")
+        writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok")
+        await writer.drain()
+    finally:
+        writer.close()
+        await writer.wait_closed()
+
+
 async def _tls_response(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
     try:
         await reader.readuntil(b"\r\n\r\n")
@@ -61,7 +71,12 @@ async def _connection_fixture(reader: asyncio.StreamReader, writer: asyncio.Stre
 async def _proxy_server(monkeypatch: pytest.MonkeyPatch) -> tuple[asyncio.AbstractServer, int]:
     monkeypatch.setattr(proxy_module, "USERNAME", PROXY_USERNAME)
     monkeypatch.setattr(proxy_module, "PASSWORD", PROXY_PASSWORD)
-    server = await asyncio.start_server(proxy_module.handle, "127.0.0.1", 0)
+    server = await asyncio.start_server(
+        proxy_module.handle,
+        "127.0.0.1",
+        0,
+        limit=proxy_module.HEADER_LIMIT + 1,
+    )
     return server, server.sockets[0].getsockname()[1]
 
 
@@ -134,6 +149,33 @@ async def test_actual_proxy_does_not_follow_local_unsafe_redirect(
 
 
 @pytest.mark.asyncio
+async def test_actual_proxy_forwards_allowed_local_fixture(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture_server, fixture_port = await _start_server(_ok_fixture_response)
+    proxy_server, proxy_port = await _proxy_server(monkeypatch)
+
+    async def resolver(_: str, __: int):
+        return [(socket.AF_INET, ("127.0.0.1", fixture_port))]
+
+    monkeypatch.setattr(proxy_module, "_resolve_public", resolver)
+    try:
+        proxy = httpx.Proxy(
+            f"http://127.0.0.1:{proxy_port}",
+            auth=(PROXY_USERNAME, PROXY_PASSWORD),
+        )
+        async with httpx.AsyncClient(proxy=proxy, trust_env=False) as client:
+            response = await client.get("http://allowed-fixture.test/")
+        assert response.status_code == 200
+        assert response.text == "ok"
+    finally:
+        proxy_server.close()
+        await proxy_server.wait_closed()
+        fixture_server.close()
+        await fixture_server.wait_closed()
+
+
+@pytest.mark.asyncio
 async def test_proxy_rejects_unauthorized_and_unsupported_requests(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -185,6 +227,22 @@ async def test_proxy_rejects_target_credentials_and_unsupported_connect_port(
     finally:
         proxy_server.close()
         await proxy_server.wait_closed()
+
+
+@pytest.mark.asyncio
+async def test_proxy_rejects_oversized_headers(monkeypatch: pytest.MonkeyPatch) -> None:
+    proxy_server, proxy_port = await _proxy_server(monkeypatch)
+    oversized = b"x-test: " + (b"a" * proxy_module.HEADER_LIMIT)
+    try:
+        response = await _raw_proxy_request(
+            proxy_port,
+            b"GET http://example.com/ HTTP/1.1\r\n" + oversized + b"\r\n\r\n",
+        )
+    finally:
+        proxy_server.close()
+        await proxy_server.wait_closed()
+
+    assert response.startswith(b"HTTP/1.1 431 Request Header Fields Too Large")
 
 
 def _create_self_signed_certificate(directory: Path) -> tuple[Path, Path]:
@@ -240,8 +298,16 @@ async def test_actual_proxy_preserves_tls_verification(
             async with httpx.AsyncClient(
                 proxy=proxy, follow_redirects=False, trust_env=False, verify=True
             ) as client:
-                with pytest.raises(httpx.HTTPError):
+                with pytest.raises(httpx.ConnectError) as exc_info:
                     await client.get("https://invalid-tls.test/")
+
+            # A refused connection or timeout is not evidence of TLS validation.
+            # Require the failure to be caused by the self-signed upstream cert.
+            message = str(exc_info.value).lower()
+            assert "certificate verify failed" in message or "self-signed certificate" in message, (
+                "expected an upstream certificate verification failure, "
+                f"got connection error: {exc_info.value}"
+            )
         finally:
             proxy_server.close()
             await proxy_server.wait_closed()

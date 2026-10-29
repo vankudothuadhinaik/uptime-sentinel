@@ -5,6 +5,7 @@ default and must not be pointed at a general-purpose or public proxy.
 """
 
 import os
+from urllib.parse import urljoin, urlsplit
 
 import httpx
 import pytest
@@ -62,9 +63,27 @@ def test_proxy_rejects_private_and_rebinding_destinations(
 def test_redirect_is_not_followed(proxy_client: httpx.Client):
     response = proxy_client.get(_fixture_url("EGRESS_REDIRECT_URL"))
     assert 300 <= response.status_code < 400
-    assert response.headers.get("location")
+    location = response.headers.get("location")
+    assert location, "redirect fixture must return a Location header"
+
+    # The fixture contract is specifically a redirect toward the private
+    # destination. Comparing hosts avoids accepting an unrelated benign redirect.
+    redirected = urlsplit(urljoin(str(response.url), location))
+    private = urlsplit(_fixture_url("EGRESS_PRIVATE_URL"))
+    assert redirected.hostname == private.hostname, (
+        "redirect fixture must target the configured private destination; "
+        f"expected host {private.hostname!r}, got {redirected.hostname!r}"
+    )
 
 
 def test_invalid_upstream_certificate_is_rejected(proxy_client: httpx.Client):
-    with pytest.raises(httpx.HTTPError):
+    with pytest.raises(httpx.ConnectError) as exc_info:
         proxy_client.get(_fixture_url("EGRESS_BAD_TLS_URL"))
+
+    # A generic timeout, DNS failure, or refused connection must not count as
+    # evidence that TLS certificate verification is enabled.
+    message = str(exc_info.value).lower()
+    assert "certificate verify failed" in message or "self-signed certificate" in message, (
+        "expected an upstream certificate verification failure, "
+        f"got connection error: {exc_info.value}"
+    )

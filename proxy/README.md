@@ -17,6 +17,18 @@ tunnels for TLS ports 443 and 8443 only.
 - Provides `GET /healthz` for platform health checks. This endpoint is not a
   proxy request and does not require authentication.
 
+## Resource limits and shutdown
+
+`PROXY_MAX_CONNECTIONS` bounds active client sessions (default 128). Excess
+connections receive `503 Service Unavailable` with `Retry-After: 1`; tune this
+limit to the container memory and expected traffic. Each session has a 32 KiB
+header limit, 10-second header read timeout, 8-second connect/DNS timeout, and
+60-second idle relay timeout. The server uses a bounded listen backlog and
+asyncio server context management so shutdown stops accepting new connections
+and closes the listener. Active sessions are not guaranteed to drain
+indefinitely; use a platform termination grace period appropriate to the
+longest expected request.
+
 ## Deployment notes
 
 Deploy this directory as a Docker web service only for controlled testing. A

@@ -19,4 +19,5 @@ def db_session(monkeypatch):
     yield session
     session.close()
     Base.metadata.drop_all(engine)
+    engine.dispose()
     app.dependency_overrides.clear()

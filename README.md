@@ -27,13 +27,15 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 - **Security:** application-side SSRF validation, redirects disabled, production egress-proxy requirement, no forwarding of user credentials.
 - **Operations:** Alembic migrations, Docker Compose, GitHub Actions, Codecov, optional Sentry, and optional Doppler developer workflow.
 
-> **Project status:** this is a GitHub portfolio project with a local Docker Compose demo; paid hosting is not required. The [GitHub Actions run history](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) records standard checks and Compose smoke-test results; consult individual runs for the exact commit and jobs verified. The proxy-authentication fail-closed fix is merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6). The external proxy integration job is an explicit opt-in on manual workflow dispatch and requires six fixture URL/configuration secrets for infrastructure you control; ordinary CI uses deterministic local proxy fixtures. The external job is not claimed as passed. Render deployment is out of scope. Never use the public test proxy for sensitive or production traffic.
+> **Project status:** this is a GitHub portfolio project with a local Docker Compose demo; paid hosting is not required. The [GitHub Actions run history](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) records standard checks and Compose smoke-test results; consult individual runs for the exact commit and jobs verified. The proxy-authentication fail-closed fix is merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6). The external proxy integration job is an explicit opt-in on manual workflow dispatch and requires six fixture URL/configuration secrets for infrastructure you control; ordinary CI uses deterministic local proxy fixtures. The external job is not claimed as passed. Render deployment is not production-certified: the configured proxy service is on a separate integration branch and its external security fixture matrix remains unverified. Never use the public test proxy for sensitive or production traffic.
 
 ## Architecture
 
 ![Uptime Sentinel architecture diagram](docs/images/architecture.svg)
 
 The API and worker share PostgreSQL. Workers claim due monitors with lease/fencing protection, perform bounded HTTP checks, and persist results and incident transitions. In production, the outbound destination must be revalidated by a controlled egress proxy at connection time to address DNS-rebinding risks that application-only validation cannot eliminate.
+
+**Operational metrics:** `GET /metrics` emits Prometheus text-format gauges for overdue checks, expired leases, open incidents, and retained failed-check history. The retained failed-check metric is a current-history gauge, not a cumulative counter. Protect this endpoint at the network/ingress layer before exposing it publicly. Scheduler exceptions are structured worker logs, not a durable cross-process counter.
 
 **Rate-limit storage:** by default, SlowAPI uses in-process `memory://` storage, which is suitable for the single-process local demo only. For multiple API replicas, set `RATE_LIMIT_STORAGE_URI=redis://redis:6379/1` (or the reachable Redis URL for your deployment) so counters are shared. Redis is optional for the base scheduler/API architecture; it is used for shared rate limits only when explicitly configured. Configure authentication/TLS and network access appropriately for deployed Redis.
 
@@ -124,7 +126,7 @@ The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
 - Compose end-to-end smoke: registration/login, monitor creation, worker check persistence, and public status
 - Deterministic local proxy security regressions; the external controlled-proxy suite remains opt-in
 
-PR #12 was merged into `main` on 2026-10-29 as commit `aa7fc8e64a5f9f3a7cdb5a8a74313e9e26ea23ce`. PR CI run [#293](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40906489226) passed `checks`, `compose-smoke`, and `proxy-local-integration`; `codecov/patch` also passed after adding focused regression tests. The external controlled-proxy job remains skipped because independently controlled fixture URLs/configuration are not available.
+PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. GitHub Actions run [#336](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40933176847) completed successfully for code/documentation head `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2`: required checks, local proxy integration, and Compose smoke passed. The opt-in external controlled-proxy job was skipped because its independently controlled fixture infrastructure is not configured; that skip is not a security pass. Later edits to the verification report and README trigger a fresh workflow run.
 
 [![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
 
@@ -154,17 +156,17 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 - Response bodies are streamed only up to `MAX_RESPONSE_BYTES`; errors are bounded and credentials are not logged.
 - **Important limitation:** DNS can change between application validation and the HTTP connection. Production therefore requires `EGRESS_PROXY_URL` to point to a private, controlled proxy that independently validates the actual destination at connection time. Do not use an arbitrary public proxy.
 
-## Current P0 reliability/security hardening (PR #12)
+## Current P0 reliability/security hardening (PR #14)
 
 The current pull-request branch adds a shared lease path for manual and scheduled checks, a wall-clock deadline spanning streamed HTTP bodies, strict PATCH null validation, fenced result persistence, one-open-incident database enforcement, concurrent quota serialization, stable bounded incident/check pagination, and regression coverage.
 
-CI run [#285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad` passed `checks`, `compose-smoke`, and `proxy-local-integration`.
+The current branch also corrects the retained failed-check metric to a gauge name, covers metric values/types and proxy overload/oversized-header responses, adds allowed-forwarding socket coverage, disposes test engines, and makes the PostgreSQL concurrency test deterministic on persistent databases.
 
-**Remaining external gate:** the opt-in controlled-proxy test is skipped because independently controlled fixture URLs/configuration are not available. Do not treat this skip as evidence that DNS rebinding, private-IP blocking, redirects, and invalid TLS have been verified against an externally operated proxy. PR #12 is merged; no release tag has been created.
+**Remaining external gate:** the opt-in controlled-proxy test is blocked because independently controlled fixture URLs/configuration are not available. Do not treat this as evidence that DNS rebinding, private-IP blocking, redirects, and invalid TLS have been verified against an externally operated proxy. PR #14 remains open; no release tag has been created.
 
 ## Verification status
 
-PR CI verification: [run #293](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40906489226) passed the required code, Compose, and deterministic local proxy jobs, and the Codecov patch check passed.
+The latest pushed commit `2292cc131e805e04cfa541f8ff30db0bb9835342` has a completed successful GitHub Actions run: [run #333](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40932673232). The external controlled-proxy job was skipped and remains a release blocker for production use.
 
 | Check | Verified result |
 |---|---|
@@ -175,7 +177,7 @@ PR CI verification: [run #293](https://github.com/vankudothuadhinaik/uptime-sent
 | Local Docker Compose end-to-end demo (2026-10-29) | **Passed** — isolated stack; registration/login, monitor creation, worker processing, persisted HTTP 200 result, and public status |
 | Render API/worker deployment | **Not deployed or required** |
 
-PR #12 was merged into `main` as `aa7fc8e64a5f9f3a7cdb5a8a74313e9e26ea23ce` after run #293 passed required CI and Codecov patch coverage. The separate external `proxy-integration` job remains opt-in and skipped. These checks validate the repository's local proxy implementation and test fixtures, not an independently operated production proxy or production readiness.
+PR #14 is not merged. The external `proxy-integration` job remains opt-in and blocked until controlled fixture infrastructure exists. These checks validate the repository's local proxy implementation and deterministic fixtures, not an independently operated production proxy or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
