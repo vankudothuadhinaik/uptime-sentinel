@@ -1,4 +1,5 @@
 from secrets import token_urlsafe
+from typing import Any, cast
 
 import pytest
 
@@ -15,7 +16,7 @@ def valid_production_settings(**overrides: str) -> Settings:
         "egress_proxy_password": token_urlsafe(48),
     }
     values.update(overrides)
-    return Settings(**values)
+    return cast(Any, Settings)(**values)
 
 
 def test_accepts_production_configuration_with_generated_secrets() -> None:
