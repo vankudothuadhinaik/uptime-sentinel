@@ -56,3 +56,12 @@ general-purpose or public proxy.
 Do not use a general public proxy or a proxy with TLS verification disabled.
 These cases are not considered passed until they run against the actual
 controlled proxy and the proxy logs demonstrate destination-IP enforcement.
+
+
+## Local-only fixture coverage
+
+`tests/test_proxy_local_fixtures.py` exercises the actual repository proxy handler against disposable loopback servers. The tests use a narrow test-only resolver seam to map fixture hostnames to loopback listeners; they verify that the proxy uses one resolved address for the connection and that an HTTP redirect is returned without proxy-side follow-up. They do not claim to prove external DNS rebinding or public network enforcement.
+
+The invalid-upstream-TLS test creates a disposable self-signed certificate and keeps client TLS verification enabled. It uses OpenSSL when available and skips that single test when certificate-generation tooling is unavailable. GitHub Actions Linux CI has OpenSSL available and should execute this test rather than skip it.
+
+These deterministic local tests complement but do not replace the six external fixture-backed integration tests. The external suite still requires a controlled proxy plus its dedicated fixture URLs/secrets; a skipped external suite is not a security pass.

@@ -22,6 +22,7 @@ PASSWORD = os.getenv("PROXY_PASSWORD", "")
 HEADER_LIMIT = 32 * 1024
 CONNECT_TIMEOUT = 8
 IDLE_TIMEOUT = 60
+FORWARD_METHODS = {"DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"}
 
 
 def _safe_ip(value: str) -> bool:
@@ -80,15 +81,19 @@ async def _open_pinned(host: str, port: int) -> tuple[asyncio.StreamReader, asyn
     for family, sockaddr in addresses:
         sock = socket.socket(family, socket.SOCK_STREAM)
         sock.setblocking(False)
+        connected = False
         try:
             await asyncio.wait_for(
                 asyncio.get_running_loop().sock_connect(sock, sockaddr), timeout=CONNECT_TIMEOUT
             )
             reader, writer = await asyncio.open_connection(sock=sock)
+            connected = True
             return reader, writer
         except (OSError, TimeoutError) as exc:
             last_error = exc
-            sock.close()
+        finally:
+            if not connected:
+                sock.close()
     raise OSError("Could not connect to validated destination") from last_error
 
 
@@ -159,11 +164,15 @@ async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter)
             )
             return
 
-        if method.upper() == "CONNECT":
-            if target.count(":") != 1:
+        method = method.upper()
+        if method == "CONNECT":
+            if ":" not in target:
                 raise ValueError("Invalid CONNECT authority")
             host, port_text = target.rsplit(":", 1)
-            port = int(port_text)
+            try:
+                port = int(port_text)
+            except ValueError:
+                raise ValueError("Invalid CONNECT port") from None
             if not host or not (1 <= port <= 65535) or port not in (443, 8443):
                 client_w.write(
                     b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
@@ -172,8 +181,15 @@ async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter)
             await _tunnel(client_r, client_w, host.strip("[]"), port)
             return
 
+        if method not in FORWARD_METHODS:
+            client_w.write(
+                b"HTTP/1.1 405 Method Not Allowed\r\nAllow: DELETE, GET, HEAD, OPTIONS, "
+                b"PATCH, POST, PUT\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
+            )
+            return
+
         parsed = urlsplit(target)
-        if parsed.scheme != "http" or not parsed.hostname:
+        if parsed.scheme != "http" or not parsed.hostname or parsed.username or parsed.password:
             client_w.write(
                 b"HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
             )
