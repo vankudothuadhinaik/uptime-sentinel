@@ -126,7 +126,7 @@ The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
 - Compose end-to-end smoke: registration/login, monitor creation, worker check persistence, and public status
 - Deterministic local proxy security regressions; the external controlled-proxy suite remains opt-in
 
-PR #14 was merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`. The latest main-branch workflow [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101), on documentation commit `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`, passed the standard checks, local proxy integration, and Docker Compose end-to-end smoke. The opt-in external controlled-proxy job was skipped because controlled fixture infrastructure is not configured; that skip is not a security pass. See the [verification report](VERIFICATION_REPORT.md) for the exact scope.
+PR #14 was merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`. The inspected main-branch workflow [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101), on documentation commit `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`, passed the standard checks, local proxy integration, and Docker Compose end-to-end smoke. The opt-in external controlled-proxy job was skipped because controlled fixture infrastructure is not configured; that skip is not a security pass. See the [verification report](VERIFICATION_REPORT.md) for the exact scope.
 
 [![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
 
@@ -162,7 +162,7 @@ PR #14, **Harden proxy limits and operational metrics**, is merged into `main` a
 
 ## Verification status — 2026-10-30
 
-**Portfolio scope: implementation and standard CI are verified.** The latest main-branch workflow [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101) completed successfully for documentation commit `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`. The code-focused main CI run [#346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) also passed.
+**Portfolio scope: implementation and standard CI are verified.** The inspected full main-branch workflow [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101) completed successfully for documentation commit `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`. The code-focused main CI run [#346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) also passed.
 
 | Check | Result |
 |---|---|
