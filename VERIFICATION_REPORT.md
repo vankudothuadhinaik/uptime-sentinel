@@ -4,7 +4,7 @@ Run date: 2026-10-30
 
 ## Current change
 
-PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pushed commit at the time of this report is `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2` (`Refresh verification report with latest CI evidence`). GitHub Actions run [#336](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40933176847) completed successfully for this exact commit: `checks`, `proxy-local-integration`, and `compose-smoke` passed; the opt-in external `proxy-integration` job was skipped because controlled fixture infrastructure is not configured.
+PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest code-validated commit is `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2` (`Refresh verification report with latest CI evidence`). GitHub Actions run [#336](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40933176847) completed successfully for that commit: `checks`, `proxy-local-integration`, and `compose-smoke` passed; the opt-in external `proxy-integration` job was skipped because controlled fixture infrastructure is not configured. Subsequent commits only refresh this report and README; their latest-head workflow is being checked separately.
 
 ## Release gates
 
@@ -21,7 +21,7 @@ PR #14 is open from `hardening/ops-metrics-proxy-limits-recovery`. The latest pu
 | Docker Compose smoke | **PASS** | Images built; PostgreSQL/Redis health, API migrations/readiness, auth, monitor creation, worker persistence, and public status passed. |
 | Local egress proxy security | **PASS** | Real local fixture tests cover private/mixed DNS answers, DNS failures, resolver pinning, redirects, auth, unsupported methods/ports, target credentials, invalid TLS, overload 503, and oversized headers. |
 | External controlled egress proxy | **BLOCKED** | All six fixture variables are unset; `tests/test_egress_proxy_integration.py` reported 5 skipped. No external security pass is claimed. |
-| GitHub Actions run #336 | **PASS** | Workflow completed successfully for exact head `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2`; `checks`, local proxy integration, and Compose smoke passed. External `proxy-integration` was skipped. |
+| GitHub Actions run #336 | **PASS** | Workflow completed successfully for code-validated commit `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2`; `checks`, local proxy integration, and Compose smoke passed. External `proxy-integration` was skipped. |
 
 ## Changes made
 
