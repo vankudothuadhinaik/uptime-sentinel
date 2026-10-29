@@ -56,3 +56,25 @@ general-purpose or public proxy.
 Do not use a general public proxy or a proxy with TLS verification disabled.
 These cases are not considered passed until they run against the actual
 controlled proxy and the proxy logs demonstrate destination-IP enforcement.
+
+## Local-only fixture coverage
+
+`tests/test_proxy_local_fixtures.py` exercises the actual repository proxy
+handler against disposable loopback servers. Because the proxy correctly
+rejects loopback addresses, these tests use a narrow test-only resolver seam to
+map fixture hostnames to the loopback listener. They prove proxy protocol
+behavior and connection pinning, but do not claim to prove external DNS
+rebinding or public network enforcement.
+
+The local tests verify:
+
+- one resolver result is used for the connection without a second lookup;
+- an HTTP redirect is returned to the client and is not followed; and
+- an invalid-TLS fixture is rejected when local certificate tooling is
+  available.
+
+The invalid-TLS case requires either the `openssl` executable or the
+`cryptography` package to create a disposable self-signed certificate. If
+neither is available, the test is skipped rather than weakening TLS
+verification. These local tests do not replace the six external fixture-backed
+integration tests.

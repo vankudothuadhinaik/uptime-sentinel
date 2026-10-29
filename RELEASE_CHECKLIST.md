@@ -32,6 +32,7 @@
 - [ ] Resolve the existing database's Free-plan expiry (recorded as 2026-11-26) before production continuity depends on it.
 - [ ] Update the verification report with actual proxy test results, workflow run ID, deployed service IDs/URLs, migration result, and end-to-end observations.
 - [x] Run supplemental local checks against the repository proxy for loopback, private, link-local/metadata, mapped IPv6, public HTTPS, and invalid authentication. These checks do not replace controlled fixture integration.
+- [x] Add deterministic local proxy fixture tests for resolver pinning and unsafe redirect handling; invalid-TLS fixture remains skipped when certificate tooling is unavailable.
 
 ## Latest CI evidence
 

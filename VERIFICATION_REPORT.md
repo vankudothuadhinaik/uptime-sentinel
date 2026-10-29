@@ -90,6 +90,17 @@ fixture, and invalid upstream TLS were therefore **not verified**. The local
 direct checks do not replace those fixture-backed tests or prove a production
 deployment boundary.
 
+Local-only fixture tests in `tests/test_proxy_local_fixtures.py` exercised the
+actual proxy handler with a narrow resolver seam:
+
+- pinned resolver result and no second lookup: **PASS**
+- HTTP redirect returned without client follow-up: **PASS**
+- invalid-TLS fixture: **SKIPPED** because neither `openssl` nor `cryptography`
+  is available in this environment
+
+These are deterministic local protocol tests, not external DNS-rebinding or
+production egress-boundary verification.
+
 ## Security test hardening
 
 Unsafe-target integration assertions require an explicit HTTP 403 policy-denial response from the controlled proxy. Generic connection errors, DNS failures, timeouts, and arbitrary 5xx responses must not count as evidence that destination enforcement works. Standard CI passed, but the real controlled-proxy run is still required before this security gate can pass.
