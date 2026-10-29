@@ -109,7 +109,7 @@ def test_invalid_jwt_and_pagination_bounds():
 def test_incident_history_has_stable_paginated_response(db_session):
     from datetime import datetime, timedelta, timezone
 
-    from app.models import Incident, Monitor, User
+    from app.models import Incident, Monitor
 
     with TestClient(app) as client:
         headers = auth(client, "incident-history@example.com")
@@ -120,7 +120,6 @@ def test_incident_history_has_stable_paginated_response(db_session):
         )
         assert created.status_code == 201
         monitor_id = created.json()["id"]
-        user = db_session.query(User).filter_by(email="incident-history@example.com").one()
         monitor = db_session.get(Monitor, monitor_id)
         now = datetime.now(timezone.utc)
         db_session.add_all(
