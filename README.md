@@ -122,7 +122,7 @@ The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
 - Compose end-to-end smoke: registration/login, monitor creation, worker check persistence, and public status
 - Deterministic local proxy security regressions; the external controlled-proxy suite remains opt-in
 
-The latest PR #12 validation is [run #285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad`. Its `checks`, `compose-smoke`, and `proxy-local-integration` jobs passed. The external controlled-proxy job was skipped because its fixture URLs and secrets are not configured; skipped is not passed. GitHub also reports an independent `codecov/patch` check failure.
+PR #12 was merged into `main` on 2026-10-29 as commit `aa7fc8e64a5f9f3a7cdb5a8a74313e9e26ea23ce`. PR CI run [#293](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40906489226) passed `checks`, `compose-smoke`, and `proxy-local-integration`; `codecov/patch` also passed after adding focused regression tests. The external controlled-proxy job remains skipped because independently controlled fixture URLs/configuration are not available.
 
 [![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
 
@@ -158,11 +158,11 @@ The current pull-request branch adds a shared lease path for manual and schedule
 
 CI run [#285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad` passed `checks`, `compose-smoke`, and `proxy-local-integration`.
 
-**Not complete:** the opt-in external controlled-proxy test is skipped because independently controlled fixture URLs/secrets are not configured. Do not treat this skip as evidence that DNS rebinding, private-IP blocking, redirects, and invalid TLS have been verified against an externally operated proxy. PR #12 is open, not merged; no release tag has been created.
+**Remaining external gate:** the opt-in controlled-proxy test is skipped because independently controlled fixture URLs/configuration are not available. Do not treat this skip as evidence that DNS rebinding, private-IP blocking, redirects, and invalid TLS have been verified against an externally operated proxy. PR #12 is merged; no release tag has been created.
 
 ## Verification status
 
-Latest PR CI verification: [run #285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) passed the required code, Compose, and deterministic local proxy jobs.
+PR CI verification: [run #293](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40906489226) passed the required code, Compose, and deterministic local proxy jobs, and the Codecov patch check passed.
 
 | Check | Verified result |
 |---|---|
@@ -173,7 +173,7 @@ Latest PR CI verification: [run #285](https://github.com/vankudothuadhinaik/upti
 | Local Docker Compose end-to-end demo (2026-10-29) | **Passed** — isolated stack; registration/login, monitor creation, worker processing, persisted HTTP 200 result, and public status |
 | Render API/worker deployment | **Not deployed or required** |
 
-PR #12 remains open and unmerged. Run #285 passed the required CI jobs; the separate external `proxy-integration` job remains opt-in and skipped. A separate `codecov/patch` check failed. These checks validate the repository's local proxy implementation and test fixtures, not an independently operated production proxy or production readiness.
+PR #12 was merged into `main` as `aa7fc8e64a5f9f3a7cdb5a8a74313e9e26ea23ce` after run #293 passed required CI and Codecov patch coverage. The separate external `proxy-integration` job remains opt-in and skipped. These checks validate the repository's local proxy implementation and test fixtures, not an independently operated production proxy or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
