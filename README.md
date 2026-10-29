@@ -27,7 +27,7 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 - **Security:** application-side SSRF validation, redirects disabled, production egress-proxy requirement, no forwarding of user credentials.
 - **Operations:** Alembic migrations, Docker Compose, GitHub Actions, Codecov, optional Sentry, and optional Doppler developer workflow.
 
-> **Project status:** this is a GitHub portfolio project with a local Docker Compose demo; paid hosting is not required. The latest main-branch CI run (#173) passed the checks and Compose smoke-test jobs. The proxy-authentication fail-closed fix is merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6). The opt-in external proxy integration job is skipped because controlled fixture URLs/secrets are not configured; it is not claimed as passed. Render deployment is out of scope. Never use the public test proxy for sensitive or production traffic.
+> **Project status:** this is a GitHub portfolio project with a local Docker Compose demo; paid hosting is not required. The [GitHub Actions run history](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) records standard checks and Compose smoke-test results; consult individual runs for the exact commit and jobs verified. The proxy-authentication fail-closed fix is merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6). The opt-in external proxy integration job is skipped because controlled fixture URLs/secrets are not configured; it is not claimed as passed. Render deployment is out of scope. Never use the public test proxy for sensitive or production traffic.
 
 ## Architecture
 
