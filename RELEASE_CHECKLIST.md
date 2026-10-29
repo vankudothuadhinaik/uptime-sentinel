@@ -40,6 +40,6 @@
 - A free Render test proxy exists at https://uptime-sentinel-egress-proxy.onrender.com, but its inbound allowlist is `0.0.0.0/0`; it is a test service, not a production security boundary.
 - The Render PostgreSQL free instance has a recorded expiry of 2026-11-26. This does not affect local Docker Compose or GitHub-only portfolio completion; do not depend on it for persistent production data.
 - The API and continuous worker are not deployed in Render. That is intentional for the free-only portfolio scope.
-- CI run #189 passed `checks` and `compose-smoke`; `proxy-integration` was skipped. Future runs still in progress are not passes.
+- CI run #191 passed `checks` and `compose-smoke`; `proxy-integration` was skipped. Use the linked Actions page for any newer run.
 
 No paid resources are required for the project goal. Do not label this deployment production-ready; it is a portfolio project with local demo and CI verification.
