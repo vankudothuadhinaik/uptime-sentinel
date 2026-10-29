@@ -35,39 +35,37 @@ async def _request_with_deadline(monitor: Monitor) -> tuple[int | None, bool, st
     try:
         async with asyncio.timeout(timeout_seconds):
             validate_target(monitor.url)
-            async with (
-                httpx.AsyncClient(
-                    follow_redirects=False,
-                    trust_env=False,
-                    proxy=proxy,
-                    timeout=httpx.Timeout(timeout_seconds),
-                ) as client,
-                client.stream(
+            async with httpx.AsyncClient(
+                follow_redirects=False,
+                trust_env=False,
+                proxy=proxy,
+                timeout=httpx.Timeout(timeout_seconds),
+            ) as client:
+                async with client.stream(
                     "GET",
                     monitor.url,
                     headers={"User-Agent": settings.check_user_agent},
-                ) as response,
-            ):
-                status_code = response.status_code
-                response_bytes = 0
-                async for chunk in response.aiter_bytes():
-                    response_bytes += len(chunk)
-                    if response_bytes > settings.max_response_bytes:
+                ) as response:
+                    status_code = response.status_code
+                    response_bytes = 0
+                    async for chunk in response.aiter_bytes():
+                        response_bytes += len(chunk)
+                        if response_bytes > settings.max_response_bytes:
+                            return (
+                                status_code,
+                                False,
+                                "response_too_large",
+                                "response exceeded configured size limit",
+                            )
+                    if 300 <= status_code < 400:
                         return (
                             status_code,
                             False,
-                            "response_too_large",
-                            "response exceeded configured size limit",
+                            "unsafe_redirect",
+                            "redirects are not followed by the monitor",
                         )
-                if 300 <= status_code < 400:
-                    return (
-                        status_code,
-                        False,
-                        "unsafe_redirect",
-                        "redirects are not followed by the monitor",
-                    )
-                is_up = 200 <= status_code < 300
-                return status_code, is_up, None if is_up else "http_error", None
+                    is_up = 200 <= status_code < 300
+                    return status_code, is_up, None if is_up else "http_error", None
     except (TimeoutError, httpx.TimeoutException):
         return None, False, "timeout", "request timed out"
     except UnsafeTarget:
