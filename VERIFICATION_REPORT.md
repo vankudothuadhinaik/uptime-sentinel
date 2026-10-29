@@ -8,7 +8,7 @@ Run date: 2026-10-29
 
 ## Latest completed end-to-end CI evidence
 
-[Run #197](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40837386321) on commit `4a955bc2c3df1a8a9809438bdd0121031997b648` completed successfully.
+[Run #213](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40842665563) on commit `b1874c4bde095e0e1c395e5a278621d1636c93ca` completed successfully for PR #10.
 
 | Job | Result | What it establishes |
 |---|---|---|
@@ -16,7 +16,9 @@ Run date: 2026-10-29
 | `compose-smoke` | **PASS** | Compose configuration validation, container build/start, API liveness, registration/login, monitor creation, worker check persistence, and public status all passed. |
 | `proxy-integration` | **SKIPPED** | Controlled proxy fixture URLs/secrets are not configured. This is not a security pass. |
 
-Run #197 also validates the CI concurrency optimization that cancels superseded runs and conserves free runner minutes.
+Run #213 also validates the CI concurrency optimization that cancels superseded runs and conserves free runner minutes.
+
+The final PR branch adds deterministic proxy request-validation and cleanup regression coverage. Its checks job passed the full suite, PostgreSQL concurrency test, migrations, dependency audit, compilation, and formatting/type checks. Its Compose job passed the registration-to-worker E2E flow. The external proxy job remained skipped because the six controlled fixture secrets are not configured.
 
 ## Implemented project capabilities
 
@@ -31,11 +33,11 @@ Run #197 also validates the CI concurrency optimization that cancels superseded 
 
 ## Verification limits
 
-- The latest CI end-to-end run #197 verifies readiness, registration/login, monitor creation, worker check persistence, and public status against `https://example.com`. Run #197 completed successfully: `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
+- The latest CI end-to-end run #213 verifies readiness, registration/login, monitor creation, worker check persistence, and public status against `https://example.com`. Run #213 completed successfully: `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
 - A separate local Docker Compose run was completed on 2026-10-29 using an isolated Compose project (`uptime-sentinel-audit`); the real registration-to-worker E2E flow passed. See **Local Docker Compose verification (2026-10-29)** below.
 - External proxy integration tests remain skipped because controlled fixtures/secrets are not configured. Do not treat the skip as a pass.
 - The old public test proxy has not passed the controlled security suite and must not be used for sensitive or production traffic.
-- Historical local verification notes from 2026-10-28 reported 38 tests passed, six infrastructure-gated tests skipped, and 69% coverage. Those are historical notes, not a fresh local run in this session.
+- The final local run on the PR branch reported **51 passed, 7 skipped**, and two existing SlowAPI deprecation warnings. The skips are the five opt-in external proxy tests, the PostgreSQL concurrency test without a local `POSTGRES_TEST_URL`, and the local invalid-TLS fixture when certificate tooling is unavailable.
 - A static source search for common private-key, GitHub token, AWS access-key, and live Stripe-key markers returned no matches. This is not equivalent to GitHub's private secret-scanning alerts or a full credential audit.
 
 ## Free-only completion status
@@ -48,6 +50,7 @@ Run #197 also validates the CI concurrency optimization that cancels superseded 
 - [x] External proxy integration limitations clearly documented.
 - [x] Run the complete demo locally with Docker Compose, including worker-backed check persistence (2026-10-29; isolated project and preserved existing resources).
 - [x] Review GitHub Secret scanning → Alerts in the GitHub UI (user-provided screenshot dated 2026-10-29 shows 0 open and 0 closed alerts; push protection was not separately checked).
+- [x] Run deterministic local proxy regressions for mixed DNS answers, DNS failures, request authentication, unsupported methods/ports, target credentials, resolver pinning, unsafe redirects, and TLS verification. The final local proxy selection reported **28 passed, 1 skipped**.
 
 ## Production-only work — intentionally out of scope
 
