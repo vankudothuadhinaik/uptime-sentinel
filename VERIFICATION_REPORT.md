@@ -2,49 +2,57 @@
 
 Run date: 2026-10-30
 
-## Current change
+## Final repository verification
 
-PR #14 was merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`. The latest code-validated commit before the documentation-only refreshes is `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2`; GitHub Actions run [#336](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40933176847) passed with `checks`, `proxy-local-integration`, and `compose-smoke` successful. Post-merge CI run [#344](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934459207) was queued after the merge; do not treat it as passed until GitHub reports completion. The opt-in external `proxy-integration` job remains skipped because controlled fixture infrastructure is not configured.
+- PR #14, **Harden proxy limits and operational metrics**, merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`.
+- Latest documentation commit: `c857035f783514be763d397e90610a221e54e613`.
+- Latest main-branch CI: [run #346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) — **success**.
+- No release tag was created.
+- Scope is the free GitHub portfolio project: code, automated CI, local proxy fixtures, Docker Compose demo, and documentation. Paid production hosting is not required.
 
-## Release gates
+## CI results
 
-| Gate | Result | Evidence |
+| Job | Result | Evidence |
 |---|---|---|
-| Local dependencies | **PASS** | `pip check`: no broken requirements. |
-| Lint and formatting | **PASS** | Ruff check passed; 37 files already formatted. |
-| Configured type check | **PASS** | `mypy app worker.py migrations tests`: no issues in 27 files. |
-| Application test suite | **PASS** | `pytest -q`: 73 passed, 8 skipped, 3 warnings. |
-| Compilation | **PASS** | `compileall` completed successfully. |
-| Dependency audit | **PASS** | `pip-audit --skip-editable`: no known vulnerabilities. |
-| PostgreSQL 16 migrations | **PASS** | Docker PostgreSQL 16 migration upgrade completed. |
-| PostgreSQL concurrency/fencing | **PASS** | Real two-session Docker test: 2 passed; exclusive claims, expired-lease reclaim, fencing, and incident serialization exercised. |
-| Docker Compose smoke | **PASS** | Images built; PostgreSQL/Redis health, API migrations/readiness, auth, monitor creation, worker persistence, and public status passed. |
-| Local egress proxy security | **PASS** | Real local fixture tests cover private/mixed DNS answers, DNS failures, resolver pinning, redirects, auth, unsupported methods/ports, target credentials, invalid TLS, overload 503, and oversized headers. |
-| External controlled egress proxy | **BLOCKED** | All six fixture variables are unset; `tests/test_egress_proxy_integration.py` reported 5 skipped. No external security pass is claimed. |
-| GitHub Actions run #336 | **PASS** | Workflow completed successfully for code-validated commit `3d6df4e41f88a8b3f4d1a99719adf4c8d05635e2`; `checks`, local proxy integration, and Compose smoke passed. External `proxy-integration` was skipped. |
-| Post-merge CI run #344 | **PENDING** | Queued for merge commit `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`; completion not yet confirmed. |
+| `checks` | **PASS** | Run #346 completed successfully, including lint, formatting, type checks, tests, migrations, and dependency audit. |
+| `proxy-local-integration` | **PASS** | Controlled local proxy security integration tests passed. |
+| `compose-smoke` | **PASS** | Docker Compose smoke test passed, including API health and service/worker exercise. |
+| `proxy-integration` | **SKIPPED** | External controlled fixtures and the six fixture configuration secrets are not configured. This is not a security pass for an external proxy. |
 
-## Changes made
+## Implemented and verified in repository scope
 
-- Renamed the retained failed-check metric from an `_total` name to a gauge name and added assertions for empty/populated values and types.
-- Added deterministic proxy overload and oversized-header regression tests; oversized headers now return HTTP 431 instead of escaping as an unhandled stream-reader exception.
-- Added a real socket-level allowed-forwarding fixture and disposed every SQLite test engine to eliminate test-resource warnings.
-- Made the PostgreSQL concurrency regression test isolate unrelated existing monitors and restore their state, so persistent test databases cannot invalidate the exclusive-claim assertion.
-- Corrected proxy, README, and release-checklist documentation where literal escape sequences or stale behavior descriptions were present.
+- FastAPI monitoring API, authentication and ownership-scoped operations.
+- PostgreSQL-compatible migrations and database-backed leased worker.
+- Bounded HTTP checks, no automatic redirect following, response-size limits, SSRF-oriented URL/address checks, and incident lifecycle.
+- Egress proxy authentication fail-closed behavior, destination policy tests, local fixture coverage, and TLS-verification regressions.
+- Operational metrics and bounded proxy concurrency/overload behavior from merged PR #14.
+- CI for lint, formatting, typing, tests, database migration checks, dependency audit, local proxy integration, and Docker Compose smoke.
 
-## Skips and blockers
+## External security boundary
 
-The local test suite previously reported eight skips, including the five external proxy cases, PostgreSQL tests without a configured URL in the host virtual environment, and an OpenSSL-dependent fixture. The local invalid-TLS test has now been tightened to require a certificate-verification-specific error; run #333 passed with this assertion. The PostgreSQL tests were separately run against Docker PostgreSQL 16 and passed. The external proxy cases require an independently controlled authenticated proxy plus public, private, rebinding, redirect, and invalid-TLS fixture URLs. They cannot be safely invented or replaced with mocks.
+The opt-in external suite in `.github/workflows/ci.yml` requires an independently controlled proxy and fixture URLs for public HTTPS, private destination, DNS rebinding, redirects, and invalid TLS. The required GitHub Actions secret names are:
 
-The project is not production-certified. Production use still requires controlled proxy infrastructure, real external proxy integration evidence, production secrets, migration/release procedures, and operational continuity controls.
+- `EGRESS_PROXY_TEST_URL`
+- `EGRESS_PUBLIC_URL`
+- `EGRESS_PRIVATE_URL`
+- `EGRESS_REBIND_URL`
+- `EGRESS_REDIRECT_URL`
+- `EGRESS_BAD_TLS_URL`
 
-## Render deployment observation
+These values must refer to infrastructure the project owner controls. They cannot be safely fabricated, and skipped tests must not be reported as passed.
 
-The Render workspace contains `uptime-sentinel-egress-proxy` at `https://uptime-sentinel-egress-proxy.onrender.com`, currently configured to deploy from `integration/sentry-doppler` (not this PR branch). Render reports the deployment as live from commit `e7f5c547a034c051cc4d35afbefc23b93a78dc86`. The service's IP allowlist permits all source IPs, so its safety depends on the proxy's fail-closed authentication and destination validation. I did not change service settings or expose/read secret values. A live deployment is not proof that the external proxy security matrix passed; fixture-backed verification remains blocked.
+## Render observation
 
-## Git state
+The connected Uptime Sentinel Render workspace has:
+- PostgreSQL instance `uptime-sentinel-db`, PostgreSQL 16, Free plan, reported available and with expiry `2026-11-26T21:40:41Z`.
+- Test proxy service `uptime-sentinel-egress-proxy` at https://uptime-sentinel-egress-proxy.onrender.com.
+- The proxy service is configured to deploy from `integration/sentry-doppler`, not `main`, and its ingress allowlist permits `0.0.0.0/0`.
 
-- Remote: `https://github.com/vankudothuadhinaik/uptime-sentinel.git`
-- Branch: `hardening/ops-metrics-proxy-limits-recovery`
-- PR: #14, merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`
-- No new repository, remote, tag, or force push was created.
+The test proxy is not independently security-certified and must not be used for sensitive or production traffic. The API and continuous worker are not deployed. This is intentional for the free-only portfolio scope; the paid Render blueprint was removed. No service settings or secrets were changed in this verification.
+
+## Final decision
+
+**Free-only portfolio project: repository implementation and standard CI verified.**
+
+**Production deployment/security certification: not complete and not claimed.** It requires controlled external proxy infrastructure, external fixture-backed evidence, a separately approved hosting plan, secure production configuration, migrations, and deployed end-to-end checks.
+
