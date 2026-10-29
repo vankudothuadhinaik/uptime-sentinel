@@ -6,9 +6,9 @@ Run date: 2026-10-29
 
 PR #12: https://github.com/vankudothuadhinaik/uptime-sentinel/pull/12
 
-The current PR branch hardens manual/scheduled check deduplication, whole-request timeout including slow response streams, PATCH null validation, lease/result persistence fencing, incident uniqueness/concurrency, quota serialization, and bounded stable pagination. [CI run #285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad` passed the required `checks`, `compose-smoke`, and `proxy-local-integration` jobs. A separate `codecov/patch` check failed.
+The merged PR hardens manual/scheduled check deduplication, whole-request timeout including slow response streams, PATCH null validation, lease/result persistence fencing, incident uniqueness/concurrency, quota serialization, and bounded stable pagination. PR CI [run #293](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40906489226) passed `checks`, `compose-smoke`, `proxy-local-integration`, and `codecov/patch`. PR #12 was merged to `main` as `aa7fc8e64a5f9f3a7cdb5a8a74313e9e26ea23ce`.
 
-The external `proxy-integration` job was skipped because external controlled fixture URLs/secrets are not configured. That skip is not a security pass. PR #12 remains open and no release tag was created.
+The external `proxy-integration` job was skipped because external controlled fixture URLs/configuration are not configured. That skip is not a security pass. PR #12 is merged; no release tag has been created.
 
 ## Project decision
 
@@ -16,7 +16,7 @@ The external `proxy-integration` job was skipped because external controlled fix
 
 ## Latest completed end-to-end CI evidence
 
-[PR #12 run #285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) completed successfully on 2026-10-29 for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad`.
+[PR #12 run #293](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40906489226) completed successfully on 2026-10-29 for commit `b597ab1f370b46370aabb95cfff5f2ff023d1139`; Codecov patch coverage passed.
 
 | Job | Result | What it establishes |
 |---|---|---|
@@ -25,7 +25,7 @@ The external `proxy-integration` job was skipped because external controlled fix
 | `proxy-local-integration` | **PASS** | Deterministic local proxy security tests passed. |
 | `proxy-integration` | **SKIPPED** | Controlled proxy fixture URLs/secrets are not configured. This is not a security pass. |
 
-Run #285 is the latest successful PR workflow validation. The external proxy job remains skipped; the independent `codecov/patch` check failed.
+Run #293 is the final successful PR workflow validation. The external proxy job remains skipped; the `codecov/patch` check passed.
 
 The final PR branch adds deterministic proxy request-validation and cleanup regression coverage. Its checks job passed the full suite, PostgreSQL concurrency test, migrations, dependency audit, compilation, and formatting/type checks. Its Compose job passed the registration-to-worker E2E flow. The external proxy job remained skipped because the six controlled fixture secrets are not configured.
 
@@ -42,7 +42,7 @@ The final PR branch adds deterministic proxy request-validation and cleanup regr
 
 ## Verification limits
 
-- CI run [#285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) on PR #12 completed successfully on 2026-10-29. `checks`, `compose-smoke`, and `proxy-local-integration` passed; the separate opt-in `proxy-integration` job was skipped because external controlled fixture URLs/secrets were not configured. A separate `codecov/patch` check failed.
+- CI run [#293](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40906489226) on PR #12 completed successfully on 2026-10-29. `checks`, `compose-smoke`, `proxy-local-integration`, and `codecov/patch` passed; the separate opt-in `proxy-integration` job was skipped because external controlled fixture URLs/configuration were not available. PR #12 was merged to `main`.
 - A separate local Docker Compose run was completed on 2026-10-29 using an isolated Compose project (`uptime-sentinel-audit`); the real registration-to-worker E2E flow passed. See **Local Docker Compose verification (2026-10-29)** below.
 - The external controlled-proxy integration job is an explicit opt-in on manual workflow dispatch (`run_external_proxy_tests`) and remains unverified until independently operated fixture URLs/configuration are supplied. These six values are not passwords and cannot be safely invented. Do not treat a skip as a pass or as evidence about an external/production proxy. The repository's controlled local proxy suite is required in CI and passed in run #285.
 - The old public test proxy has not passed the controlled security suite and must not be used for sensitive or production traffic.
@@ -96,4 +96,4 @@ The user-provided screenshot of the repository's **Secret scanning alerts** page
 
 ## Final assessment
 
-**Portfolio project with passing required workflow jobs, end-to-end Compose smoke, and local proxy security regression tests; not represented as production-ready.** CI run #285 passed `checks`, `compose-smoke`, and `proxy-local-integration`. A separate `codecov/patch` check failed. The external controlled-proxy integration suite remains unverified because its dedicated fixture secrets are not configured. Local fixtures validate the repository's proxy behavior but do not certify an independently operated production proxy. No production deployment is claimed.
+**Portfolio project with passing required workflow jobs, end-to-end Compose smoke, Codecov patch coverage, and local proxy security regression tests; not represented as production-ready.** PR CI run #293 passed `checks`, `compose-smoke`, `proxy-local-integration`, and `codecov/patch`. The external controlled-proxy integration suite remains unverified because independently controlled fixture configuration is not available. Local fixtures validate the repository's proxy behavior but do not certify an independently operated production proxy. No production deployment is claimed.
