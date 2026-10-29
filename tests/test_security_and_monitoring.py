@@ -117,7 +117,7 @@ def test_worker_respects_monitor_interval(monkeypatch, db_session):
 
     monkeypatch.setattr("worker.SessionLocal", lambda: db_session)
     calls = []
-    monkeypatch.setattr("worker.perform_check", lambda db, item: calls.append(item.id))
+    monkeypatch.setattr("worker.perform_check", lambda db, item, **kwargs: calls.append(item.id))
     now = datetime.now(timezone.utc)
     monitor.next_check_at = now + timedelta(seconds=280)
     db_session.add(
@@ -157,7 +157,7 @@ def test_worker_skips_paused_and_claimed_monitors(monkeypatch, db_session):
     db_session.commit()
     monkeypatch.setattr("worker.SessionLocal", lambda: db_session)
     calls = []
-    monkeypatch.setattr("worker.perform_check", lambda db, item: calls.append(item.name))
+    monkeypatch.setattr("worker.perform_check", lambda db, item, **kwargs: calls.append(item.name))
     assert run_once() == 0
     assert calls == []
 
@@ -211,7 +211,7 @@ def test_worker_slow_check_keeps_claim_until_completion(monkeypatch, db_session)
     monkeypatch.setattr("worker.SessionLocal", lambda: db_session)
     observed = []
 
-    def slow_check(db, item):
+    def slow_check(db, item, **kwargs):
         observed.append((item.lease_token, item.lease_until))
 
     monkeypatch.setattr("worker.perform_check", slow_check)
@@ -261,7 +261,8 @@ def test_worker_exception_releases_claim(monkeypatch, db_session):
     monitor_id = monitor.id
     monkeypatch.setattr("worker.SessionLocal", lambda: db_session)
     monkeypatch.setattr(
-        "worker.perform_check", lambda db, item: (_ for _ in ()).throw(RuntimeError("boom"))
+        "worker.perform_check",
+        lambda db, item, **kwargs: (_ for _ in ()).throw(RuntimeError("boom")),
     )
     with pytest.raises(RuntimeError, match="boom"):
         run_once(now=datetime.now(timezone.utc))
@@ -345,10 +346,65 @@ def test_response_size_limit_is_enforced(db_session, monkeypatch):
     assert result.error_category == "response_too_large"
 
 
+def test_total_deadline_includes_slow_streamed_body(monkeypatch):
+    import asyncio
+
+    from app import monitoring
+
+    monkeypatch.setattr("app.monitoring.validate_target", lambda _: None)
+    monkeypatch.setattr(
+        "app.monitoring.get_settings",
+        lambda: Settings(max_response_bytes=1024),
+    )
+    wall_clock_timeout = asyncio.timeout
+    monkeypatch.setattr(monitoring.asyncio, "timeout", lambda _: wall_clock_timeout(0.02))
+    monitor = Monitor(
+        name="slow-stream",
+        url="https://example.com",
+        interval_seconds=60,
+        timeout_seconds=1,
+    )
+
+    class SlowResponse:
+        status_code = 200
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_):
+            return False
+
+        async def aiter_bytes(self):
+            await asyncio.sleep(0.08)
+            yield b"ok"
+
+    class FakeAsyncClient:
+        def __init__(self, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_):
+            return False
+
+        def stream(self, *args, **kwargs):
+            return SlowResponse()
+
+    monkeypatch.setattr(monitoring.httpx, "AsyncClient", FakeAsyncClient)
+    status_code, is_up, error_category, _ = asyncio.run(monitoring._request_with_deadline(monitor))
+
+    assert status_code is None
+    assert is_up is False
+    assert error_category == "timeout"
+
+
 def test_monitor_client_uses_configured_proxy(monkeypatch, db_session):
     from app import monitoring
 
     user = User(email="proxy@example.com", password_hash="test-hash")
+    db_session.add(user)
+    db_session.flush()
     monitor = Monitor(
         owner_id=user.id,
         name="proxy",
@@ -356,9 +412,6 @@ def test_monitor_client_uses_configured_proxy(monkeypatch, db_session):
         interval_seconds=60,
         timeout_seconds=5,
     )
-    db_session.add(user)
-    db_session.flush()
-    monitor.owner_id = user.id
     db_session.add(monitor)
     db_session.commit()
     monkeypatch.setattr("app.monitoring.validate_target", lambda _: None)
@@ -371,26 +424,29 @@ def test_monitor_client_uses_configured_proxy(monkeypatch, db_session):
     class FakeResponse:
         status_code = 200
 
-        def iter_bytes(self):
+        async def aiter_bytes(self):
             yield b"ok"
 
-        def __enter__(self):
+        async def __aenter__(self):
             return self
 
-        def __exit__(self, *_):
+        async def __aexit__(self, *_):
             return False
 
-    class FakeClient:
+    class FakeAsyncClient:
         def __init__(self, **kwargs):
             captured.update(kwargs)
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *_):
+            return False
 
         def stream(self, *args, **kwargs):
             return FakeResponse()
 
-        def close(self):
-            pass
-
-    monkeypatch.setattr(monitoring.httpx, "Client", FakeClient)
+    monkeypatch.setattr(monitoring.httpx, "AsyncClient", FakeAsyncClient)
     result = monitoring.perform_check(db_session, monitor)
     assert result.is_up is True
     assert str(captured["proxy"].url) == "http://proxy.test:3128"

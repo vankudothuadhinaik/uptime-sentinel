@@ -1,6 +1,14 @@
 from datetime import datetime
 
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import (
+    AnyHttpUrl,
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 
 class AuthIn(BaseModel):
@@ -35,6 +43,23 @@ class MonitorPatch(BaseModel):
     timeout_seconds: int | None = Field(default=None, ge=1, le=30)
     is_paused: bool | None = None
     public: bool | None = None
+
+    @model_validator(mode="after")
+    def reject_explicit_nulls(self):
+        # Optional annotations let a client omit any field. Explicit nulls must
+        # still be rejected for columns that are non-nullable in the database.
+        non_nullable = (
+            "name",
+            "url",
+            "interval_seconds",
+            "timeout_seconds",
+            "is_paused",
+            "public",
+        )
+        for field_name in non_nullable:
+            if field_name in self.model_fields_set and getattr(self, field_name) is None:
+                raise ValueError(f"{field_name} cannot be null")
+        return self
 
 
 class MonitorOut(BaseModel):

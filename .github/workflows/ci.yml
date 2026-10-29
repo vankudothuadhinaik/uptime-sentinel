@@ -8,6 +8,12 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      run_external_proxy_tests:
+        description: "Run tests against an independently operated controlled proxy (requires all six fixture URL secrets)"
+        required: false
+        default: false
+        type: boolean
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -125,7 +131,7 @@ jobs:
         run: docker compose down --remove-orphans
 
   proxy-integration:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.run_external_proxy_tests == true
     runs-on: ubuntu-latest
 
     steps:

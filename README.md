@@ -27,7 +27,7 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 - **Security:** application-side SSRF validation, redirects disabled, production egress-proxy requirement, no forwarding of user credentials.
 - **Operations:** Alembic migrations, Docker Compose, GitHub Actions, Codecov, optional Sentry, and optional Doppler developer workflow.
 
-> **Project status:** this is a GitHub portfolio project with a local Docker Compose demo; paid hosting is not required. The [GitHub Actions run history](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) records standard checks and Compose smoke-test results; consult individual runs for the exact commit and jobs verified. The proxy-authentication fail-closed fix is merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6). The opt-in external proxy integration job is skipped because controlled fixture URLs/secrets are not configured; it is not claimed as passed. Render deployment is out of scope. Never use the public test proxy for sensitive or production traffic.
+> **Project status:** this is a GitHub portfolio project with a local Docker Compose demo; paid hosting is not required. The [GitHub Actions run history](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) records standard checks and Compose smoke-test results; consult individual runs for the exact commit and jobs verified. The proxy-authentication fail-closed fix is merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6). The external proxy integration job is an explicit opt-in on manual workflow dispatch and requires six fixture URL/configuration secrets for infrastructure you control; ordinary CI uses deterministic local proxy fixtures. The external job is not claimed as passed. Render deployment is out of scope. Never use the public test proxy for sensitive or production traffic.
 
 ## Architecture
 
@@ -120,6 +120,9 @@ The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
 - PostgreSQL and SQLite migration upgrade/downgrade round trips
 - Docker Compose build/startup and API liveness smoke test
 - Compose end-to-end smoke: registration/login, monitor creation, worker check persistence, and public status
+- Deterministic local proxy security regressions; the external controlled-proxy suite remains opt-in
+
+The latest PR #12 validation is [run #285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad`. Its `checks`, `compose-smoke`, and `proxy-local-integration` jobs passed. The external controlled-proxy job was skipped because its fixture URLs and secrets are not configured; skipped is not passed. GitHub also reports an independent `codecov/patch` check failure.
 
 [![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
 
@@ -149,26 +152,34 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 - Response bodies are streamed only up to `MAX_RESPONSE_BYTES`; errors are bounded and credentials are not logged.
 - **Important limitation:** DNS can change between application validation and the HTTP connection. Production therefore requires `EGRESS_PROXY_URL` to point to a private, controlled proxy that independently validates the actual destination at connection time. Do not use an arbitrary public proxy.
 
+## Current P0 reliability/security hardening (PR #12)
+
+The current pull-request branch adds a shared lease path for manual and scheduled checks, a wall-clock deadline spanning streamed HTTP bodies, strict PATCH null validation, fenced result persistence, one-open-incident database enforcement, concurrent quota serialization, stable bounded incident/check pagination, and regression coverage.
+
+CI run [#285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad` passed `checks`, `compose-smoke`, and `proxy-local-integration`.
+
+**Not complete:** the opt-in external controlled-proxy test is skipped because independently controlled fixture URLs/secrets are not configured. Do not treat this skip as evidence that DNS rebinding, private-IP blocking, redirects, and invalid TLS have been verified against an externally operated proxy. PR #12 is open, not merged; no release tag has been created.
+
 ## Verification status
 
-Latest main-branch CI verification: [run #233](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849831440) passed after the documentation updates. The security-test change was verified in [run #229](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849371364), where `proxy-local-integration` passed all 29 tests.
+Latest PR CI verification: [run #285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) passed the required code, Compose, and deterministic local proxy jobs.
 
 | Check | Verified result |
 |---|---|
 | `checks` job | **Passed** — dependencies, lint, formatting, type checking, PostgreSQL concurrency, tests/coverage, Codecov upload, compile, dependency audit, and migration round trips |
 | `compose-smoke` | **Passed** — Compose configuration, container build/start, API health, registration/login, monitor creation, worker check persistence, and public status |
-| `proxy-local-integration` | **Passed** — 29 controlled local proxy security tests covering address policy, DNS failures/mixed answers, connection pinning, redirects, authentication, unsupported requests, and TLS verification |
+| `proxy-local-integration` | **Passed** — controlled local proxy security tests covering address policy, DNS failures/mixed answers, connection pinning, redirects, authentication, unsupported requests, and TLS verification |
 | `proxy-integration` | **Skipped** — optional independently operated proxy fixtures/secrets are not configured; this is not a security pass for any external/production proxy |
 | Local Docker Compose end-to-end demo (2026-10-29) | **Passed** — isolated stack; registration/login, monitor creation, worker processing, persisted HTTP 200 result, and public status |
 | Render API/worker deployment | **Not deployed or required** |
 
-PR #11 has been merged to main. Run #233 passed on main after documentation updates, and run #229 verified all required CI jobs including 29 local proxy security tests. The separate external `proxy-integration` job remains opt-in and skipped. These checks validate the repository's local proxy implementation and test fixtures, not an independently operated production proxy or production readiness.
+PR #12 remains open and unmerged. Run #285 passed the required CI jobs; the separate external `proxy-integration` job remains opt-in and skipped. A separate `codecov/patch` check failed. These checks validate the repository's local proxy implementation and test fixtures, not an independently operated production proxy or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
 - [ ] Provision an isolated, access-controlled egress proxy that validates the actual destination IP at connection time and enforces IPv4/IPv6, private/loopback/link-local/metadata, DNS-rebinding, redirect, and TLS policy.
-- [ ] Create deterministic controlled fixtures and configure these GitHub Actions repository secrets: `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, `EGRESS_BAD_TLS_URL`.
-- [ ] Manually dispatch the workflow and verify `proxy-integration` actually runs and passes. Inspect proxy enforcement logs; generic network errors and arbitrary 5xx responses are not proof of destination blocking.
+- [ ] Only if you operate a controlled proxy and deterministic fixtures, configure these GitHub Actions repository secrets (they are fixture URLs/configuration, not values to invent): `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, `EGRESS_BAD_TLS_URL`.
+- [ ] Manually dispatch the workflow with `run_external_proxy_tests` checked and verify `proxy-integration` actually runs and passes. Inspect proxy enforcement logs; generic network errors and arbitrary 5xx responses are not proof of destination blocking.
 - [ ] Configure production `DATABASE_URL`, a unique `JWT_SECRET` of at least 32 characters, and the private `EGRESS_PROXY_URL` for both API and worker.
 - [ ] Apply migrations once through a controlled release step.
 - [ ] Verify `/health/live`, `/health/ready`, registration, monitor creation, worker execution, result/incident persistence, recovery after restart, and retention cleanup.

@@ -2,21 +2,30 @@
 
 Run date: 2026-10-29
 
+## Active P0 hardening PR — 2026-10-29
+
+PR #12: https://github.com/vankudothuadhinaik/uptime-sentinel/pull/12
+
+The current PR branch hardens manual/scheduled check deduplication, whole-request timeout including slow response streams, PATCH null validation, lease/result persistence fencing, incident uniqueness/concurrency, quota serialization, and bounded stable pagination. [CI run #285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad` passed the required `checks`, `compose-smoke`, and `proxy-local-integration` jobs. A separate `codecov/patch` check failed.
+
+The external `proxy-integration` job was skipped because external controlled fixture URLs/secrets are not configured. That skip is not a security pass. PR #12 remains open and no release tag was created.
+
 ## Project decision
 
 **Portfolio scope: free GitHub repository, CI, and local Docker Compose demo.** Paid hosting and production uptime guarantees are out of scope. This report distinguishes automated evidence from checks that have not been run.
 
 ## Latest completed end-to-end CI evidence
 
-[Main-branch run #233](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849831440) completed successfully on 2026-10-29 after the latest documentation updates. The new local proxy security job was independently verified in [run #229](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849371364), with 29 tests passing.
+[PR #12 run #285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) completed successfully on 2026-10-29 for commit `c15c3c0b8b8c0b31c56f54790e5776afaf4f46ad`.
 
 | Job | Result | What it establishes |
 |---|---|---|
 | `checks` | **PASS** | Dependency consistency, Ruff lint/format, mypy, PostgreSQL concurrency tests, pytest/coverage, Codecov upload, compileall, dependency audit, and PostgreSQL/SQLite migration checks passed. |
 | `compose-smoke` | **PASS** | Compose configuration validation, container build/start, API liveness, registration/login, monitor creation, worker check persistence, and public status all passed. |
+| `proxy-local-integration` | **PASS** | Deterministic local proxy security tests passed. |
 | `proxy-integration` | **SKIPPED** | Controlled proxy fixture URLs/secrets are not configured. This is not a security pass. |
 
-Run #233 is the latest successful main-branch CI result after the documentation changes. Run #229 verifies the new local proxy security job; the external proxy job remains skipped.
+Run #285 is the latest successful PR workflow validation. The external proxy job remains skipped; the independent `codecov/patch` check failed.
 
 The final PR branch adds deterministic proxy request-validation and cleanup regression coverage. Its checks job passed the full suite, PostgreSQL concurrency test, migrations, dependency audit, compilation, and formatting/type checks. Its Compose job passed the registration-to-worker E2E flow. The external proxy job remained skipped because the six controlled fixture secrets are not configured.
 
@@ -33,11 +42,11 @@ The final PR branch adds deterministic proxy request-validation and cleanup regr
 
 ## Verification limits
 
-- CI run [#229](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849371364) on PR #11 completed successfully on 2026-10-29. `checks`, `compose-smoke`, and the newly added `proxy-local-integration` passed; the separate opt-in `proxy-integration` job was skipped because external controlled fixture URLs/secrets were not configured. PR #11 was merged to main.
+- CI run [#285](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40900905354) on PR #12 completed successfully on 2026-10-29. `checks`, `compose-smoke`, and `proxy-local-integration` passed; the separate opt-in `proxy-integration` job was skipped because external controlled fixture URLs/secrets were not configured. A separate `codecov/patch` check failed.
 - A separate local Docker Compose run was completed on 2026-10-29 using an isolated Compose project (`uptime-sentinel-audit`); the real registration-to-worker E2E flow passed. See **Local Docker Compose verification (2026-10-29)** below.
-- The external controlled-proxy integration job remains skipped because independently operated fixture URLs/secrets are not configured. Do not treat this skip as a pass or as evidence about an external/production proxy. The repository's controlled local proxy suite is now required in CI and passed 29 tests in run #229.
+- The external controlled-proxy integration job is an explicit opt-in on manual workflow dispatch (`run_external_proxy_tests`) and remains unverified until independently operated fixture URLs/configuration are supplied. These six values are not passwords and cannot be safely invented. Do not treat a skip as a pass or as evidence about an external/production proxy. The repository's controlled local proxy suite is required in CI and passed in run #285.
 - The old public test proxy has not passed the controlled security suite and must not be used for sensitive or production traffic.
-- The final local run on the PR branch reported **51 passed, 7 skipped**, and two existing SlowAPI deprecation warnings. The skips are the five opt-in external proxy tests, the PostgreSQL concurrency test without a local `POSTGRES_TEST_URL`, and the local invalid-TLS fixture when certificate tooling is unavailable.
+- The final local run on the PR branch reported **60 passed, 8 skipped**, and two existing SlowAPI deprecation warnings. The skips are the five opt-in external proxy tests, the PostgreSQL concurrency tests without a local `POSTGRES_TEST_URL`, and the local invalid-TLS fixture when certificate tooling is unavailable.
 - A static source search for common private-key, GitHub token, AWS access-key, and live Stripe-key markers returned no matches. This is not equivalent to GitHub's private secret-scanning alerts or a full credential audit.
 
 ## Free-only completion status
@@ -50,7 +59,7 @@ The final PR branch adds deterministic proxy request-validation and cleanup regr
 - [x] External proxy integration limitations clearly documented.
 - [x] Run the complete demo locally with Docker Compose, including worker-backed check persistence (2026-10-29; isolated project and preserved existing resources).
 - [x] Review GitHub Secret scanning → Alerts in the GitHub UI (user-provided screenshot dated 2026-10-29 shows 0 open and 0 closed alerts); a separate Advanced Security screenshot dated 2026-10-29 shows Push Protection On.
-- [x] Run deterministic local proxy regressions in CI for mixed DNS answers, DNS failures, request authentication, unsupported methods/ports, target credentials, resolver pinning, unsafe redirects, and TLS verification. CI run #229's `proxy-local-integration` job reported **29 passed**. These verify the repository's proxy implementation and deterministic fixtures, not an independently operated external proxy.
+- [x] Run deterministic local proxy regressions in CI for mixed DNS answers, DNS failures, request authentication, unsupported methods/ports, target credentials, resolver pinning, unsafe redirects, and TLS verification. PR #12 run #285's `proxy-local-integration` job passed. These verify the repository's proxy implementation and deterministic fixtures, not an independently operated external proxy.
 
 ## Production-only work — intentionally out of scope
 
@@ -74,7 +83,7 @@ A local run was performed after Docker Desktop's Linux engine became available. 
 | Worker processed check | **PASS** |
 | Persisted result | **PASS** — `is_up=True`, HTTP status 200 |
 | Public status | **PASS** — HTTP 200, status `up`, `last_check` populated |
-| Regression suite | **PASS** — 23 passed, 6 skipped |
+| Regression suite | **PASS** — 60 passed, 8 skipped locally |
 | Ruff lint / format, mypy, diff check | **PASS** |
 
 The temporary audit containers and network were stopped with `docker compose down --remove-orphans`; the audit named volume was intentionally retained. Pre-existing containers remained running. No production resources were touched and no application code fix was required.
@@ -87,4 +96,4 @@ The user-provided screenshot of the repository's **Secret scanning alerts** page
 
 ## Final assessment
 
-**Portfolio project with passing automated CI, end-to-end Compose smoke, and required local proxy security regression tests; not represented as production-ready.** CI run #233 passed after the latest documentation updates; run #229 passed `checks`, `compose-smoke`, and `proxy-local-integration` (29 tests). The separate external controlled-proxy integration suite remains unverified because its dedicated fixture secrets are not configured. Local fixtures validate the repository's proxy behavior but do not certify an independently operated production proxy. No production deployment is claimed.
+**Portfolio project with passing required workflow jobs, end-to-end Compose smoke, and local proxy security regression tests; not represented as production-ready.** CI run #285 passed `checks`, `compose-smoke`, and `proxy-local-integration`. A separate `codecov/patch` check failed. The external controlled-proxy integration suite remains unverified because its dedicated fixture secrets are not configured. Local fixtures validate the repository's proxy behavior but do not certify an independently operated production proxy. No production deployment is claimed.

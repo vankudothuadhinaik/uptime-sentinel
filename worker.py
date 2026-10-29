@@ -1,87 +1,43 @@
-"""Interval scheduler with fenced, database-backed monitor leases.
-
-PostgreSQL workers use SELECT FOR UPDATE SKIP LOCKED. Every claim has a unique
-token, and completion updates are conditional on that token, so an expired
-worker cannot clear or reschedule a newer owner's lease.
-"""
+"""Interval scheduler with shared database-backed monitor leases and fencing."""
 
 import logging
 from datetime import datetime, timedelta, timezone
 from signal import SIGINT, SIGTERM, signal
 from threading import Event
 from types import FrameType
-from uuid import uuid4
 
-from sqlalchemy import delete, or_, select, update
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import SessionLocal
+from app.leases import _as_utc, claim_monitor, finish_claim
 from app.models import CheckResult, Monitor
-from app.monitoring import perform_check
+from app.monitoring import StaleLease, perform_check
 
 logger = logging.getLogger(__name__)
 RETENTION_CLEANUP_INTERVAL = timedelta(hours=24)
 RETENTION_RETRY_INTERVAL = timedelta(hours=1)
 
 
-def _as_utc(value: datetime) -> datetime:
-    if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc)
-
-
 def _claim_due(db, now: datetime) -> tuple[Monitor, str] | None:
-    statement = (
-        select(Monitor)
-        .where(
-            Monitor.is_paused.is_(False),
-            or_(Monitor.next_check_at.is_(None), Monitor.next_check_at <= now),
-            or_(Monitor.lease_until.is_(None), Monitor.lease_until <= now),
-        )
-        .order_by(Monitor.next_check_at.asc().nulls_first(), Monitor.id)
-        .limit(1)
-        .with_for_update(skip_locked=True)
-    )
-    monitor = db.scalar(statement)
-    if monitor is None:
-        return None
-    token = uuid4().hex
-    # The lease is longer than the configured HTTP timeout, preventing normal
-    # slow checks from overlapping while still allowing crash recovery.
-    lease_seconds = max(monitor.interval_seconds, monitor.timeout_seconds + 60)
-    monitor.lease_until = now + timedelta(seconds=lease_seconds)
-    monitor.lease_token = token
-    db.commit()
-    db.refresh(monitor)
-    return monitor, token
+    """Claim one due monitor using the same lease protocol as manual checks."""
+    return claim_monitor(db, None, now, due_only=True)
 
 
 def _finish_claim(db, monitor_id: int, token: str, next_check_at: datetime) -> bool:
-    result = db.execute(
-        update(Monitor)
-        .where(Monitor.id == monitor_id, Monitor.lease_token == token)
-        .values(lease_until=None, lease_token=None, next_check_at=next_check_at)
-    )
-    db.commit()
-    return getattr(result, "rowcount", None) == 1
+    """Compatibility wrapper for callers/tests using the former worker helper."""
+    return finish_claim(db, monitor_id, token, next_check_at)
 
 
 def cleanup_old_results(db: Session, now: datetime | None = None) -> int:
-    """Delete check history older than RESULT_RETENTION_DAYS.
-
-    Incident records are deliberately retained so an incident's history is not
-    erased merely because its underlying check samples have expired.
-    """
+    """Delete expired check history but preserve incident records."""
     retention_days = get_settings().result_retention_days
     if retention_days < 1:
         raise ValueError("RESULT_RETENTION_DAYS must be at least 1")
 
     cutoff = _as_utc(now or datetime.now(timezone.utc)) - timedelta(days=retention_days)
     try:
-        # Delete in one database-side statement instead of loading every expired
-        # ID into worker memory. This keeps cleanup bounded for high-volume
-        # monitors and returns the affected-row count for operational logging.
         result = db.execute(
             delete(CheckResult)
             .where(CheckResult.checked_at < cutoff)
@@ -104,22 +60,27 @@ def run_once(now: datetime | None = None) -> int:
             if claimed is None:
                 break
             monitor, token = claimed
+            monitor_id = monitor.id
             try:
-                perform_check(db, monitor)
-            except Exception:
-                # Roll back partial check writes, release the lease in finally,
-                # and propagate the failure so the process supervisor/CI can
-                # observe it rather than silently recording a successful pass.
+                perform_check(db, monitor, lease_token=token)
+                checked += 1
+                logger.info("monitor_check_completed", extra={"monitor_id": monitor_id})
+            except StaleLease:
                 db.rollback()
+                logger.warning("monitor_check_stale_lease", extra={"monitor_id": monitor_id})
+            except Exception:
+                db.rollback()
+                logger.exception("monitor_check_failed", extra={"monitor_id": monitor_id})
+                # Leave a short, bounded retry delay if this worker still owns
+                # the lease; finalization is fenced against a newer claim.
                 raise
             finally:
-                _finish_claim(
+                finish_claim(
                     db,
-                    monitor.id,
+                    monitor_id,
                     token,
                     current_time + timedelta(seconds=monitor.interval_seconds),
                 )
-            checked += 1
     return checked
 
 
@@ -132,14 +93,22 @@ def run_forever(stop_event: Event) -> None:
                 with SessionLocal() as db:
                     deleted = cleanup_old_results(db, now=now)
                 if deleted:
-                    logger.info("Retention cleanup removed %d expired check results", deleted)
+                    logger.info(
+                        "retention_cleanup_completed",
+                        extra={"deleted_check_results": deleted},
+                    )
             except Exception:
-                logger.exception("Retention cleanup failed; will retry in one hour")
+                logger.exception("retention_cleanup_failed")
                 next_retention_cleanup = now + RETENTION_RETRY_INTERVAL
             else:
                 next_retention_cleanup = now + RETENTION_CLEANUP_INTERVAL
 
-        run_once()
+        try:
+            run_once()
+        except Exception:
+            # A transient database/persistence problem should be observable but
+            # must not permanently terminate the continuous scheduler loop.
+            logger.exception("scheduler_cycle_failed")
         stop_event.wait(5)
 
 
