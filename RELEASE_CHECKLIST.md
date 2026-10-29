@@ -15,6 +15,8 @@
 - [x] Proxy destination-policy, redirect, resolver pinning, TLS, overload, and malformed/unsupported request regression coverage.
 - [x] Prometheus operational gauges and bounded proxy concurrency/overload handling.
 - [x] Dockerfiles, Docker Compose demo, README, runbook, verification report, CI workflow, and portfolio demo/interview walkthrough.
+- [x] Production-oriented Compose profile with Caddy TLS edge, private data network, authenticated Redis, persistent volumes, container hardening, and public docs/metrics blocking.
+- [x] Production deployment runbook and environment template; configuration validator rejects common placeholder credentials.
 
 ## Final verification — 2026-10-30
 
@@ -28,9 +30,16 @@
 - [ ] External controlled-proxy security suite: **not run**; intentionally optional for the free portfolio scope and required before claiming production proxy security.
 - [ ] Production deployment: **not performed**; outside the selected free-only scope.
 
-## Optional production-only work
+## Remaining production release gates
 
-Only pursue these if production hosting/security certification is explicitly desired:
+The production configuration is merged, but **a public production deployment is not complete or certified**. Do not call it production-ready until these gates are completed:
+
+- [ ] Run #372 (triggered by placeholder-secret validation tests) finishes successfully: [CI run #372](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40945219179).
+- [ ] Provision a private controlled proxy and host-level egress firewall; the existing Render proxy allows public ingress and is not approved for production.
+- [ ] Decide where to host the API and continuously running worker. Free tiers may sleep or restrict background services; do not claim 24/7 monitoring without verifying always-on behavior.
+- [ ] Configure real domain/DNS and unique production secrets outside Git, then deploy and verify health, scheduled checks, incident recovery, and backups.
+
+## External security and hosting work
 
 - [ ] Provision a private, access-controlled proxy that enforces destination IP policy at connection time.
 - [ ] Operate controlled public HTTPS, private destination, DNS-rebinding, redirect, and invalid-TLS fixtures.
