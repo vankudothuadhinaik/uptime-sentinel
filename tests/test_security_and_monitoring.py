@@ -261,7 +261,8 @@ def test_worker_exception_releases_claim(monkeypatch, db_session):
     monitor_id = monitor.id
     monkeypatch.setattr("worker.SessionLocal", lambda: db_session)
     monkeypatch.setattr(
-        "worker.perform_check", lambda db, item, **kwargs: (_ for _ in ()).throw(RuntimeError("boom"))
+        "worker.perform_check",
+        lambda db, item, **kwargs: (_ for _ in ()).throw(RuntimeError("boom")),
     )
     with pytest.raises(RuntimeError, match="boom"):
         run_once(now=datetime.now(timezone.utc))
