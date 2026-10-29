@@ -19,7 +19,7 @@
 ## Final verification — 2026-10-30
 
 - [x] PR #14 merged into `main`: [PR #14](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/14), merge commit `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`.
-- [x] Latest main CI passed: [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101), documentation commit `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`; code-focused run [#346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) also passed.
+- [x] Inspected full main CI passed: [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101), documentation commit `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`; code-focused run [#346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) also passed.
 - [x] Main CI checks passed.
 - [x] Controlled local proxy security integration passed.
 - [x] Docker Compose smoke passed.
