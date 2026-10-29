@@ -1,0 +1,93 @@
+# Production-oriented self-host profile. Requires a trusted egress proxy and host firewall.
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: [.env.production]
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?Set POSTGRES_USER}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:?Set POSTGRES_DB}
+      RATE_LIMIT_STORAGE_URI: redis://:${REDIS_PASSWORD:?Set REDIS_PASSWORD}@redis:6379/1
+    expose: ["8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    read_only: true
+    tmpfs: ["/tmp:size=32m,noexec,nosuid"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    init: true
+    networks: [app, data]
+  worker:
+    build: .
+    command: ["python", "worker.py"]
+    restart: unless-stopped
+    env_file: [.env.production]
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?Set POSTGRES_USER}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:?Set POSTGRES_DB}
+    depends_on:
+      postgres: {condition: service_healthy}
+    read_only: true
+    tmpfs: ["/tmp:size=32m,noexec,nosuid"]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    init: true
+    networks: [app, data]
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes: [production_pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [data]
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD}
+    command: ["sh", "-c", "exec redis-server --appendonly yes --requirepass \"$$REDIS_PASSWORD\""]
+    volumes: [production_redisdata:/data]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping 2>/dev/null | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [data]
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN to a public DNS name pointing at this host}
+      EMAIL: ${EMAIL:?Set EMAIL for certificate notices}
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./Caddyfile.production:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api: {condition: service_healthy}
+    networks: [edge, app]
+volumes:
+  production_pgdata:
+  production_redisdata:
+  caddy_data:
+  caddy_config:
+networks:
+  edge:
+  app:
+  data:
+    internal: true
