@@ -150,7 +150,7 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Latest completed CI run for `main` commit `b0ba9abdda6ac6f47e92a5f4c7272058b675b98c`: [GitHub Actions run #173](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40829991424).
+Latest completed CI run for `main` commit `9d143a43d54f77276c001ea148e411205ea01203`: [GitHub Actions run #179](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40830636294).
 
 | Check | Latest result |
 |---|---|
@@ -160,7 +160,7 @@ Latest completed CI run for `main` commit `b0ba9abdda6ac6f47e92a5f4c7272058b675b
 | Full local monitor-to-worker workflow | **Not independently verified in this session** |
 | Render API/worker deployment | **Not deployed or required** |
 
-CI evidence proves automated checks and the Compose liveness smoke test pass. It does not prove a full manual registration-to-monitor-to-worker scenario, external proxy enforcement, or production readiness.
+CI run #179 passed the automated checks and Compose liveness smoke test. It does not prove a full manual registration-to-monitor-to-worker scenario, external proxy enforcement, or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
