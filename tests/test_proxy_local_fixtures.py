@@ -43,6 +43,16 @@ async def _fixture_response(reader: asyncio.StreamReader, writer: asyncio.Stream
         await writer.wait_closed()
 
 
+async def _ok_fixture_response(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    try:
+        await reader.readuntil(b"\r\n\r\n")
+        writer.write(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok")
+        await writer.drain()
+    finally:
+        writer.close()
+        await writer.wait_closed()
+
+
 async def _tls_response(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
     try:
         await reader.readuntil(b"\r\n\r\n")
@@ -131,6 +141,33 @@ async def test_actual_proxy_does_not_follow_local_unsafe_redirect(
         assert response.status_code == 302
         assert response.headers["location"] == "http://127.0.0.1/private"
         assert calls == [("redirect-fixture.test", 80)]
+    finally:
+        proxy_server.close()
+        await proxy_server.wait_closed()
+        fixture_server.close()
+        await fixture_server.wait_closed()
+
+
+@pytest.mark.asyncio
+async def test_actual_proxy_forwards_allowed_local_fixture(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture_server, fixture_port = await _start_server(_ok_fixture_response)
+    proxy_server, proxy_port = await _proxy_server(monkeypatch)
+
+    async def resolver(_: str, __: int):
+        return [(socket.AF_INET, ("127.0.0.1", fixture_port))]
+
+    monkeypatch.setattr(proxy_module, "_resolve_public", resolver)
+    try:
+        proxy = httpx.Proxy(
+            f"http://127.0.0.1:{proxy_port}",
+            auth=(PROXY_USERNAME, PROXY_PASSWORD),
+        )
+        async with httpx.AsyncClient(proxy=proxy, trust_env=False) as client:
+            response = await client.get("http://allowed-fixture.test/")
+        assert response.status_code == 200
+        assert response.text == "ok"
     finally:
         proxy_server.close()
         await proxy_server.wait_closed()
