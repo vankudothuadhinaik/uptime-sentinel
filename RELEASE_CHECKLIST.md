@@ -18,7 +18,7 @@
 
 ## Free-only completion gates
 
-- [x] Verify the latest GitHub Actions run on `main` completes successfully: [run #189](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40831569902) passed `checks` and `compose-smoke`, including the new registration-to-worker end-to-end smoke.
+- [x] Verify the latest GitHub Actions run on `main` completes successfully: [run #192](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40832294190) passed `checks` and `compose-smoke`, including the new registration-to-worker end-to-end smoke.
 - [ ] Run the documented app manually on a developer machine with Docker Compose. CI now automates readiness, registration/login, monitor creation, worker check persistence, and public status, but a local manual run has not been performed from this session.
 - [x] Search indexed source for common private-key, GitHub-token, AWS-key, and live Stripe-key markers; no matches were returned. This static search is not a substitute for GitHub secret-scanning alerts or rotating any credential that may have been exposed.
 - [ ] Review GitHub's repository security/secret-scanning alerts in the GitHub UI; that private security-alert view was not available through the connected tools.
@@ -35,11 +35,11 @@
 
 ## Latest verified evidence and remaining work
 
-- Latest completed end-to-end CI run [#189](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40831569902) on commit `49284c6f0fcba9dd1577e2770debe65ef33788da`: `checks` and `compose-smoke` passed, including registration/login, monitor creation, worker check persistence, and public status. `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
+- Verified end-to-end CI run [#192](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40832294190) on commit `f415f7993cd06e7b8a00731fdbdb6580b446a64c`: `checks` and `compose-smoke` passed, including registration/login, monitor creation, worker check persistence, and public status. `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
 - Proxy fail-closed authentication regression was merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6).
 - A free Render test proxy exists at https://uptime-sentinel-egress-proxy.onrender.com, but its inbound allowlist is `0.0.0.0/0`; it is a test service, not a production security boundary.
 - The Render PostgreSQL free instance has a recorded expiry of 2026-11-26. This does not affect local Docker Compose or GitHub-only portfolio completion; do not depend on it for persistent production data.
 - The API and continuous worker are not deployed in Render. That is intentional for the free-only portfolio scope.
-- CI run #191 passed `checks` and `compose-smoke`; `proxy-integration` was skipped. Use the linked Actions page for any newer run.
+- CI run #192 passed `checks` and `compose-smoke`; `proxy-integration` was skipped. Use the linked Actions page for any newer run.
 
 No paid resources are required for the project goal. Do not label this deployment production-ready; it is a portfolio project with local demo and CI verification.

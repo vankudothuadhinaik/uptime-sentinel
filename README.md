@@ -151,7 +151,7 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Verified end-to-end CI run: [run #191](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40831932771) on commit `b18dad67b9d63ceeca36d47c7d8b5cfc98ec8a9d`. Check [all workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for newer documentation-only runs.
+Verified end-to-end CI run: [run #192](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40832294190) on commit `f415f7993cd06e7b8a00731fdbdb6580b446a64c`. Check [all workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for newer documentation-only runs.
 
 | Check | Verified result |
 |---|---|
@@ -161,7 +161,7 @@ Verified end-to-end CI run: [run #191](https://github.com/vankudothuadhinaik/upt
 | Manual run on a developer machine | **Not independently verified in this session** |
 | Render API/worker deployment | **Not deployed or required** |
 
-Run #191 validates the CI concurrency setting that cancels superseded runs to conserve free runner minutes. The end-to-end Compose test does not prove the external proxy security boundary or production readiness.
+Run #192 validates the CI concurrency setting that cancels superseded runs to conserve free runner minutes. The end-to-end Compose test does not prove the external proxy security boundary or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
