@@ -33,9 +33,9 @@ The final PR branch adds deterministic proxy request-validation and cleanup regr
 
 ## Verification limits
 
-- The latest main-branch CI run #222 verifies the standard checks and Compose smoke workflow, including readiness, registration/login, monitor creation, worker check persistence, and public status against `https://example.com`. Run #222 completed successfully: `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets were not configured.
+- CI run [#229](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849371364) on PR #11 completed successfully on 2026-10-29. `checks`, `compose-smoke`, and the newly added `proxy-local-integration` passed; the separate opt-in `proxy-integration` job was skipped because external controlled fixture URLs/secrets were not configured. PR #11 was merged to main.
 - A separate local Docker Compose run was completed on 2026-10-29 using an isolated Compose project (`uptime-sentinel-audit`); the real registration-to-worker E2E flow passed. See **Local Docker Compose verification (2026-10-29)** below.
-- External proxy integration tests remain skipped because controlled fixtures/secrets are not configured. Do not treat the skip as a pass.
+- The external controlled-proxy integration job remains skipped because independently operated fixture URLs/secrets are not configured. Do not treat this skip as a pass or as evidence about an external/production proxy. The repository's controlled local proxy suite is now required in CI and passed 29 tests in run #229.
 - The old public test proxy has not passed the controlled security suite and must not be used for sensitive or production traffic.
 - The final local run on the PR branch reported **51 passed, 7 skipped**, and two existing SlowAPI deprecation warnings. The skips are the five opt-in external proxy tests, the PostgreSQL concurrency test without a local `POSTGRES_TEST_URL`, and the local invalid-TLS fixture when certificate tooling is unavailable.
 - A static source search for common private-key, GitHub token, AWS access-key, and live Stripe-key markers returned no matches. This is not equivalent to GitHub's private secret-scanning alerts or a full credential audit.
@@ -50,7 +50,7 @@ The final PR branch adds deterministic proxy request-validation and cleanup regr
 - [x] External proxy integration limitations clearly documented.
 - [x] Run the complete demo locally with Docker Compose, including worker-backed check persistence (2026-10-29; isolated project and preserved existing resources).
 - [x] Review GitHub Secret scanning → Alerts in the GitHub UI (user-provided screenshot dated 2026-10-29 shows 0 open and 0 closed alerts); a separate Advanced Security screenshot dated 2026-10-29 shows Push Protection On.
-- [x] Run deterministic local proxy regressions for mixed DNS answers, DNS failures, request authentication, unsupported methods/ports, target credentials, resolver pinning, unsafe redirects, and TLS verification. The final local proxy selection reported **28 passed, 1 skipped**. Supplemental direct proxy checks also denied loopback/private/link-local/mapped IPv6 targets (HTTP 403), allowed a public HTTPS fixture (HTTP 200), and rejected invalid proxy credentials (HTTP 407); these are local checks, not proof of external DNS-rebinding enforcement.
+- [x] Run deterministic local proxy regressions in CI for mixed DNS answers, DNS failures, request authentication, unsupported methods/ports, target credentials, resolver pinning, unsafe redirects, and TLS verification. CI run #229's `proxy-local-integration` job reported **29 passed**. These verify the repository's proxy implementation and deterministic fixtures, not an independently operated external proxy.
 
 ## Production-only work — intentionally out of scope
 
@@ -87,4 +87,4 @@ The user-provided screenshot of the repository's **Secret scanning alerts** page
 
 ## Final assessment
 
-**Portfolio project with passing automated CI and end-to-end Compose baseline; not represented as production-ready.** The external controlled-proxy integration suite is still unverified: its six dedicated fixture secrets are not configured, and the job was skipped in run #227. Local proxy regression tests and direct checks are useful evidence but do not replace a real controlled proxy test. No production deployment is claimed.
+**Portfolio project with passing automated CI, end-to-end Compose smoke, and required local proxy security regression tests; not represented as production-ready.** CI run #229 passed `checks`, `compose-smoke`, and `proxy-local-integration` (29 tests). The separate external controlled-proxy integration suite remains unverified because its dedicated fixture secrets are not configured. Local fixtures validate the repository's proxy behavior but do not certify an independently operated production proxy. No production deployment is claimed.
