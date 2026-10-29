@@ -89,6 +89,5 @@ volumes:
 networks:
   edge:
   app:
-    internal: true
   data:
     internal: true
