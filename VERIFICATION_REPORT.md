@@ -1,72 +1,56 @@
 # Uptime Sentinel verification report
 
-Run date: 2026-10-28
+Run date: 2026-10-29
 
-## Release decision
+## Project decision
 
-**PUBLISHED FOR REVIEW / NOT READY FOR PRODUCTION.** PR #4 is merged into `main` at commit `da893678780ba06ed64cb6db95ef9fa6db65dea5`. Production is blocked on a real controlled egress proxy, execution of the proxy security integration suite, and deployed API/worker end-to-end verification.
+**Portfolio scope: free GitHub repository, CI, and local Docker Compose demo.** Paid hosting and production uptime guarantees are out of scope. This report distinguishes automated evidence from checks that have not been run.
 
-## Latest verified GitHub Actions run
+## Latest completed CI evidence
 
-[Run #160 / 40694085326](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40694085326) on commit `da893678780ba06ed64cb6db95ef9fa6db65dea5` completed successfully. The `checks` and `compose-smoke` jobs passed; the opt-in `proxy-integration` job was skipped because its six controlled fixture secrets are not configured.
+[Run #179](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40830636294) on commit `9d143a43d54f77276c001ea148e411205ea01203` completed successfully.
 
-| Job | Result | Interpretation |
+| Job | Result | What it establishes |
 |---|---|---|
-| `checks` | PASS | Dependency consistency, Ruff lint/format, mypy, PostgreSQL concurrency, pytest/coverage, Codecov upload, compileall, pip-audit, and PostgreSQL/SQLite migration round trips all succeeded. |
-| `compose-smoke` | PASS | Compose validation/build/startup and API liveness check succeeded. |
-| `proxy-integration` | SKIPPED | Controlled proxy fixture secrets are not configured. This is not a security pass. |
+| `checks` | **PASS** | Dependency consistency, Ruff lint/format, mypy, PostgreSQL concurrency tests, pytest/coverage, Codecov upload, compileall, dependency audit, and PostgreSQL/SQLite migration checks passed. |
+| `compose-smoke` | **PASS** | Compose configuration validation, container build/start, and API liveness endpoint passed. |
+| `proxy-integration` | **SKIPPED** | Controlled proxy fixture URLs/secrets are not configured. This is not a security pass. |
 
-## Local verification reported for this commit
+The CI run is the latest verified automated evidence available when this report was updated. Subsequent README/checklist edits trigger their own CI runs; check the [workflow page](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for their final state.
 
-- pytest: 38 passed; 6 infrastructure-gated tests skipped; coverage-enabled local run reported 69% across `app`, `worker`, and `proxy`.
-- Ruff lint and format: passed from the project virtual environment.
-- mypy: passed for the CI targets (`app worker.py migrations tests`).
-- compileall and `pip check`: passed.
-- pip-audit: no known vulnerabilities at time of run.
-- SQLite migration upgrade/downgrade/upgrade: passed.
-- Compose smoke script syntax: passed.
-- Secret/artifact tracking scan: no tracked secrets, database dumps, or caches.
+## Implemented project capabilities
 
-These local results were reported for the 2026-10-28 checkout and are historical. Run #173 is the authoritative automated check evidence for the current published commit. A passing CI job does not verify a full manual workflow or production infrastructure.
+- FastAPI API with registration/login, authenticated monitor management, and ownership-scoped monitor/check/incident queries.
+- PostgreSQL-compatible Alembic migrations and a database-backed worker with lease/fencing logic.
+- HTTP/HTTPS checks with bounded response reads, timeouts, latency/failure history, and incident open/update/recovery behavior.
+- Application-side SSRF checks, URL credential rejection, redirects disabled, and production startup validation.
+- Unit and PostgreSQL concurrency tests, dependency auditing, migration checks, and Docker Compose smoke CI.
+- Architecture/lifecycle diagrams and setup, troubleshooting, security, and release documentation.
+- Proxy authentication fail-closed fix merged in [PR #6](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/6).
+- Paid Render blueprint removed. No hosted API, worker, or database is required for the intended portfolio project.
 
-## Security test hardening
+## Verification limits
 
-Unsafe-target integration assertions require an explicit HTTP 403 policy-denial response from the controlled proxy. Generic connection errors, DNS failures, timeouts, and arbitrary 5xx responses must not count as evidence that destination enforcement works. Standard CI passed, but the real controlled-proxy run is still required before this security gate can pass.
+- The automated Compose smoke test verifies startup and `/health/live`; it does not by itself prove the full registration-to-monitor-to-worker workflow.
+- A full manual local end-to-end workflow has **not** been independently verified in this session.
+- External proxy integration tests remain skipped because controlled fixtures/secrets are not configured. Do not treat the skip as a pass.
+- The old public test proxy has not passed the controlled security suite and must not be used for sensitive or production traffic.
+- Historical local verification notes from 2026-10-28 reported 38 tests passed, six infrastructure-gated tests skipped, and 69% coverage. Those are historical notes, not a fresh local run in this session.
 
-## Implemented
+## Free-only completion status
 
-- FastAPI API, authentication, ownership-scoped monitor operations, status endpoints, and health endpoints.
-- PostgreSQL migrations and database-backed worker leases/fencing.
-- Application-side SSRF checks, redirect disabling, bounded response reading, proxy configuration, and production startup validation.
-- Unit tests, PostgreSQL concurrency tests, Compose smoke job, dependency auditing, and opt-in proxy integration tests.
-- Render blueprint at `render.yaml` defining an API web service and a continuous background worker.
-- Architecture and incident-lifecycle SVG diagrams under `docs/images/` and embedded in the project README.
-- README badges/links for GitHub Actions and Codecov plus setup, quality gates, integrations, security model, and release checklist.
-- Render runbook and release documentation.
+- [x] Latest confirmed CI baseline has passing `checks` and `compose-smoke` jobs.
+- [x] README and release checklist describe the free-only scope.
+- [x] Paid Render blueprint removed.
+- [x] Render notes reduced to a historical warning.
+- [x] External proxy integration limitations clearly documented.
+- [ ] Run the complete local Compose workflow on a developer machine: health/readiness, registration/login, monitor creation, a check, worker processing, and persisted results.
+- [ ] Review GitHub's repository security/secret-scanning alerts and confirm no credential has been committed. A source-tree review through the connected tools is not a substitute for GitHub secret scanning or credential rotation if a secret was exposed.
 
-## Production-only items (out of scope)
+## Production-only work — intentionally out of scope
 
-1. **Controlled egress proxy:** no private, destination-validating proxy has been deployed or independently verified. Application-side DNS validation alone cannot eliminate the DNS-rebinding time-of-check/time-of-use risk.
-2. **Real proxy integration:** controlled public, private, DNS-rebinding, redirect, and invalid-TLS fixtures and the six Actions secrets are not configured. The integration job has therefore been skipped.
-3. **Render services:** API and background worker deployment are not verified.
-4. **End-to-end behavior:** no deployed test has verified monitor creation, worker execution, result/incident persistence, restart/recovery, and cleanup.
-5. **Database continuity:** the existing PostgreSQL resource is on the Free plan and has a recorded expiry of 2026-11-26. Review/upgrade it before depending on it for production continuity.
+Production use would require a private controlled egress proxy that independently validates destination IPs at connection time, controlled public/private/DNS-rebinding/redirect/invalid-TLS fixtures, a successful real proxy integration run, deployment and database continuity planning, and full end-to-end verification. None of those is claimed complete, and no paid service should be created for this portfolio goal.
 
-## Optional future production work
+## Final assessment
 
-Set these repository Actions secrets only after a controlled proxy and fixture endpoints exist:
-
-- `EGRESS_PROXY_TEST_URL`
-- `EGRESS_PUBLIC_URL`
-- `EGRESS_PRIVATE_URL`
-- `EGRESS_REBIND_URL`
-- `EGRESS_REDIRECT_URL`
-- `EGRESS_BAD_TLS_URL`
-
-Then manually dispatch the workflow and verify `proxy-integration` actually executes and passes. Use the Render blueprint only after the private proxy is ready; supply the database's internal URL, a unique random JWT secret of at least 32 characters, and the private proxy URL as secret environment values. Apply migrations once through a controlled release step and perform real end-to-end verification.
-
-No real proxy integration run or production deployment is claimed. The API and worker remain undeployed by design for the free-only portfolio scope.
-
-## Final status
-
-**NOT READY FOR PRODUCTION.** Standard CI is green. Real proxy enforcement and production deployment remain unverified and must not be represented as complete.
+**Suitable as a portfolio project with passing automated CI baseline; not represented as production-ready.** The remaining local manual demo and external proxy security checks are clearly identified rather than silently marked complete.
