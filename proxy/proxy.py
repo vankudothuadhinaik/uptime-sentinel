@@ -259,9 +259,7 @@ async def handle(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter)
 async def main() -> None:
     if len(USERNAME) < 8 or len(PASSWORD) < 32:
         raise SystemExit("PROXY_USERNAME must be >=8 chars and PROXY_PASSWORD >=32 chars")
-    server = await asyncio.start_server(
-        handle, HOST, PORT, limit=HEADER_LIMIT + 1, backlog=128
-    )
+    server = await asyncio.start_server(handle, HOST, PORT, limit=HEADER_LIMIT + 1, backlog=128)
     async with server:
         await server.serve_forever()
 
