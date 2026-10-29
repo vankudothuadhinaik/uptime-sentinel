@@ -119,6 +119,7 @@ The [GitHub Actions workflow](.github/workflows/ci.yml) runs:
 - pip-audit dependency vulnerability scan
 - PostgreSQL and SQLite migration upgrade/downgrade round trips
 - Docker Compose build/startup and API liveness smoke test
+- Compose end-to-end smoke: registration/login, monitor creation, worker check persistence, and public status
 
 [![CI workflow](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/workflows/ci.yml) · [All workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions)
 
@@ -150,25 +151,23 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Latest completed CI run for `main` commit `9d143a43d54f77276c001ea148e411205ea01203`: [GitHub Actions run #179](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40830636294).
+Latest completed end-to-end CI baseline: [run #187](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40831202247) on commit `e17788aefba0d76d980f4b304432306650db75c1`. The later CI concurrency optimization has its own run; see [all workflow runs](https://github.com/vankudothuadhinaik/uptime-sentinel/actions) for the current status.
 
-| Check | Latest result |
+| Check | Verified result |
 |---|---|
 | `checks` job | **Passed** — dependencies, lint, formatting, type checking, PostgreSQL concurrency, tests/coverage, Codecov upload, compile, dependency audit, and migration round trips |
-| `compose-smoke` | **Passed** — Compose configuration, container build/start, and API liveness |
+| `compose-smoke` | **Passed** — Compose configuration, container build/start, API health, registration/login, monitor creation, worker check persistence, and public status |
 | `proxy-integration` | **Skipped** — opt-in controlled proxy fixture secrets are not configured; this is not a security pass |
-| Full local monitor-to-worker workflow | **Not independently verified in this session** |
+| Manual run on a developer machine | **Not independently verified in this session** |
 | Render API/worker deployment | **Not deployed or required** |
 
-CI run #179 passed the automated checks and Compose liveness smoke test. It does not prove a full manual registration-to-monitor-to-worker scenario, external proxy enforcement, or production readiness.
+Run #187 confirms the new automated end-to-end Compose workflow works in GitHub Actions. It does not prove the external proxy security boundary or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
 - [ ] Provision an isolated, access-controlled egress proxy that validates the actual destination IP at connection time and enforces IPv4/IPv6, private/loopback/link-local/metadata, DNS-rebinding, redirect, and TLS policy.
 - [ ] Create deterministic controlled fixtures and configure these GitHub Actions repository secrets: `EGRESS_PROXY_TEST_URL`, `EGRESS_PUBLIC_URL`, `EGRESS_PRIVATE_URL`, `EGRESS_REBIND_URL`, `EGRESS_REDIRECT_URL`, `EGRESS_BAD_TLS_URL`.
 - [ ] Manually dispatch the workflow and verify `proxy-integration` actually runs and passes. Inspect proxy enforcement logs; generic network errors and arbitrary 5xx responses are not proof of destination blocking.
-- [ ] Review Render Starter plan costs before provisioning paid services.
-- [ ] Resolve the existing free PostgreSQL resource's expiry (recorded as **2026-11-26**) before relying on it for production continuity.
 - [ ] Configure production `DATABASE_URL`, a unique `JWT_SECRET` of at least 32 characters, and the private `EGRESS_PROXY_URL` for both API and worker.
 - [ ] Apply migrations once through a controlled release step.
 - [ ] Verify `/health/live`, `/health/ready`, registration, monitor creation, worker execution, result/incident persistence, recovery after restart, and retention cleanup.
