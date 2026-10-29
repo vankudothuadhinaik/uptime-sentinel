@@ -35,17 +35,19 @@ async def _request_with_deadline(monitor: Monitor) -> tuple[int | None, bool, st
     try:
         async with asyncio.timeout(timeout_seconds):
             validate_target(monitor.url)
-            async with httpx.AsyncClient(
-                follow_redirects=False,
-                trust_env=False,
-                proxy=proxy,
-                timeout=httpx.Timeout(timeout_seconds),
-            ) as client:
-                async with client.stream(
+            async with (
+                httpx.AsyncClient(
+                    follow_redirects=False,
+                    trust_env=False,
+                    proxy=proxy,
+                    timeout=httpx.Timeout(timeout_seconds),
+                ) as client,
+                client.stream(
                     "GET",
                     monitor.url,
                     headers={"User-Agent": settings.check_user_agent},
-                ) as response:
+                ) as response,
+            ):
                     status_code = response.status_code
                     response_bytes = 0
                     async for chunk in response.aiter_bytes():
