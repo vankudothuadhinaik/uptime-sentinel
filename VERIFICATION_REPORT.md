@@ -2,6 +2,14 @@
 
 Run date: 2026-10-29
 
+## Active P0 hardening PR — 2026-10-29
+
+PR #12: https://github.com/vankudothuadhinaik/uptime-sentinel/pull/12
+
+The current PR branch hardens manual/scheduled check deduplication, whole-request timeout including slow response streams, PATCH null validation, lease/result persistence fencing, incident uniqueness/concurrency, quota serialization, and bounded stable pagination. The latest successful `checks` job for commit `f750b25f0fa4f6deef56a96a582b72f992b2ad6e` passed the full pytest/coverage suite, PostgreSQL concurrency, lint, formatting, type checking, dependency audit, compilation, and PostgreSQL/SQLite migration round-trips. Latest workflow: https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40889435122.
+
+At the time of this report update, that run's Compose E2E and local proxy security jobs were still in progress; inspect the Actions run for final outcomes. Its external `proxy-integration` job was skipped because external controlled fixture URLs/secrets are not configured. That skip is not a security pass. PR #12 remains open and no release tag was created.
+
 ## Project decision
 
 **Portfolio scope: free GitHub repository, CI, and local Docker Compose demo.** Paid hosting and production uptime guarantees are out of scope. This report distinguishes automated evidence from checks that have not been run.

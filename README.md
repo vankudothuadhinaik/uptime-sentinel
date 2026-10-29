@@ -149,6 +149,14 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 - Response bodies are streamed only up to `MAX_RESPONSE_BYTES`; errors are bounded and credentials are not logged.
 - **Important limitation:** DNS can change between application validation and the HTTP connection. Production therefore requires `EGRESS_PROXY_URL` to point to a private, controlled proxy that independently validates the actual destination at connection time. Do not use an arbitrary public proxy.
 
+## Current P0 reliability/security hardening (PR #12)
+
+The current pull-request branch adds a shared lease path for manual and scheduled checks, a wall-clock deadline spanning streamed HTTP bodies, strict PATCH null validation, fenced result persistence, one-open-incident database enforcement, concurrent quota serialization, stable bounded incident/check pagination, and regression coverage.
+
+Latest successful `checks` job for commit `f750b25f0fa4f6deef56a96a582b72f992b2ad6e` includes lint, formatting, mypy, PostgreSQL lease/incident concurrency, the full pytest/coverage suite (including a slow-stream total-deadline regression), Codecov upload, compilation, dependency audit, and PostgreSQL/SQLite migration round-trips. The same run's Compose E2E and local proxy jobs were still in progress when this text was written; check the linked Actions run for their final status: https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40889435122.
+
+**Not complete:** the opt-in external controlled-proxy test is skipped because independently controlled fixture URLs/secrets are not configured. Do not treat this skip as evidence that DNS rebinding, private-IP blocking, redirects, and invalid TLS have been verified against an externally operated proxy. PR #12 is open, not merged; no release tag has been created.
+
 ## Verification status
 
 Latest main-branch CI verification: [run #233](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849831440) passed after the documentation updates. The security-test change was verified in [run #229](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849371364), where `proxy-local-integration` passed all 29 tests.

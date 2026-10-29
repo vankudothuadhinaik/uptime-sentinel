@@ -34,6 +34,17 @@
 - External proxy fixture infrastructure and live internet security testing requiring controlled hosts and repository secrets.
 - Public production deployment and production readiness claims.
 
+## Active PR hardening status — 2026-10-29
+
+PR #12 is open on `fix/p0-monitoring-consistency`. The current branch contains the critical correctness changes listed in the section above this checklist. Its `checks` job passed on the latest tested commit, including the full pytest suite, PostgreSQL concurrency, lint/format/type checks, dependency audit, and migration round-trips. The latest CI run is available at https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40889435122; its Compose E2E and local proxy jobs were still in progress when this update was written.
+
+- [x] Shared manual/scheduled lease protocol, persisted-result fencing, wall-clock request deadline, PATCH explicit-null 422 validation.
+- [x] PostgreSQL guard for one open incident per monitor; regression test for concurrent failure transitions.
+- [x] Concurrency-safe monitor quota check and stable bounded incident/check pagination.
+- [x] Slow-stream timeout regression, full test suite, PostgreSQL concurrency, formatting/type/lint, dependency audit, and PostgreSQL/SQLite migration round-trips passed in the latest successful `checks` job.
+- [ ] External controlled-proxy integration: **not run** because controlled fixture endpoints/secrets have not been configured.
+- [ ] PR #12 merge and release tag: **not done**.
+
 ## Latest verified evidence and remaining work
 
 - Latest completed main-branch CI evidence is [run #233](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849831440), after the latest documentation updates. The local proxy security tests were verified in [run #229](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40849371364), associated with merged PR #11. `checks`, `compose-smoke`, and `proxy-local-integration` passed; the local proxy job reported 29 passed tests. The optional external `proxy-integration` job was skipped because external controlled fixture URLs/secrets were not configured.
