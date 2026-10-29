@@ -27,7 +27,7 @@ Run date: 2026-10-28
 - Compose smoke script syntax: passed.
 - Secret/artifact tracking scan: no tracked secrets, database dumps, or caches.
 
-These are local results reported for the current `main` checkout. CI run #160 is the authoritative automated check evidence for the current published commit. A passing CI job does not verify production infrastructure.
+These local results were reported for the 2026-10-28 checkout and are historical. Run #173 is the authoritative automated check evidence for the current published commit. A passing CI job does not verify a full manual workflow or production infrastructure.
 
 ## Security test hardening
 
@@ -44,7 +44,7 @@ Unsafe-target integration assertions require an explicit HTTP 403 policy-denial 
 - README badges/links for GitHub Actions and Codecov plus setup, quality gates, integrations, security model, and release checklist.
 - Render runbook and release documentation.
 
-## Production blockers
+## Production-only items (out of scope)
 
 1. **Controlled egress proxy:** no private, destination-validating proxy has been deployed or independently verified. Application-side DNS validation alone cannot eliminate the DNS-rebinding time-of-check/time-of-use risk.
 2. **Real proxy integration:** controlled public, private, DNS-rebinding, redirect, and invalid-TLS fixtures and the six Actions secrets are not configured. The integration job has therefore been skipped.
@@ -52,7 +52,7 @@ Unsafe-target integration assertions require an explicit HTTP 403 policy-denial 
 4. **End-to-end behavior:** no deployed test has verified monitor creation, worker execution, result/incident persistence, restart/recovery, and cleanup.
 5. **Database continuity:** the existing PostgreSQL resource is on the Free plan and has a recorded expiry of 2026-11-26. Review/upgrade it before depending on it for production continuity.
 
-## Required external configuration
+## Optional future production work
 
 Set these repository Actions secrets only after a controlled proxy and fixture endpoints exist:
 
@@ -65,7 +65,7 @@ Set these repository Actions secrets only after a controlled proxy and fixture e
 
 Then manually dispatch the workflow and verify `proxy-integration` actually executes and passes. Use the Render blueprint only after the private proxy is ready; supply the database's internal URL, a unique random JWT secret of at least 32 characters, and the private proxy URL as secret environment values. Apply migrations once through a controlled release step and perform real end-to-end verification.
 
-The available connected integrations do not expose GitHub Actions secret creation/manual dispatch or full Render deployment provisioning. No real proxy integration run or production deployment is claimed. The API and worker remain undeployed and PR #4 is merged.
+No real proxy integration run or production deployment is claimed. The API and worker remain undeployed by design for the free-only portfolio scope.
 
 ## Final status
 
