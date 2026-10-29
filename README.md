@@ -35,6 +35,8 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 
 The API and worker share PostgreSQL. Workers claim due monitors with lease/fencing protection, perform bounded HTTP checks, and persist results and incident transitions. In production, the outbound destination must be revalidated by a controlled egress proxy at connection time to address DNS-rebinding risks that application-only validation cannot eliminate.
 
+**Rate-limit storage:** by default, SlowAPI uses in-process `memory://` storage, which is suitable for the single-process local demo only. For multiple API replicas, set `RATE_LIMIT_STORAGE_URI=redis://redis:6379/1` (or the reachable Redis URL for your deployment) so counters are shared. Redis is optional for the base scheduler/API architecture; it is used for shared rate limits only when explicitly configured. Configure authentication/TLS and network access appropriately for deployed Redis.
+
 ## Monitor and incident lifecycle
 
 ![Monitor check and incident lifecycle diagram](docs/images/check-lifecycle.svg)
