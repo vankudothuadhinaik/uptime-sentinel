@@ -206,3 +206,14 @@ def test_manual_check_claims_and_fences_lease(monkeypatch):
         response = client.post(f"/monitors/{monitor_id}/check", headers=headers)
         assert response.status_code == 409
         assert observed["token"]
+
+
+
+def test_metrics_endpoint_emits_scheduler_health_gauges():
+    with TestClient(app) as client:
+        response = client.get("/metrics")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/plain")
+    assert "uptime_sentinel_overdue_checks " in response.text
+    assert "uptime_sentinel_expired_leases " in response.text
+    assert "uptime_sentinel_open_incidents " in response.text
