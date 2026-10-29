@@ -151,7 +151,7 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Verification status
 
-Latest main-branch verification: [CI run #222](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40847422445) on merge commit `80ec36f4c91ba1d30704a5401b6a5db9cd111bb5` completed successfully on 2026-10-29. `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets are not configured.
+Latest main-branch verification: [CI run #227](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40848379667) completed successfully on 2026-10-29. `checks` and `compose-smoke` passed; `proxy-integration` was skipped because controlled fixture URLs/secrets are not configured.
 
 | Check | Verified result |
 |---|---|
@@ -161,7 +161,7 @@ Latest main-branch verification: [CI run #222](https://github.com/vankudothuadhi
 | Local Docker Compose end-to-end demo (2026-10-29) | **Passed** — isolated stack; registration/login, monitor creation, worker processing, persisted HTTP 200 result, and public status |
 | Render API/worker deployment | **Not deployed or required** |
 
-Run #222 is the latest verified main-branch run after PR #10 merged. Local Compose verification was also completed on 2026-10-29. These checks do not prove the external proxy security boundary or production readiness.
+Run #227 is the latest successful main-branch CI run after the proxy hardening and final documentation updates. Local Compose verification was also completed on 2026-10-29. These checks do not prove the external proxy security boundary or production readiness.
 
 ## Production-only release gates (out of scope for this portfolio project)
 
