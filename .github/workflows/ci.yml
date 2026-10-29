@@ -105,6 +105,9 @@ jobs:
       - name: Wait for API health
         run: curl --fail --retry 30 --retry-delay 2 http://127.0.0.1:8000/health/live
 
+      - name: Exercise registration, monitor API, and worker processing
+        run: python scripts/compose-e2e.py
+
       - name: Show service state
         if: always()
         run: docker compose ps
