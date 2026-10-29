@@ -61,7 +61,12 @@ async def _connection_fixture(reader: asyncio.StreamReader, writer: asyncio.Stre
 async def _proxy_server(monkeypatch: pytest.MonkeyPatch) -> tuple[asyncio.AbstractServer, int]:
     monkeypatch.setattr(proxy_module, "USERNAME", PROXY_USERNAME)
     monkeypatch.setattr(proxy_module, "PASSWORD", PROXY_PASSWORD)
-    server = await asyncio.start_server(proxy_module.handle, "127.0.0.1", 0)
+    server = await asyncio.start_server(
+        proxy_module.handle,
+        "127.0.0.1",
+        0,
+        limit=proxy_module.HEADER_LIMIT + 1,
+    )
     return server, server.sockets[0].getsockname()[1]
 
 
@@ -185,6 +190,22 @@ async def test_proxy_rejects_target_credentials_and_unsupported_connect_port(
     finally:
         proxy_server.close()
         await proxy_server.wait_closed()
+
+
+@pytest.mark.asyncio
+async def test_proxy_rejects_oversized_headers(monkeypatch: pytest.MonkeyPatch) -> None:
+    proxy_server, proxy_port = await _proxy_server(monkeypatch)
+    oversized = b"x-test: " + (b"a" * proxy_module.HEADER_LIMIT)
+    try:
+        response = await _raw_proxy_request(
+            proxy_port,
+            b"GET http://example.com/ HTTP/1.1\r\n" + oversized + b"\r\n\r\n",
+        )
+    finally:
+        proxy_server.close()
+        await proxy_server.wait_closed()
+
+    assert response.startswith(b"HTTP/1.1 431 Request Header Fields Too Large")
 
 
 def _create_self_signed_certificate(directory: Path) -> tuple[Path, Path]:

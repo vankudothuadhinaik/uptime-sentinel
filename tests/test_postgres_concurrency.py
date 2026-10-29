@@ -23,8 +23,17 @@ def test_postgres_claim_is_exclusive_and_fenced():
     now = datetime.now(timezone.utc)
     user_id = None
     monitor_id = None
+    existing_monitor_states = {}
     try:
         with Session.begin() as db:
+            for existing in db.scalars(select(Monitor)).all():
+                existing_monitor_states[existing.id] = (
+                    existing.is_paused,
+                    existing.next_check_at,
+                    existing.lease_until,
+                    existing.lease_token,
+                )
+                existing.is_paused = True
             user = User(email=f"concurrency-{uuid4().hex}@example.test", password_hash="test")
             db.add(user)
             db.flush()
@@ -77,6 +86,15 @@ def test_postgres_claim_is_exclusive_and_fenced():
                 monitor = db.scalar(select(Monitor).where(Monitor.id == monitor_id))
                 if monitor is not None:
                     db.delete(monitor)
+            for existing_id, state in existing_monitor_states.items():
+                existing = db.get(Monitor, existing_id)
+                if existing is not None:
+                    (
+                        existing.is_paused,
+                        existing.next_check_at,
+                        existing.lease_until,
+                        existing.lease_token,
+                    ) = state
             if user_id is not None:
                 existing = db.get(User, user_id)
                 if existing is not None:

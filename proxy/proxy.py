@@ -135,7 +135,9 @@ async def _tunnel(client_r, client_w, host: str, port: int) -> None:
         client_w.close()
 
 
-async def _handle_connection(client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter) -> None:
+async def _handle_connection(
+    client_r: asyncio.StreamReader, client_w: asyncio.StreamWriter
+) -> None:
     upstream_w = None
     try:
         raw = await asyncio.wait_for(client_r.readuntil(b"\r\n\r\n"), timeout=10)
@@ -220,6 +222,13 @@ async def _handle_connection(client_r: asyncio.StreamReader, client_w: asyncio.S
             client_w.write(
                 b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n"
             )
+    except asyncio.LimitOverrunError:
+        if not client_w.is_closing():
+            client_w.write(
+                b"HTTP/1.1 431 Request Header Fields Too Large\r\n"
+                b"Connection: close\r\nContent-Length: 0\r\n\r\n"
+            )
+            await client_w.drain()
     except (ValueError, OSError, TimeoutError, asyncio.IncompleteReadError, UnicodeError):
         if not client_w.is_closing():
             client_w.write(

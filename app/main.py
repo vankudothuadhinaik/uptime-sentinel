@@ -66,18 +66,21 @@ def metrics(db: Session = Depends(get_db)) -> Response:
         )
         or 0
     )
-    expired_leases = db.scalar(
-        select(func.count(Monitor.id)).where(
-            Monitor.lease_until.is_not(None),
-            Monitor.lease_until <= now,
+    expired_leases = (
+        db.scalar(
+            select(func.count(Monitor.id)).where(
+                Monitor.lease_until.is_not(None),
+                Monitor.lease_until <= now,
+            )
         )
-    ) or 0
-    open_incidents = db.scalar(
-        select(func.count(Incident.id)).where(Incident.resolved_at.is_(None))
-    ) or 0
-    failed_checks = db.scalar(
-        select(func.count(CheckResult.id)).where(CheckResult.is_up.is_(False))
-    ) or 0
+        or 0
+    )
+    open_incidents = (
+        db.scalar(select(func.count(Incident.id)).where(Incident.resolved_at.is_(None))) or 0
+    )
+    failed_checks = (
+        db.scalar(select(func.count(CheckResult.id)).where(CheckResult.is_up.is_(False))) or 0
+    )
     payload = (
         "# HELP uptime_sentinel_overdue_checks Monitors due for a check.\n"
         "# TYPE uptime_sentinel_overdue_checks gauge\n"
@@ -88,9 +91,9 @@ def metrics(db: Session = Depends(get_db)) -> Response:
         "# HELP uptime_sentinel_open_incidents Currently unresolved incidents.\n"
         "# TYPE uptime_sentinel_open_incidents gauge\n"
         f"uptime_sentinel_open_incidents {open_incidents}\n"
-        "# HELP uptime_sentinel_failed_checks_total Persisted failed checks in retained history.\n"
-        "# TYPE uptime_sentinel_failed_checks_total gauge\n"
-        f"uptime_sentinel_failed_checks_total {failed_checks}\n"
+        "# HELP uptime_sentinel_failed_checks Persisted failed checks in retained history.\n"
+        "# TYPE uptime_sentinel_failed_checks gauge\n"
+        f"uptime_sentinel_failed_checks {failed_checks}\n"
     )
     return Response(payload, media_type="text/plain; version=0.0.4; charset=utf-8")
 

@@ -98,3 +98,37 @@ async def test_dns_resolution_failure_is_explicit(
     monkeypatch.setattr(loop, "getaddrinfo", resolution_failure)
     with pytest.raises(ValueError, match="DNS resolution failed"):
         await proxy_module._resolve_public("missing.test", 443)
+
+
+@pytest.mark.asyncio
+async def test_proxy_rejects_connections_when_capacity_is_saturated(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeWriter:
+        def __init__(self) -> None:
+            self.data = b""
+            self.closed = False
+
+        def write(self, data: bytes) -> None:
+            self.data += data
+
+        async def drain(self) -> None:
+            return None
+
+        def close(self) -> None:
+            self.closed = True
+
+        def is_closing(self) -> bool:
+            return self.closed
+
+        async def wait_closed(self) -> None:
+            return None
+
+    monkeypatch.setattr(proxy_module, "_connection_slots", asyncio.Semaphore(0))
+    writer = FakeWriter()
+
+    await proxy_module.handle(asyncio.StreamReader(), writer)  # type: ignore[arg-type]
+
+    assert writer.closed
+    assert writer.data.startswith(b"HTTP/1.1 503 Service Unavailable")
+    assert b"Retry-After: 1" in writer.data

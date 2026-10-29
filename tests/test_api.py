@@ -208,12 +208,49 @@ def test_manual_check_claims_and_fences_lease(monkeypatch):
         assert observed["token"]
 
 
-def test_metrics_endpoint_emits_scheduler_health_gauges():
+def test_metrics_endpoint_emits_scheduler_health_gauges(db_session):
+    from datetime import datetime, timedelta, timezone
+
+    from app.models import CheckResult, Incident, Monitor, User
+
     with TestClient(app) as client:
         response = client.get("/metrics")
 
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/plain")
-    assert "uptime_sentinel_overdue_checks " in response.text
-    assert "uptime_sentinel_expired_leases " in response.text
-    assert "uptime_sentinel_open_incidents " in response.text
+    assert "# TYPE uptime_sentinel_overdue_checks gauge" in response.text
+    assert "uptime_sentinel_overdue_checks 0" in response.text
+    assert "uptime_sentinel_expired_leases 0" in response.text
+    assert "uptime_sentinel_open_incidents 0" in response.text
+    assert "uptime_sentinel_failed_checks 0" in response.text
+
+    now = datetime.now(timezone.utc)
+    user = User(email="metrics@example.com", password_hash="test")
+    db_session.add(user)
+    db_session.flush()
+    monitor = Monitor(
+        owner_id=user.id,
+        name="metrics",
+        url="https://example.com",
+        interval_seconds=60,
+        timeout_seconds=5,
+        next_check_at=now - timedelta(seconds=1),
+        lease_until=now - timedelta(seconds=1),
+    )
+    db_session.add(monitor)
+    db_session.flush()
+    db_session.add_all(
+        [
+            Incident(monitor_id=monitor.id, failure_count=1),
+            CheckResult(monitor_id=monitor.id, is_up=False),
+        ]
+    )
+    db_session.commit()
+
+    with TestClient(app) as client:
+        populated = client.get("/metrics")
+    assert "uptime_sentinel_overdue_checks 1" in populated.text
+    assert "uptime_sentinel_expired_leases 1" in populated.text
+    assert "uptime_sentinel_open_incidents 1" in populated.text
+    assert "uptime_sentinel_failed_checks 1" in populated.text
+    assert "uptime_sentinel_failed_checks_total" not in populated.text
