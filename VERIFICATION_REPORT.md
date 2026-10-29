@@ -5,8 +5,8 @@ Run date: 2026-10-30
 ## Final repository verification
 
 - PR #14, **Harden proxy limits and operational metrics**, merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`.
-- Latest documentation commit: `c857035f783514be763d397e90610a221e54e613`.
-- Latest main-branch CI: [run #346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) — **success**.
+- Latest documentation commit: `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`.
+- Latest main-branch CI: [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101) — **success** on the latest documentation commit. Code-focused main run [#346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) also passed.
 - No release tag was created.
 - Scope is the free GitHub portfolio project: code, automated CI, local proxy fixtures, Docker Compose demo, and documentation. Paid production hosting is not required.
 
@@ -14,7 +14,7 @@ Run date: 2026-10-30
 
 | Job | Result | Evidence |
 |---|---|---|
-| `checks` | **PASS** | Run #346 completed successfully, including lint, formatting, type checks, tests, migrations, and dependency audit. |
+| `checks` | **PASS** | Run #349 completed successfully, including lint, formatting, type checks, tests, migrations, and dependency audit. |
 | `proxy-local-integration` | **PASS** | Controlled local proxy security integration tests passed. |
 | `compose-smoke` | **PASS** | Docker Compose smoke test passed, including API health and service/worker exercise. |
 | `proxy-integration` | **SKIPPED** | External controlled fixtures and the six fixture configuration secrets are not configured. This is not a security pass for an external proxy. |
