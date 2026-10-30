@@ -21,7 +21,8 @@
 ## Final verification — 2026-10-30
 
 - [x] PR #14 merged into `main`: [PR #14](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/14), merge commit `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`.
-- [x] Inspected full main CI passed: [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101), documentation commit `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`; code-focused run [#346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) also passed.
+- [x] Latest full main CI passed: [run #375](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40945979277), commit `2016301838f0a4a92a0808994e163c13281df770`; checks, local proxy integration, Compose smoke, and production Compose validation passed.
+- [x] Earlier run [#374](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40945479831) failed at type checking and was superseded by the successful #375 run. The older run #372 was cancelled; it is not a pending gate.
 - [x] Main CI checks passed.
 - [x] Controlled local proxy security integration passed.
 - [x] Docker Compose smoke passed.
@@ -34,7 +35,6 @@
 
 The production configuration is merged, but **a public production deployment is not complete or certified**. Do not call it production-ready until these gates are completed:
 
-- [ ] Run #372 (triggered by placeholder-secret validation tests) finishes successfully: [CI run #372](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40945219179).
 - [ ] Provision a private controlled proxy and host-level egress firewall; the existing Render proxy allows public ingress and is not approved for production.
 - [ ] Decide where to host the API and continuously running worker. Free tiers may sleep or restrict background services; do not claim 24/7 monitoring without verifying always-on behavior.
 - [ ] Configure real domain/DNS and unique production secrets outside Git, then deploy and verify health, scheduled checks, incident recovery, and backups.
