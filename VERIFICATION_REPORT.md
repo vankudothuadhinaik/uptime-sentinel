@@ -5,8 +5,9 @@ Run date: 2026-10-30
 ## Final repository verification
 
 - PR #14, **Harden proxy limits and operational metrics**, merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`.
-- Latest documentation commit: `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`.
-- Inspected full main-branch CI: [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101) — **success** on the latest documentation commit. Code-focused main run [#346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) also passed.
+- Latest verification commit: `2016301838f0a4a92a0808994e163c13281df770`.
+- Latest full main-branch CI: [run #375](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40945979277) — **success**. Checks, local proxy integration, Docker Compose smoke, and production Compose configuration validation all passed.
+- The preceding run [#374](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40945479831) failed during type checking and was superseded by #375. Run #372 was cancelled, not left pending.
 - No release tag was created.
 - Scope is the free GitHub portfolio project: code, automated CI, local proxy fixtures, Docker Compose demo, and documentation. Paid production hosting is not required.
 
