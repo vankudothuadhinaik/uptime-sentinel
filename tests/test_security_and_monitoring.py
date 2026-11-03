@@ -6,8 +6,8 @@ import pytest
 from pydantic import ValidationError
 
 from app.config import Settings
-from app.models import CheckResult, Incident, Monitor, User
 from app.leases import _as_utc, finish_claim
+from app.models import CheckResult, Incident, Monitor, User
 from app.monitoring import perform_check
 from app.ssrf import UnsafeTarget, validate_target
 
