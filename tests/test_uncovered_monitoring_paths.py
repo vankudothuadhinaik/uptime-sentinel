@@ -253,4 +253,4 @@ def test_update_monitor_fails_closed_when_dns_capacity_is_exhausted(monkeypatch)
         assert response.status_code == 503
         unchanged = client.get(f"/monitors/{monitor_id}", headers=headers)
         assert unchanged.status_code == 200
-        assert unchanged.json()["url"] == "https://example.com"
+        assert unchanged.json()["url"] == "https://example.com/"
