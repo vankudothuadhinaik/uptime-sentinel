@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from app.config import Settings
 from app.leases import _as_utc, finish_claim
 from app.models import CheckResult, Incident, Monitor, User
-from app.monitoring import perform_check
+from app.monitoring import _request_with_deadline, perform_check
 from app.ssrf import UnsafeTarget, validate_target
 
 
