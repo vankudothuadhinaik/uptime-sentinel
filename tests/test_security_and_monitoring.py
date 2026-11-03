@@ -563,4 +563,3 @@ def test_slow_dns_validation_does_not_overrun_monitor_deadline(monkeypatch):
     assert result[2] == "timeout"
     assert elapsed < 1.5
     assert finished.wait(timeout=2)
-
