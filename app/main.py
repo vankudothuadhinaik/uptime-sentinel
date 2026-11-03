@@ -10,17 +10,12 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from . import monitoring
 from .config import get_settings
 from .db import get_db
 from .leases import claim_monitor, finish_claim
 from .models import CheckResult, Incident, Monitor, User
-from .monitoring import (
-    _DNS_VALIDATION_MAX_SECONDS,
-    _validate_target_with_deadline,
-    DNSValidationCapacityError,
-    StaleLease,
-    perform_check,
-)
+from .monitoring import StaleLease, perform_check
 from .schemas import AuthIn, CheckOut, IncidentOut, MonitorIn, MonitorOut, MonitorPatch, Token
 from .security import current_user, hash_password, make_token, verify_password
 from .sentry import initialize_sentry
@@ -146,10 +141,10 @@ def create_monitor(
     # Resolve/validate before taking the owner's quota lock so network DNS work
     # cannot unnecessarily block other monitor-management requests.
     try:
-        _validate_target_with_deadline(
-            str(data.url), min(data.timeout_seconds, _DNS_VALIDATION_MAX_SECONDS)
+        monitoring._validate_target_with_deadline(
+            str(data.url), min(data.timeout_seconds, monitoring._DNS_VALIDATION_MAX_SECONDS)
         )
-    except DNSValidationCapacityError as exc:
+    except monitoring.DNSValidationCapacityError as exc:
         raise HTTPException(503, "DNS validation capacity is temporarily exhausted") from exc
     except TimeoutError as exc:
         raise HTTPException(504, "target DNS validation exceeded its deadline") from exc
