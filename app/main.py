@@ -209,10 +209,10 @@ def update_monitor(
     if "url" in values:
         timeout_seconds = values.get("timeout_seconds", monitor.timeout_seconds)
         try:
-            _validate_target_with_deadline(
-                str(values["url"]), min(timeout_seconds, _DNS_VALIDATION_MAX_SECONDS)
+            monitoring._validate_target_with_deadline(
+                str(values["url"]), min(timeout_seconds, monitoring._DNS_VALIDATION_MAX_SECONDS)
             )
-        except DNSValidationCapacityError as exc:
+        except monitoring.DNSValidationCapacityError as exc:
             raise HTTPException(503, "DNS validation capacity is temporarily exhausted") from exc
         except TimeoutError as exc:
             raise HTTPException(504, "target DNS validation exceeded its deadline") from exc
