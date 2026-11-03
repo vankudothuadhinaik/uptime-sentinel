@@ -1,4 +1,6 @@
 import asyncio
+import queue
+import threading
 import time
 from datetime import datetime, timezone
 
@@ -14,6 +16,47 @@ from .ssrf import UnsafeTarget, validate_target
 
 class StaleLease(RuntimeError):
     """Raised when a monitor check finishes after another worker owns its lease."""
+
+
+_DNS_VALIDATION_SLOTS = threading.BoundedSemaphore(8)
+_DNS_VALIDATION_MAX_SECONDS = 5.0
+
+
+def _validate_target_with_deadline(url: str, timeout_seconds: float) -> None:
+    """Run blocking system DNS validation without letting it pin the event loop.
+
+    Resolver calls cannot be force-cancelled safely. A bounded set of daemon
+    threads ensures timed-out resolver calls cannot create unbounded thread
+    growth; if all slots are occupied, new checks fail closed immediately.
+    """
+    if not _DNS_VALIDATION_SLOTS.acquire(blocking=False):
+        raise TimeoutError("DNS validation capacity is exhausted")
+
+    outcome: queue.Queue[Exception | None] = queue.Queue(maxsize=1)
+
+    def resolve() -> None:
+        error: Exception | None = None
+        try:
+            validate_target(url)
+        except Exception as exc:
+            error = exc
+        finally:
+            _DNS_VALIDATION_SLOTS.release()
+        outcome.put(error)
+
+    thread = threading.Thread(target=resolve, name="monitor-dns-validation", daemon=True)
+    try:
+        thread.start()
+    except Exception:
+        _DNS_VALIDATION_SLOTS.release()
+        raise
+
+    try:
+        error = outcome.get(timeout=timeout_seconds)
+    except queue.Empty:
+        raise TimeoutError("DNS validation timed out") from None
+    if error is not None:
+        raise error
 
 
 async def _request_with_deadline(
@@ -36,7 +79,11 @@ async def _request_with_deadline(
     )
     try:
         async with asyncio.timeout(timeout_seconds):
-            validate_target(monitor.url)
+            await asyncio.to_thread(
+                _validate_target_with_deadline,
+                monitor.url,
+                min(timeout_seconds, _DNS_VALIDATION_MAX_SECONDS),
+            )
             async with (
                 httpx.AsyncClient(
                     follow_redirects=False,
