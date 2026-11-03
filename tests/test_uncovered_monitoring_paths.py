@@ -212,7 +212,7 @@ def test_create_monitor_dns_validation_is_bounded(monkeypatch):
         observed["timeout_seconds"] = timeout_seconds
         raise TimeoutError("DNS validation timed out")
 
-    monkeypatch.setattr("app.main._validate_target_with_deadline", slow_dns)
+    monkeypatch.setattr("app.main.monitoring._validate_target_with_deadline", slow_dns)
     with TestClient(app) as client:
         headers = _auth(client, "bounded-create-dns@example.com")
         response = client.post(
@@ -230,7 +230,7 @@ def test_update_monitor_fails_closed_when_dns_capacity_is_exhausted(monkeypatch)
     from app.monitoring import DNSValidationCapacityError
 
     monkeypatch.setattr(limiter, "enabled", False)
-    monkeypatch.setattr("app.main._validate_target_with_deadline", lambda *_: None)
+    monkeypatch.setattr("app.main.monitoring._validate_target_with_deadline", lambda *_: None)
     with TestClient(app) as client:
         headers = _auth(client, "bounded-update-dns@example.com")
         created = client.post(
@@ -244,7 +244,7 @@ def test_update_monitor_fails_closed_when_dns_capacity_is_exhausted(monkeypatch)
         def exhausted(*_args):
             raise DNSValidationCapacityError("DNS validation capacity is exhausted")
 
-        monkeypatch.setattr("app.main._validate_target_with_deadline", exhausted)
+        monkeypatch.setattr("app.main.monitoring._validate_target_with_deadline", exhausted)
         response = client.patch(
             f"/monitors/{monitor_id}",
             headers=headers,
