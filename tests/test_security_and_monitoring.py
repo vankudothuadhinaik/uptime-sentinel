@@ -504,7 +504,6 @@ def test_cleanup_old_results_removes_expired_checks_but_keeps_recent_checks_and_
     assert cleanup_old_results(db_session, now=now) == 0
 
 
-
 def test_expired_worker_cannot_finalize_and_reschedule_monitor(db_session):
     now = datetime.now(timezone.utc)
     expired_until = now - timedelta(seconds=1)
