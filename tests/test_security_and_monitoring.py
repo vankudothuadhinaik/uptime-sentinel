@@ -1,4 +1,8 @@
+import asyncio
 import socket
+import threading
+import time
+from types import SimpleNamespace
 from datetime import datetime, timedelta, timezone
 
 import httpx
@@ -7,7 +11,7 @@ from pydantic import ValidationError
 
 from app.config import Settings
 from app.models import CheckResult, Incident, Monitor, User
-from app.monitoring import perform_check
+from app.monitoring import _request_with_deadline, perform_check
 from app.ssrf import UnsafeTarget, validate_target
 
 
@@ -501,3 +505,23 @@ def test_cleanup_old_results_removes_expired_checks_but_keeps_recent_checks_and_
     assert db_session.get(CheckResult, recent_id) is not None
     assert db_session.get(Incident, incident_id) is not None
     assert cleanup_old_results(db_session, now=now) == 0
+
+
+
+def test_slow_dns_validation_does_not_overrun_monitor_deadline(monkeypatch):
+    finished = threading.Event()
+
+    def slow_dns_validation(_url):
+        time.sleep(2)
+        finished.set()
+
+    monkeypatch.setattr("app.monitoring.validate_target", slow_dns_validation)
+    monitor = SimpleNamespace(url="https://slow-dns.example", timeout_seconds=1)
+
+    started = time.monotonic()
+    result = asyncio.run(_request_with_deadline(monitor))
+    elapsed = time.monotonic() - started
+
+    assert result[2] == "timeout"
+    assert elapsed < 1.5
+    assert finished.wait(timeout=2)
