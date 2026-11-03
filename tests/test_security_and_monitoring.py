@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from app.config import Settings
 from app.models import CheckResult, Incident, Monitor, User
+from app.leases import _as_utc, finish_claim
 from app.monitoring import perform_check
 from app.ssrf import UnsafeTarget, validate_target
 
@@ -501,3 +502,42 @@ def test_cleanup_old_results_removes_expired_checks_but_keeps_recent_checks_and_
     assert db_session.get(CheckResult, recent_id) is not None
     assert db_session.get(Incident, incident_id) is not None
     assert cleanup_old_results(db_session, now=now) == 0
+
+
+
+def test_expired_worker_cannot_finalize_and_reschedule_monitor(db_session):
+    now = datetime.now(timezone.utc)
+    expired_until = now - timedelta(seconds=1)
+    already_due = now - timedelta(seconds=2)
+    user = User(email="expired-finalizer@example.com", password_hash="test-hash")
+    db_session.add(user)
+    db_session.commit()
+    monitor = Monitor(
+        owner_id=user.id,
+        name="expired-finalizer",
+        url="https://example.com",
+        interval_seconds=60,
+        timeout_seconds=5,
+        lease_token="expired-owner",
+        lease_until=expired_until,
+        next_check_at=already_due,
+    )
+    db_session.add(monitor)
+    db_session.commit()
+    db_session.refresh(monitor)
+
+    assert (
+        finish_claim(
+            db_session,
+            monitor.id,
+            "expired-owner",
+            now + timedelta(seconds=60),
+            now=now,
+        )
+        is False
+    )
+
+    db_session.refresh(monitor)
+    assert monitor.lease_token == "expired-owner"
+    assert _as_utc(monitor.lease_until) == expired_until
+    assert _as_utc(monitor.next_check_at) == already_due
