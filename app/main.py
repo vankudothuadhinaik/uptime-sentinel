@@ -14,11 +14,17 @@ from .config import get_settings
 from .db import get_db
 from .leases import claim_monitor, finish_claim
 from .models import CheckResult, Incident, Monitor, User
-from .monitoring import StaleLease, perform_check
+from .monitoring import (
+    DNSValidationCapacityError,
+    StaleLease,
+    _DNS_VALIDATION_MAX_SECONDS,
+    _validate_target_with_deadline,
+    perform_check,
+)
 from .schemas import AuthIn, CheckOut, IncidentOut, MonitorIn, MonitorOut, MonitorPatch, Token
 from .security import current_user, hash_password, make_token, verify_password
 from .sentry import initialize_sentry
-from .ssrf import UnsafeTarget, validate_target
+from .ssrf import UnsafeTarget
 
 initialize_sentry()
 
@@ -140,7 +146,13 @@ def create_monitor(
     # Resolve/validate before taking the owner's quota lock so network DNS work
     # cannot unnecessarily block other monitor-management requests.
     try:
-        validate_target(str(data.url))
+        _validate_target_with_deadline(
+            str(data.url), min(data.timeout_seconds, _DNS_VALIDATION_MAX_SECONDS)
+        )
+    except DNSValidationCapacityError as exc:
+        raise HTTPException(503, "DNS validation capacity is temporarily exhausted") from exc
+    except TimeoutError as exc:
+        raise HTTPException(504, "target DNS validation exceeded its deadline") from exc
     except UnsafeTarget as exc:
         raise HTTPException(422, str(exc)) from exc
 
@@ -200,8 +212,15 @@ def update_monitor(
     monitor = owned_monitor(monitor_id, user, db)
     values = data.model_dump(exclude_unset=True)
     if "url" in values:
+        timeout_seconds = values.get("timeout_seconds", monitor.timeout_seconds)
         try:
-            validate_target(str(values["url"]))
+            _validate_target_with_deadline(
+                str(values["url"]), min(timeout_seconds, _DNS_VALIDATION_MAX_SECONDS)
+            )
+        except DNSValidationCapacityError as exc:
+            raise HTTPException(503, "DNS validation capacity is temporarily exhausted") from exc
+        except TimeoutError as exc:
+            raise HTTPException(504, "target DNS validation exceeded its deadline") from exc
         except UnsafeTarget as exc:
             raise HTTPException(422, str(exc)) from exc
         values["url"] = str(values["url"])
