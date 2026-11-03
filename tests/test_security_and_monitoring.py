@@ -1,5 +1,9 @@
+import asyncio
 import socket
+import threading
+import time
 from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -540,3 +544,23 @@ def test_expired_worker_cannot_finalize_and_reschedule_monitor(db_session):
     assert monitor.lease_token == "expired-owner"
     assert _as_utc(monitor.lease_until) == expired_until
     assert _as_utc(monitor.next_check_at) == already_due
+
+
+def test_slow_dns_validation_does_not_overrun_monitor_deadline(monkeypatch):
+    finished = threading.Event()
+
+    def slow_dns_validation(_url):
+        time.sleep(2)
+        finished.set()
+
+    monkeypatch.setattr("app.monitoring.validate_target", slow_dns_validation)
+    monitor = SimpleNamespace(url="https://slow-dns.example", timeout_seconds=1)
+
+    started = time.monotonic()
+    result = asyncio.run(_request_with_deadline(monitor))
+    elapsed = time.monotonic() - started
+
+    assert result[2] == "timeout"
+    assert elapsed < 1.5
+    assert finished.wait(timeout=2)
+
