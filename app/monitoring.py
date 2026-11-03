@@ -18,6 +18,10 @@ class StaleLease(RuntimeError):
     """Raised when a monitor check finishes after another worker owns its lease."""
 
 
+class DNSValidationCapacityError(TimeoutError):
+    """Raised when all bounded DNS resolver slots are occupied."""
+
+
 _DNS_VALIDATION_SLOTS = threading.BoundedSemaphore(8)
 _DNS_VALIDATION_MAX_SECONDS = 5.0
 
@@ -30,7 +34,7 @@ def _validate_target_with_deadline(url: str, timeout_seconds: float) -> None:
     growth; if all slots are occupied, new checks fail closed immediately.
     """
     if not _DNS_VALIDATION_SLOTS.acquire(blocking=False):
-        raise TimeoutError("DNS validation capacity is exhausted")
+        raise DNSValidationCapacityError("DNS validation capacity is exhausted")
 
     outcome: queue.Queue[Exception | None] = queue.Queue(maxsize=1)
 
