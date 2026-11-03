@@ -62,12 +62,24 @@ def claim_monitor(
     return monitor, token
 
 
-def finish_claim(db: Session, monitor_id: int, token: str, next_check_at: datetime) -> bool:
-    """Release only the lease still owned by this token; expired leases self-recover."""
+def finish_claim(
+    db: Session,
+    monitor_id: int,
+    token: str,
+    next_check_at: datetime,
+    now: datetime | None = None,
+) -> bool:
+    """Release only a still-active lease owned by this token."""
+    current = _as_utc(now or datetime.now(timezone.utc))
     try:
         result = db.execute(
             update(Monitor)
-            .where(Monitor.id == monitor_id, Monitor.lease_token == token)
+            .where(
+                Monitor.id == monitor_id,
+                Monitor.lease_token == token,
+                Monitor.lease_until.is_not(None),
+                Monitor.lease_until > current,
+            )
             .values(lease_until=None, lease_token=None, next_check_at=next_check_at)
             .execution_options(synchronize_session=False)
         )
