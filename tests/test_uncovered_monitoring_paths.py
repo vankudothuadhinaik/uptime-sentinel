@@ -200,3 +200,57 @@ def test_consecutive_failure_increments_existing_incident(db_session, monkeypatc
     incident = db_session.scalar(select(Incident).where(Incident.monitor_id == monitor.id))
     assert incident is not None
     assert incident.failure_count == 2
+
+
+def test_create_monitor_dns_validation_is_bounded(monkeypatch):
+    from app.main import limiter
+
+    monkeypatch.setattr(limiter, "enabled", False)
+    observed = {}
+
+    def slow_dns(_url, timeout_seconds):
+        observed["timeout_seconds"] = timeout_seconds
+        raise TimeoutError("DNS validation timed out")
+
+    monkeypatch.setattr("app.main._validate_target_with_deadline", slow_dns)
+    with TestClient(app) as client:
+        headers = _auth(client, "bounded-create-dns@example.com")
+        response = client.post(
+            "/monitors",
+            headers=headers,
+            json={"name": "bounded", "url": "https://slow-dns.example", "timeout_seconds": 2},
+        )
+
+    assert response.status_code == 504
+    assert observed["timeout_seconds"] == 2
+
+
+def test_update_monitor_fails_closed_when_dns_capacity_is_exhausted(monkeypatch):
+    from app.main import limiter
+    from app.monitoring import DNSValidationCapacityError
+
+    monkeypatch.setattr(limiter, "enabled", False)
+    monkeypatch.setattr("app.main._validate_target_with_deadline", lambda *_: None)
+    with TestClient(app) as client:
+        headers = _auth(client, "bounded-update-dns@example.com")
+        created = client.post(
+            "/monitors",
+            headers=headers,
+            json={"name": "before", "url": "https://example.com", "timeout_seconds": 3},
+        )
+        assert created.status_code == 201
+        monitor_id = created.json()["id"]
+
+        def exhausted(*_args):
+            raise DNSValidationCapacityError("DNS validation capacity is exhausted")
+
+        monkeypatch.setattr("app.main._validate_target_with_deadline", exhausted)
+        response = client.patch(
+            f"/monitors/{monitor_id}",
+            headers=headers,
+            json={"url": "https://new-target.example"},
+        )
+        assert response.status_code == 503
+        unchanged = client.get(f"/monitors/{monitor_id}", headers=headers)
+        assert unchanged.status_code == 200
+        assert unchanged.json()["url"] == "https://example.com"
