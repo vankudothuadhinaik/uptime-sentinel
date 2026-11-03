@@ -2,8 +2,8 @@ import asyncio
 import socket
 import threading
 import time
-from types import SimpleNamespace
 from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
 
 import httpx
 import pytest
