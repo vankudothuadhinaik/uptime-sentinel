@@ -15,10 +15,10 @@ from .db import get_db
 from .leases import claim_monitor, finish_claim
 from .models import CheckResult, Incident, Monitor, User
 from .monitoring import (
-    DNSValidationCapacityError,
-    StaleLease,
     _DNS_VALIDATION_MAX_SECONDS,
     _validate_target_with_deadline,
+    DNSValidationCapacityError,
+    StaleLease,
     perform_check,
 )
 from .schemas import AuthIn, CheckOut, IncidentOut, MonitorIn, MonitorOut, MonitorPatch, Token
