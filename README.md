@@ -33,6 +33,18 @@ A FastAPI uptime-monitoring service with scheduled HTTP/HTTPS checks, latency hi
 
 For the hardened self-host deployment profile, see the [production deployment guide](docs/PRODUCTION_DEPLOYMENT.md), [production Compose file](docker-compose.production.yml), and [Caddy TLS configuration](Caddyfile.production). This profile still requires a private controlled egress proxy and host-level egress firewall; it is not a production certification.
 
+## Technology and tooling
+
+| Layer | Technology |
+|---|---|
+| API | Python 3.12+, FastAPI |
+| Persistence | PostgreSQL, SQLAlchemy, Alembic |
+| Worker coordination | Database-backed claims, leases, and fencing |
+| Monitoring | Scheduled HTTP/HTTPS checks, latency history, incident lifecycle |
+| Runtime | Docker, Docker Compose |
+| Quality and security | Pytest, Ruff, mypy, CodeQL, GitHub Actions |
+| Operations integrations | Optional Codecov, Sentry, and Doppler |
+
 ## Architecture
 
 ![Uptime Sentinel architecture diagram](docs/images/architecture.svg)
