@@ -162,23 +162,27 @@ The repository also uses Alembic, PostgreSQL, Docker Compose, Ruff, mypy, pytest
 
 ## Recent hardening
 
-PR #14, **Harden proxy limits and operational metrics**, is merged into `main` as `0ae9c20f0e6dc7c946fb968a1dff6b8e5a49ef42`. It adds bounded proxy concurrency and overload handling, operational Prometheus gauges, and regression coverage.
+- [PR #16](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/16) fences expired monitor leases before a stale worker can persist a result or postpone the next check.
+- [PR #18](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/18) moves blocking DNS resolution off the event loop, bounds resolver work by the monitor-check deadline and a five-second ceiling, and limits concurrent resolver threads.
+- [PR #19](https://github.com/vankudothuadhinaik/uptime-sentinel/pull/19) applies bounded DNS validation to monitor creation and URL updates, returning 503 on resolver-capacity exhaustion and 504 on DNS timeout.
 
-## Verification status — 2026-10-30
+The recorded required CI checks for PRs #18 and #19 passed, including lint, formatting, typing, tests, PostgreSQL concurrency, migrations, local proxy integration, and Compose checks. The optional external controlled-proxy suite remains skipped; production egress security is not certified.
 
-**Portfolio scope: implementation and standard CI are verified.** The inspected full main-branch workflow [run #349](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40935659101) completed successfully for documentation commit `831ef9127c0f6c82e308f46a3306ff5c56d20e1e`. The code-focused main CI run [#346](https://github.com/vankudothuadhinaik/uptime-sentinel/actions/runs/40934553581) also passed.
+## Verification status — 2026-11-04
+
+**Portfolio scope: the merged code changes and required CI checks are verified.** PRs #16, #18, and #19 are merged. The recorded CI for #18 and #19 passed lint, formatting, type checking, tests, PostgreSQL concurrency, migration checks, local proxy security integration, production Compose validation, and Compose smoke checks.
 
 | Check | Result |
 |---|---|
-| Main CI checks (lint, formatting, typing, tests, migrations, dependency audit) | **Passed** |
+| Required CI checks for PR #18 and #19 | **Passed** |
+| PostgreSQL concurrency and migration checks | **Passed** |
 | Controlled local proxy security integration | **Passed** |
-| Docker Compose end-to-end smoke | **Passed** |
-| External controlled-proxy integration | **Not run — requires independently controlled fixtures and secrets** |
-| Render API/background-worker production deployment | **Not deployed; outside the free-only portfolio scope** |
+| Production Compose validation and registration-to-worker smoke | **Passed** |
+| Optional external controlled-proxy integration | **Not run — independently controlled fixtures and secrets are required** |
+| Production egress security certification | **Not established** |
+| Paid hosted production deployment | **Not deployed; outside the free-only portfolio scope** |
 
-The local tests and green CI are evidence for the repository and deterministic local fixtures. They do **not** prove that a separately operated public proxy is secure, and this project must not be described as production-certified.
-
-The existing Render proxy is a test service on the `integration/sentry-doppler` branch, with public ingress allowed. It is not a production egress-security boundary and must not be used for sensitive or production traffic.
+These results apply to the recorded commits and test environment. They do not establish that an independently operated external proxy is secure or that this service is production-certified.
 
 ## Optional production-only gates (not required to finish the free portfolio project)
 
