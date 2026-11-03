@@ -44,9 +44,7 @@ def _validate_target_with_deadline(url: str, timeout_seconds: float) -> None:
             _DNS_VALIDATION_SLOTS.release()
         outcome.put(error)
 
-    thread = threading.Thread(
-        target=resolve, name="monitor-dns-validation", daemon=True
-    )
+    thread = threading.Thread(target=resolve, name="monitor-dns-validation", daemon=True)
     try:
         thread.start()
     except Exception:
